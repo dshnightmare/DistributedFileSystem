@@ -8,15 +8,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class ServerConnectionHandler implements Runnable{
+public class ServerConnectionHandler extends Thread{
 
 	private Socket clientSocket;
-	private DataOutputStream out;
 	private ObjectInputStream objIn;
 	
 	public ServerConnectionHandler(Socket _client){
 		clientSocket = _client;
-		new Thread(this).start();
 	}
 	
 	@Override
@@ -26,15 +24,16 @@ public class ServerConnectionHandler implements Runnable{
 			objIn = new ObjectInputStream(clientSocket.getInputStream());
 			try {
 				RemoteCommand rc = (RemoteCommand)objIn.readObject();
-				String param = rc.params[0]+rc.params[1];
-				
-				out.writeUTF(param);
+				String param = "";
+				for(int i=0; i<rc.params.length; i++){
+					param += " "+rc.params[i];
+				}
+				System.out.println("[Server]Command recieved: "+param);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-			out.close();
 			objIn.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
