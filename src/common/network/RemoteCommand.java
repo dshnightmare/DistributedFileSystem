@@ -17,6 +17,12 @@ public class RemoteCommand implements Serializable {
 	public int missionId;
 	public String[] params;
 	
+	/**
+	 * 
+	 * @param _commandType defined in constant.java
+	 * @param _params most commands from client to server have only one parameter.
+	 *  
+	 */
 	public RemoteCommand(int _commandType, String[] _params){
 		commandType = _commandType;
 		params = _params;
