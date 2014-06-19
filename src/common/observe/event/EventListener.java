@@ -2,5 +2,5 @@ package common.observe.event;
 
 public interface EventListener
 {
-    public void handleRequest(Event event);
+    public void handleEvent(Event event);
 }
