@@ -9,6 +9,11 @@ public class StorageTaskThread extends TaskThread
     	// TODO Auto-generated method stub
     	
     }
+
+	public StorageTaskThread(long sid) {
+		super(sid);
+		// TODO Auto-generated constructor stub
+	}
     
     public void init(){
     	

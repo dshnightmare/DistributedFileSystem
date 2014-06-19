@@ -19,7 +19,7 @@ public class StorageMasterThread implements Runnable, EventListener, RequestList
 	@Override
 	public void handleRequest(Request request) {
 		// TODO Auto-generated method stub
-		StorageTaskThread worker = new StorageTaskThread();
+		StorageTaskThread worker = new StorageTaskThread(0);
 		worker.run();
 	}
 

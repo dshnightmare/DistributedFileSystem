@@ -24,29 +24,25 @@ public class TaskThreadPool {
 	// Unit test
 	public static void main(String[] args) {
 		TaskThreadPool pool = new TaskThreadPool();
-		
-		pool.addThread(new TaskThread() {
 
+		pool.addThread(new TaskThread(1) {
 			@Override
 			public void run() {
 				System.out.println("TaskThread A");
 			}
-
 		});
-		pool.addThread(new TaskThread() {
-
+		pool.addThread(new TaskThread(2) {
 			@Override
 			public void run() {
 				System.out.println("TaskThread B");
 			}
-
 		});
-		
+
 		new Thread(pool.nextThread()).start();
 		new Thread(pool.nextThread()).start();
 		new Thread(pool.nextThread()).start();
 		new Thread(pool.nextThread()).start();
-		
+
 		TaskThread thread = pool.nextThread();
 		pool.removeThread(thread);
 		new Thread(pool.nextThread()).start();
