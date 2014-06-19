@@ -1,6 +1,6 @@
 package common.observe.call;
 
-public interface RequestListener
+public interface CallListener
 {
     public void handleRequest(Call call);
 }

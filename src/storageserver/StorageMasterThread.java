@@ -5,9 +5,9 @@ import java.net.Socket;
 import common.observe.call.Call;
 import common.observe.event.Event;
 import common.observe.event.EventListener;
-import common.observe.call.RequestListener;
+import common.observe.call.CallListener;
 
-public class StorageMasterThread implements Runnable, EventListener, RequestListener{
+public class StorageMasterThread implements Runnable, EventListener, CallListener{
 	
 	@Override
 	public void run() {
