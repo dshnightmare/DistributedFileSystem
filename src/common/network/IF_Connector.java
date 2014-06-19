@@ -1,7 +1,6 @@
 package common.network;
 
 import common.observe.call.Call;
-
 /**
  * implemented by: ClientConnector
  * @author gengyufeng
