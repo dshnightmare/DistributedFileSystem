@@ -4,10 +4,10 @@ import java.net.Socket;
 
 import common.observe.call.Call;
 import common.observe.event.Event;
-import common.observe.event.EventListener;
+import common.observe.event.TaskEventListener;
 import common.observe.call.CallListener;
 
-public class StorageMasterThread implements Runnable, EventListener, CallListener{
+public class StorageMasterThread implements Runnable, TaskEventListener, CallListener{
 	
 	@Override
 	public void run() {

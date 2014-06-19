@@ -5,65 +5,96 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import common.observe.event.Event;
-import common.observe.event.EventDispatcher;
-import common.observe.event.EventListener;
+import common.observe.event.TaskEvent;
+import common.observe.event.TaskEvent.EventType;
+import common.observe.event.TaskEventDispatcher;
+import common.observe.event.TaskEventListener;
 
-public class TaskThreadMonitor implements EventDispatcher {
-	private TaskThreadPool pool;
-	private List<EventListener> listeners = new ArrayList<EventListener>();
-	private Timer timer = new Timer();
-	private TimerTask task = new MonitorTask();
-	private boolean isMonitoring = false;
+public class TaskThreadMonitor
+    implements TaskEventDispatcher
+{
+    private TaskThreadPool pool;
 
-	public TaskThreadMonitor(TaskThreadPool pool) {
-		pool = this.pool;
-	}
+    private List<TaskEventListener> listeners = new ArrayList<TaskEventListener>();
 
-	public void startMonitoring(long period) {
-		if (!isMonitoring) {
-			timer.scheduleAtFixedRate(task, 0, period);
-			isMonitoring = true;
-		}
-	}
+    private Timer timer = new Timer();
 
-	public void stopMonitoring() {
-		if (isMonitoring) {
-			timer.cancel();
-			isMonitoring = false;
-		}
-	}
-	
-	public void restartMonitoring(long period) {
-		stopMonitoring();
-		startMonitoring(period);
-	}
+    private TimerTask task = new MonitorTask();
 
-	@Override
-	public synchronized void addListener(EventListener listener) {
-		listeners.add(listener);
-	}
+    private boolean isMonitoring = false;
 
-	@Override
-	public synchronized void removeListener(EventListener listener) {
-		listeners.remove(listener);
-	}
+    public TaskThreadMonitor(TaskThreadPool pool)
+    {
+        pool = this.pool;
+    }
 
-	@Override
-	public void fireEvent(Event event) {
-		for (EventListener l : listeners)
-			l.handleEvent(event);
-	}
+    public void startMonitoring(long period)
+    {
+        if (!isMonitoring)
+        {
+            timer.scheduleAtFixedRate(task, 0, period);
+            isMonitoring = true;
+        }
+    }
 
-	private class MonitorTask extends TimerTask {
+    public void stopMonitoring()
+    {
+        if (isMonitoring)
+        {
+            timer.cancel();
+            isMonitoring = false;
+        }
+    }
 
-		@Override
-		public void run() {
-			TaskThread thread = pool.nextThread();
-			if (null != thread) {
-				// TODO
-			}
-		}
+    public void restartMonitoring(long period)
+    {
+        stopMonitoring();
+        startMonitoring(period);
+    }
 
-	}
+    @Override
+    public synchronized void addListener(TaskEventListener listener)
+    {
+        listeners.add(listener);
+    }
+
+    @Override
+    public synchronized void removeListener(TaskEventListener listener)
+    {
+        listeners.remove(listener);
+    }
+
+    @Override
+    public void fireEvent(TaskEvent event)
+    {
+        for (TaskEventListener l : listeners)
+            l.handleEvent(event);
+    }
+
+    private class MonitorTask
+        extends TimerTask
+    {
+
+        @Override
+        public void run()
+        {
+            TaskThread thread = pool.nextThread();
+            if (null != thread)
+            {
+                if (thread.isFinished())
+                {
+                    fireEvent(new TaskEvent(EventType.TASK_FINISHED, thread));
+                }
+                else if (thread.isLeaseValid())
+                {
+                    thread.deceaseLease();
+                }
+                else
+                {
+                    fireEvent(new TaskEvent(EventType.TASK_ABORTED, thread));
+                }
+            }
+        }
+
+    }
 }
