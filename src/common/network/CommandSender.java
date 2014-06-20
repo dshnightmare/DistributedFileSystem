@@ -1,12 +1,7 @@
 package common.network;
 
-import java.io.DataOutputStream;
-import java.io.InputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import common.observe.call.Call;
 
 /**
@@ -29,12 +24,9 @@ public class CommandSender extends Thread{
 		
 		while(true){
 			try {
-				Call cmd = connector.commands.take();
+				Call cmd = connector.getCommandCall();
 				out.writeObject(cmd);
 				System.out.println("Command sent: "+cmd.callType);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

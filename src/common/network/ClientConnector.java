@@ -10,6 +10,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import common.observe.call.Call;
+import common.observe.call.CallDispatcher;
+import common.observe.call.CallListener;
 import common.util.Constant;
 
 /**
@@ -17,24 +19,48 @@ import common.util.Constant;
  * @author geng yufeng
  *
  */
-public class ClientConnector extends Thread implements IF_Connector{
+public class ClientConnector extends Thread implements IF_Connector, CallDispatcher{
 	
 	private Socket socket = null;
 	private String remoteIP;
 	private int remotePort;
-	public BlockingQueue<Call> commands;
+	private BlockingQueue<Call> commands;
+	private BlockingQueue<Call> responses;
 	
 	public ClientConnector(){
 		remoteIP = Constant.serverIP;
 		remotePort = Constant.serverPort;
 		commands = new LinkedBlockingDeque<Call>();
+		responses = new LinkedBlockingDeque<Call>();
 	}
 	
 	@Override
+	/**
+	 * call this method to send a command to nameserver.
+	 */
 	public void sendCommand(Call command) {
 		// TODO Auto-generated method stub
 		try {
 			commands.put(command);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public Call getCommandCall(){
+		Call ret = null;
+		try {
+			ret = commands.take();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ret;
+	}
+	public void addResponseCall(Call resp){
+		try {
+			responses.put(resp);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -73,6 +99,18 @@ public class ClientConnector extends Thread implements IF_Connector{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void addListener(CallListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeListener(CallListener listener) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
