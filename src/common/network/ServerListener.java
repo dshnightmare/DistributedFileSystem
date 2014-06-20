@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 import common.observe.call.Call;
-import common.util.ObjectAndByteSwitch;
+import common.util.SwitchObjectAndByte;
 
 public class ServerListener extends Thread{
 
@@ -90,8 +90,8 @@ public class ServerListener extends Thread{
 			sc.read(r_buf);
 			r_buf.flip();
 			try {
-				Call rc = (Call)ObjectAndByteSwitch.switchByteToObject(r_buf.array());
-				System.out.println("data done:"+rc.callType+" "+rc.getParamsString());
+				Call rc = (Call)SwitchObjectAndByte.switchByteToObject(r_buf.array());
+				System.out.println("Call received:"+rc.callType+" "+rc.getParamsString());
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -106,17 +106,5 @@ public class ServerListener extends Thread{
 				e1.printStackTrace();
 			}
 		}
-	}
-	
-	private String getCurrentTime() {
-		Calendar date = Calendar.getInstance();
-		String time = "current time: " +
-					  date.get(Calendar.YEAR) + "-" +
-					  date.get(Calendar.MONTH)+1 + "-" +
-					  date.get(Calendar.DATE) + " " +
-					  date.get(Calendar.HOUR) + ":" +
-					  date.get(Calendar.MINUTE) + ":" +
-					  date.get(Calendar.SECOND);
-		return time;
 	}
 }

@@ -12,7 +12,7 @@ import java.io.ObjectOutputStream;
  * @author straw
  * 
  */
-public class ObjectAndByteSwitch {
+public class SwitchObjectAndByte {
 	/**
 	 * 将对象转换成字节数组
 	 * 
