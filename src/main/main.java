@@ -10,10 +10,11 @@ public class main {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		System.out.print("Start type is(c:client, n:nameserver, s:storageserver):");
 		Scanner input = new Scanner(System.in);
 		String startType = input.next();
 		
-		if(startType.equals("client")){
+		if(startType.equals("c")){
 			System.out.println("Start as client...");
 			ClientConnector client = new ClientConnector();
 			client.setupSocket();
@@ -28,10 +29,16 @@ public class main {
 				System.out.println("Command:"+cmd+" "+param);
 			}
 		}
-		else if(startType.equals("Start as server...")){
-			System.out.println("dsh sb");
+		else if(startType.equals("n")){
+			System.out.println("Start as nameserver...");
 			ServerConnector server = new ServerConnector();
 			server.setupSocket();
+		}
+		else if(startType.equals("s")){
+			System.out.println("not implemented");
+		}
+		else {
+			System.out.println("Wrong type code!");
 		}
 	}
 
