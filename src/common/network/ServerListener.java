@@ -12,6 +12,9 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Scanner;
 
+import common.observe.call.Call;
+import common.util.ObjectAndByteSwitch;
+
 public class ServerListener extends Thread{
 
 	private int port;
@@ -86,19 +89,13 @@ public class ServerListener extends Thread{
 			//将字节序列从此通道中读入给定的缓冲区r_bBuf
 			sc.read(r_buf);
 			r_buf.flip();
-			String msg = new String(r_buf.array()).toString();
-			if(msg.equalsIgnoreCase("1 time")) {
-				w_buf = ByteBuffer.wrap(getCurrentTime().getBytes("UTF-8"));
-				sc.write(w_buf);
-				w_buf.clear();
-			} else if(msg.equalsIgnoreCase("1 bye")) {
-				sc.write(ByteBuffer.wrap("已经与服务器断开连接".getBytes("UTF-8")));
-				sc.socket().close();
-			} else {
-				sc.write(ByteBuffer.wrap(msg.getBytes("UTF-8")));
+			try {
+				Call rc = (Call)ObjectAndByteSwitch.switchByteToObject(r_buf.array());
+				System.out.println("data done:"+rc.callType+" "+rc.getParamsString());
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			System.out.println(msg);
-			System.out.println("data done");
 			r_buf.clear();
 		} catch (IOException e) {
 			e.printStackTrace();

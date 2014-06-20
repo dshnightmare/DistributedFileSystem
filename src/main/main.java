@@ -31,10 +31,10 @@ public class main {
 		}
 		else if(startType.equals("n")){
 			System.out.println("Start as nameserver...");
-			//ServerListener server = new ServerListener(5001);
-			//server.start();
-			ServerConnector sc = new ServerConnector();
-			sc.setupSocket();
+			ServerListener server = new ServerListener(5001);
+			server.start();
+			//ServerConnector sc = new ServerConnector();
+			//sc.setupSocket();
 		}
 		else if(startType.equals("s")){
 			System.out.println("not implemented");

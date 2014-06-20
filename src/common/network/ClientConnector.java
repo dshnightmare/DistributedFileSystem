@@ -13,6 +13,7 @@ import common.observe.call.Call;
 import common.observe.call.CallDispatcher;
 import common.observe.call.CallListener;
 import common.util.Constant;
+import common.util.ObjectAndByteSwitch;
 
 /**
  * Client holds an object of this class. 
@@ -94,9 +95,17 @@ public class ClientConnector extends Thread implements IF_Connector, CallDispatc
 			break;
 		}
 		System.out.println("Connection established with server.");
+//		try {
+//			CommandSender cs = new CommandSender(this, new ObjectOutputStream(socket.getOutputStream()));
+//			cs.start();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		String[] params = {"abc", "123"};
+		Call rCommand = new Call(23, params);
 		try {
-			CommandSender cs = new CommandSender(this, new ObjectOutputStream(socket.getOutputStream()));
-			cs.start();
+			socket.getOutputStream().write(ObjectAndByteSwitch.switchObjectToByte(rCommand));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
