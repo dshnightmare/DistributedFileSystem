@@ -7,7 +7,7 @@ package common.util;
  */
 public class Constant {
 
-	public static final String serverIP = "172.31.203.219";	//put it in config file
+	public static final String serverIP = "172.31.203.220";	//put it in config file
 	public static final int serverPort = 5001;
 	
 	//callType: client-server operation 

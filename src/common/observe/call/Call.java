@@ -28,4 +28,12 @@ public class Call implements Serializable {
 		params = _params;
 		missionId = -1;
 	}
+	
+	public String getParamsString(){
+		String ret = "";
+		for(int i=0; i<params.length; i++){
+			ret += " "+params[i];
+		}
+		return ret;
+	}
 }

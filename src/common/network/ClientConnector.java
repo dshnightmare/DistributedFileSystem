@@ -71,16 +71,16 @@ public class ClientConnector extends Thread implements IF_Connector, CallDispatc
 	 * setup connection with server, and create two threads to send and recv respectively
 	 */
 	public void setupSocket(){
-		socket = new Socket();
 		SocketAddress address = new InetSocketAddress(remoteIP, remotePort);
 		while(true){
 			try {
+				socket = new Socket();
 				socket.connect(address, 1000);
 			} catch (SocketTimeoutException e) {
 				// TODO: handle exception
-				System.out.println("Connecting to NameServer timeout, will reconnect in 10 seconds...");
+				System.out.println("Connecting NameServer("+remoteIP+":"+remotePort+") timeout, will reconnect in 5 seconds...");
 				try {
-					Thread.sleep(10000);
+					Thread.sleep(5000);
 					continue;
 				} catch (InterruptedException e1) {
 					// TODO Auto-generated catch block
@@ -89,12 +89,14 @@ public class ClientConnector extends Thread implements IF_Connector, CallDispatc
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				System.exit(0);
 			}
 			break;
 		}
 		System.out.println("Connection established with server.");
 		try {
-			(new CommandSender(this, new ObjectOutputStream(socket.getOutputStream()))).start();
+			CommandSender cs = new CommandSender(this, new ObjectOutputStream(socket.getOutputStream()));
+			cs.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 import common.network.ClientConnector;
 import common.network.ServerConnector;
+import common.network.ServerListener;
 import common.observe.call.Call;
 
 public class main {
@@ -26,13 +27,14 @@ public class main {
 				String[] params = param.split(" ");
 				Call rc = new Call(Integer.parseInt(cmd), params);
 				client.sendCommand(rc);
-				System.out.println("Command:"+cmd+" "+param);
 			}
 		}
 		else if(startType.equals("n")){
 			System.out.println("Start as nameserver...");
-			ServerConnector server = new ServerConnector();
-			server.setupSocket();
+			//ServerListener server = new ServerListener(5001);
+			//server.start();
+			ServerConnector sc = new ServerConnector();
+			sc.setupSocket();
 		}
 		else if(startType.equals("s")){
 			System.out.println("not implemented");

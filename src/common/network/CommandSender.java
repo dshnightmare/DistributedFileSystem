@@ -26,7 +26,7 @@ public class CommandSender extends Thread{
 			try {
 				Call cmd = connector.getCommandCall();
 				out.writeObject(cmd);
-				System.out.println("Command sent: "+cmd.callType);
+				System.out.println("Command sent: "+cmd.callType+cmd.getParamsString());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
