@@ -1,6 +1,6 @@
 package storageserver;
 
-import java.net.Socket;
+import javax.security.auth.login.Configuration;
 
 import common.observe.call.Call;
 import common.observe.event.Event;
@@ -8,6 +8,13 @@ import common.observe.event.EventListener;
 import common.observe.call.RequestListener;
 
 public class StorageMasterThread implements Runnable, EventListener, RequestListener{
+	private final StorageNode node;
+	
+	
+	StorageMasterThread(Configuration conf, StorageNode _node)
+	{
+		node = _node;
+	}
 	
 	@Override
 	public void run() {
