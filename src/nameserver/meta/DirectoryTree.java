@@ -1,40 +1,24 @@
 package nameserver.meta;
 
-import nameserver.meta.DirectoryNode.DirectoryNodeType;
+import nameserver.meta.Node.Type;
 
 public class DirectoryTree
 {
     public static final String SEPERATOR = "/";
 
-    private DirectoryNode root = new DirectoryNode("", DirectoryNodeType.DIR);
+    private Node root = new DirectoryNode("");
 
-    public synchronized DirectoryNode getNode(String path)
+    public synchronized Node getNode(String path)
     {
         return find(root, normalizePath(path));
     }
 
-    public synchronized DirectoryNode createPath(String path)
+    public synchronized Node createPath(String path)
     {
         return create(root, normalizePath(path));
     }
-
-    public synchronized boolean lock(String path)
-    {
-        DirectoryNode node = getNode(path);
-        if (null == node)
-            return false;
-        return node.getLock();
-    }
     
-    public synchronized void unlock(String path)
-    {
-        DirectoryNode node = getNode(path);
-        if (null != node)
-            node.releaseLock();
-        
-    }
-
-    private DirectoryNode create(DirectoryNode node, String path)
+    private Node create(Node node, String path)
     {
         if (null == node || null == path)
             return null;
@@ -54,16 +38,16 @@ public class DirectoryTree
             leftPath = "";
         }
 
-        DirectoryNode childNode = node.getChild(name);
+        Node childNode = node.getChild(name);
         if (null == childNode)
         {
-            childNode = new DirectoryNode(name, DirectoryNodeType.DIR);
+            childNode = new DirectoryNode(name);
             node.addChild(childNode);
         }
         return create(childNode, leftPath);
     }
 
-    private DirectoryNode find(DirectoryNode node, String path)
+    private Node find(Node node, String path)
     {
         if (null == node || null == path)
             return null;
@@ -82,7 +66,7 @@ public class DirectoryTree
             name = path;
             leftPath = "";
         }
-        DirectoryNode childNode = node.getChild(name);
+        Node childNode = node.getChild(name);
         return find(childNode, leftPath);
     }
 

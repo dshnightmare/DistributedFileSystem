@@ -1,11 +1,15 @@
 package test;
 
 import nameserver.meta.DirectoryTree;
+import nameserver.meta.FileNode;
+import nameserver.meta.Node;
 import junit.framework.TestCase;
 
 public class TestDirectoryTree
     extends TestCase
 {
+    private static Object sync = new Object();
+
     @Override
     protected void setUp()
     {
@@ -30,58 +34,88 @@ public class TestDirectoryTree
     public void testLockAndUnlock()
     {
         final DirectoryTree tree = new DirectoryTree();
-        tree.createPath("/abc/def/ghi");
-        tree.createPath("/abc/def/jkl");
-        tree.createPath("/abc/ghi");
+        Node dir = tree.createPath("/dir");
+        Node file = new FileNode("file");
+        dir.addChild(file);
 
-        Thread threadA = new Thread(new Runnable()
+        Thread a = new Thread(new Runnable()
         {
             @Override
             public void run()
             {
-                assertTrue(tree.lock("/abc/def/ghi"));
                 try
                 {
-                    Thread.sleep(5000);
+                    Thread.sleep(1000);
+                    FileNode file = (FileNode) tree.getNode("/dir/file");
+                    assertTrue(file.getLock());
+                    synchronized (sync)
+                    {
+                        sync.notifyAll();
+                    }
+                    synchronized (sync)
+                    {
+                        sync.wait();
+                    }
+                    file.releaseLock();
+                    synchronized (sync)
+                    {
+                        sync.notifyAll();
+                    }
                 }
                 catch (InterruptedException e)
                 {
                     e.printStackTrace();
                 }
-                tree.unlock("/abc/def/ghi");
             }
         });
-        Thread threadB = new Thread(new Runnable()
+        Thread b = new Thread(new Runnable()
         {
             @Override
             public void run()
             {
-                assertFalse(tree.lock("/abc/def/ghi"));
-                assertTrue(tree.lock("/abc/ghi"));
-                tree.unlock("/abc/def/ghi");
                 try
                 {
-                    Thread.sleep(10000);
+                    synchronized (sync)
+                    {
+                        sync.wait();
+                    }
+                    FileNode file = (FileNode) tree.getNode("/dir/file");
+                    assertFalse(file.getLock());
+                    synchronized (sync)
+                    {
+                        sync.notifyAll();
+                    }
+                    synchronized (sync)
+                    {
+                        sync.wait();
+                    }
+                    assertTrue(file.getLock());
+                    file.releaseLock();
+                    synchronized (this) {
+                        notifyAll();
+                    }
                 }
                 catch (InterruptedException e)
                 {
                     e.printStackTrace();
                 }
-                assertTrue(tree.lock("/abc/def/ghi"));
-                tree.unlock("/abc/def/ghi/");
             }
         });
 
-        threadA.start();
-        threadB.start();
-        
-        try
+        a.start();
+        b.start();
+
+        synchronized (b)
         {
-            Thread.sleep(12000);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
+            try
+            {
+                b.wait();
+            }
+            catch (InterruptedException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 

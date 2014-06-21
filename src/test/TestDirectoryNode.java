@@ -1,7 +1,8 @@
 package test;
 
 import nameserver.meta.DirectoryNode;
-import nameserver.meta.DirectoryNode.DirectoryNodeType;
+import nameserver.meta.FileNode;
+import nameserver.meta.Node;
 import junit.framework.TestCase;
 
 public class TestDirectoryNode extends TestCase
@@ -13,12 +14,12 @@ public class TestDirectoryNode extends TestCase
 
     public void testNode()
     {
-        DirectoryNode root = new DirectoryNode("root", DirectoryNodeType.DIR);
-        root.addChild(new DirectoryNode("b", DirectoryNodeType.DIR));
-        root.addChild(new DirectoryNode("a", DirectoryNodeType.FILE));
-        root.addChild(new DirectoryNode("c", DirectoryNodeType.DIR));
+        Node root = new DirectoryNode("root");
+        root.addChild(new DirectoryNode("b"));
+        root.addChild(new FileNode("a"));
+        root.addChild(new DirectoryNode("c"));
 
-        for (DirectoryNode n : root.getChilds())
+        for (Node n : root.getChilds())
         {
             System.out.println(n.getName());
         }
