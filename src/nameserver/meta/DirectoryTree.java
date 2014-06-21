@@ -1,19 +1,19 @@
 package nameserver.meta;
 
-import nameserver.meta.TreeNode.TreeNodeType;
+import nameserver.meta.DirectoryNode.DirectoryNodeType;
 
 public class DirectoryTree
 {
-    public static final String sep = "/";
+    public static final String SEPERATOR = "/";
 
-    private TreeNode root = new TreeNode("", TreeNodeType.DIR);
+    private DirectoryNode root = new DirectoryNode("", DirectoryNodeType.DIR);
 
-    public TreeNode getNode(String path)
+    public DirectoryNode getNode(String path)
     {
         return find(root, normalizePath(path));
     }
 
-    public TreeNode createPath(String path)
+    public DirectoryNode createPath(String path)
     {
         return create(root, normalizePath(path));
     }
@@ -23,7 +23,7 @@ public class DirectoryTree
         return null != getNode(path);
     }
 
-    private TreeNode create(TreeNode node, String path)
+    private DirectoryNode create(DirectoryNode node, String path)
     {
         if (null == node || null == path)
             return null;
@@ -32,10 +32,10 @@ public class DirectoryTree
 
         String name = null;
         String leftPath = null;
-        if (path.indexOf(sep) >= 0)
+        if (path.indexOf(SEPERATOR) >= 0)
         {
-            name = path.split("/", 2)[0];
-            leftPath = path.split("/", 2)[1];
+            name = path.split(SEPERATOR, 2)[0];
+            leftPath = path.split(SEPERATOR, 2)[1];
         }
         else
         {
@@ -43,16 +43,16 @@ public class DirectoryTree
             leftPath = "";
         }
 
-        TreeNode childNode = node.getChild(name);
+        DirectoryNode childNode = node.getChild(name);
         if (null == childNode)
         {
-            childNode = new TreeNode(name, TreeNodeType.DIR);
+            childNode = new DirectoryNode(name, DirectoryNodeType.DIR);
             node.addChild(childNode);
         }
         return create(childNode, leftPath);
     }
 
-    private TreeNode find(TreeNode node, String path)
+    private DirectoryNode find(DirectoryNode node, String path)
     {
         if (null == node || null == path)
             return null;
@@ -61,17 +61,17 @@ public class DirectoryTree
 
         String name = null;
         String leftPath = null;
-        if (path.indexOf(sep) >= 0)
+        if (path.indexOf(SEPERATOR) >= 0)
         {
-            name = path.split(sep, 2)[0];
-            leftPath = path.split(sep, 2)[1];
+            name = path.split(SEPERATOR, 2)[0];
+            leftPath = path.split(SEPERATOR, 2)[1];
         }
         else
         {
             name = path;
             leftPath = "";
         }
-        TreeNode childNode = node.getChild(name);
+        DirectoryNode childNode = node.getChild(name);
         return find(childNode, leftPath);
     }
 
@@ -79,10 +79,10 @@ public class DirectoryTree
     {
         String normalPath = path;
         // Remove the suffix '/'
-        if ('/' == path.charAt(path.length() - 1))
+        if (normalPath.length() - 1 == normalPath.lastIndexOf(SEPERATOR))
             normalPath = normalPath.substring(0, path.length() - 1);
         // Remove the prefix '/'
-        if ('/' == path.charAt(0))
+        if (0 == normalPath.indexOf(SEPERATOR))
             normalPath = normalPath.substring(1);
         return normalPath;
     }
@@ -91,7 +91,11 @@ public class DirectoryTree
     {
         DirectoryTree tree = new DirectoryTree();
 
+        System.out.println(tree.containNode("/"));
+        System.out.println(tree.containNode("/abc/"));
+        System.out.println(tree.containNode("/abc/def/ghi"));
         tree.createPath("/abc/def/ghi/");
+        System.out.println(tree.containNode("/abc/"));
         System.out.println(tree.containNode("/abc/def/ghi"));
     }
 }
