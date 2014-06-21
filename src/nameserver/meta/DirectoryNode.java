@@ -10,6 +10,8 @@ public class DirectoryNode
     private String name;
 
     private DirectoryNodeType type;
+    
+    private boolean isLocked = false;
 
     private List<DirectoryNode> childs = new ArrayList<DirectoryNode>();
 
@@ -17,6 +19,22 @@ public class DirectoryNode
     {
         this.name = name;
         this.type = type;
+    }
+    
+    public synchronized boolean getLock()
+    {
+        if (isLocked)
+            return false;
+        else 
+        {
+            isLocked = true;
+            return true;
+        }
+    }
+    
+    public synchronized void releaseLock()
+    {
+        isLocked = false;
     }
 
     public String getName()

@@ -8,19 +8,30 @@ public class DirectoryTree
 
     private DirectoryNode root = new DirectoryNode("", DirectoryNodeType.DIR);
 
-    public DirectoryNode getNode(String path)
+    public synchronized DirectoryNode getNode(String path)
     {
         return find(root, normalizePath(path));
     }
 
-    public DirectoryNode createPath(String path)
+    public synchronized DirectoryNode createPath(String path)
     {
         return create(root, normalizePath(path));
     }
 
-    public boolean containNode(String path)
+    public synchronized boolean lock(String path)
     {
-        return null != getNode(path);
+        DirectoryNode node = getNode(path);
+        if (null == node)
+            return false;
+        return node.getLock();
+    }
+    
+    public synchronized void unlock(String path)
+    {
+        DirectoryNode node = getNode(path);
+        if (null != node)
+            node.releaseLock();
+        
     }
 
     private DirectoryNode create(DirectoryNode node, String path)
