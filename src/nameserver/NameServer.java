@@ -15,6 +15,7 @@ public class NameServer implements TaskEventListener, HeartbeatEventListener
     
     public void init()
     {
+        // This should be set in configuration file
         heartbeatMonitor = new HeartbeatMonitor(60);
     }
     

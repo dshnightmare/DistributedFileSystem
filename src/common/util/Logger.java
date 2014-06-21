@@ -151,16 +151,4 @@ public class Logger
 
         loggerDelegate.setLevel(level);
     }
-    
-    // Unit test
-    public static void main(String[] args)
-    {
-        Logger logger = Logger.getLogger(Logger.class);
-        logger.debug("debug");
-        logger.error("error");
-        logger.fatal("fatal");
-        logger.info("info");
-        logger.trace("trace");
-        logger.warn("warn");
-    }
 }
