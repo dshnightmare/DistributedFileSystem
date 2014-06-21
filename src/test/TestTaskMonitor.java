@@ -2,17 +2,15 @@ package test;
 
 import common.observe.event.TaskEvent;
 import common.observe.event.TaskEventListener;
+import common.thread.TaskLease;
 import common.thread.TaskThread;
 import common.thread.TaskThreadMonitor;
-import common.thread.TaskThreadPool;
 import junit.framework.TestCase;
 
 public class TestTaskMonitor
     extends TestCase
 {
     private static TaskThreadMonitor monitor;
-
-    private static TaskThreadPool pool;
 
     private static long period = 1000;
 
@@ -23,8 +21,7 @@ public class TestTaskMonitor
     @Override
     protected void setUp()
     {
-        pool = new TaskThreadPool();
-        monitor = new TaskThreadMonitor(pool, period);
+        monitor = new TaskThreadMonitor(period);
         monitor.addListener(new TaskEventListener()
         {
             @Override
@@ -35,6 +32,13 @@ public class TestTaskMonitor
             }
         });
         
+        
+    }
+
+    public void testStartMonitoring()
+    {
+        monitor.startMonitoring();
+
         taskA = new TaskThread(1)
         {
             @Override
@@ -54,8 +58,9 @@ public class TestTaskMonitor
                 }
             }
         };
+        taskA.setLease(new TaskLease(3000));
         taskA.renewLease();
-        pool.addThread(taskA);
+        monitor.addThread(taskA);
         
         taskB = new TaskThread(2)
         {
@@ -76,13 +81,9 @@ public class TestTaskMonitor
                 }
             }
         };
-        pool.addThread(taskB);
-    }
-
-    public void testStartMonitoring()
-    {
-        monitor.startMonitoring();
-
+        taskB.setLease(new TaskLease(7000));
+        monitor.addThread(taskB);
+        
         try
         {
             Thread.sleep(15000);

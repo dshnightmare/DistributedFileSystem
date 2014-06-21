@@ -24,27 +24,22 @@ public class TaskEvent
         return thread;
     }
 
-//    public static enum Type
-//    {
-//        TASK_FINISHED("TASK_FINISHED"), TASK_ABORTED("TASK_ABORTED"), INVALID(
-//            "INVALID");
-//
-//        private String name;
-//
-//        private Type(String name)
-//        {
-//            this.name = name;
-//        }
-//
-//        @Override
-//        public String toString()
-//        {
-//            return name;
-//        }
-//    }
-    
     public static enum Type
     {
-        TASK_FINISHED, TASK_ABORTED, INVALID
+        TASK_FINISHED("TASK_FINISHED"), TASK_ABORTED("TASK_ABORTED"), INVALID(
+            "INVALID");
+
+        private String name;
+
+        private Type(String name)
+        {
+            this.name = name;
+        }
+
+        @Override
+        public String toString()
+        {
+            return name;
+        }
     }
 }

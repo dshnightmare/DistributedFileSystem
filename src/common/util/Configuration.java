@@ -15,8 +15,6 @@ public class Configuration
     private Configuration(String fileName)
         throws IOException
     {
-        // Well, we don't know when you don't need Configuration, so the input
-        // won't be closed
         InputStream in = new BufferedInputStream(new FileInputStream(fileName));
         prop.load(in);
         in.close();

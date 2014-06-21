@@ -1,7 +1,10 @@
 package common.thread;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -9,14 +12,16 @@ import common.observe.event.TaskEvent;
 import common.observe.event.TaskEvent.Type;
 import common.observe.event.TaskEventDispatcher;
 import common.observe.event.TaskEventListener;
+import common.util.Logger;
 
 public class TaskThreadMonitor
     implements TaskEventDispatcher
 {
-    private TaskThreadPool pool;
+    private Queue<TaskThread> threads = new LinkedList<TaskThread>();
 
-    private List<TaskEventListener> listeners = new ArrayList<TaskEventListener>();
-    
+    private List<TaskEventListener> listeners =
+        new ArrayList<TaskEventListener>();
+
     private long period;
 
     private Timer timer = new Timer();
@@ -25,10 +30,16 @@ public class TaskThreadMonitor
 
     private boolean isMonitoring = false;
 
-    public TaskThreadMonitor(TaskThreadPool pool, long period)
+    private static Logger logger = Logger.getLogger(TaskThreadMonitor.class);
+
+    public TaskThreadMonitor(long period)
     {
-        this.pool = pool;
         this.period = period;
+    }
+
+    public synchronized void addThread(TaskThread thread)
+    {
+        threads.add(thread);
     }
 
     public void startMonitoring()
@@ -81,20 +92,22 @@ public class TaskThreadMonitor
         @Override
         public void run()
         {
-            TaskThread thread = pool.nextThread();
-            if (null != thread)
+            Iterator<TaskThread> iter = threads.iterator();
+            while (iter.hasNext())
             {
+                TaskThread thread = iter.next();
+
                 if (thread.isFinished())
                 {
                     fireEvent(new TaskEvent(Type.TASK_FINISHED, thread));
+                    iter.remove();
+                    logger.debug("TASK_FINISHED");
                 }
-                else if (thread.isLeaseValid())
-                {
-                    thread.deceaseLease();
-                }
-                else
+                else if (!thread.isLeaseValid())
                 {
                     fireEvent(new TaskEvent(Type.TASK_ABORTED, thread));
+                    iter.remove();
+                    logger.debug("TASK_ABORTED");
                 }
             }
         }

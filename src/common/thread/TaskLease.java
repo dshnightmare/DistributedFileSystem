@@ -2,21 +2,23 @@ package common.thread;
 
 public class TaskLease implements Lease {
 
-	private long lease = 0;
+	private long timestamp = 0;
+	private long period = 0;
+	
+	public TaskLease(long period)
+	{
+	    timestamp = System.currentTimeMillis();
+	    this.period = period;
+	}
 
 	@Override
 	public synchronized void renew() {
-		lease = 5;
+		timestamp = System.currentTimeMillis();
 	}
 
 	@Override
 	public synchronized boolean isValid() {
-		return lease > 0;
+	    long current = System.currentTimeMillis();
+	    return (current - timestamp) < period;
 	}
-
-	@Override
-	public synchronized void decrease() {
-		lease = lease > 0 ? lease - 1 : 0;
-	}
-
 }

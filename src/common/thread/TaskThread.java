@@ -5,9 +5,11 @@ public abstract class TaskThread
 {
     private long sid;
 
-    private Lease lease = new TaskLease();
+    private Lease lease = null;
 
     private boolean isFinish = false;
+
+    private boolean hasLease = false;
 
     public TaskThread(long sid)
     {
@@ -19,22 +21,26 @@ public abstract class TaskThread
         return sid;
     }
 
+    public void setLease(Lease lease)
+    {
+        this.lease = lease;
+        hasLease = true;
+    }
+
     // Called by thread itself
     public void renewLease()
     {
-        lease.renew();
-    }
-
-    // Called by thread monitor
-    public void deceaseLease()
-    {
-        lease.decrease();
+        if (hasLease)
+            lease.renew();
     }
 
     // Called by thread monitor
     public boolean isLeaseValid()
     {
-        return lease.isValid();
+        if (hasLease)
+            return lease.isValid();
+        else
+            return true;
     }
 
     public synchronized boolean isFinished()
@@ -46,4 +52,7 @@ public abstract class TaskThread
     {
         isFinish = true;
     }
+    
+    @Override
+    public abstract void run();
 }
