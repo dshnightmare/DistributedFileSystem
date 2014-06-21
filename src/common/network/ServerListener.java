@@ -91,7 +91,7 @@ public class ServerListener extends Thread{
 			r_buf.flip();
 			try {
 				Call rc = (Call)SwitchObjectAndByte.switchByteToObject(r_buf.array());
-				System.out.println("Call received:"+rc.callType+" "+rc.getParamsString());
+//				System.out.println("Call received:"+rc.callType+" "+rc.getParamsString());
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

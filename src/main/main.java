@@ -6,6 +6,7 @@ import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.network.ServerListener;
 import common.observe.call.Call;
+import common.observe.call.CallFactory;
 
 public class main {
 
@@ -23,9 +24,17 @@ public class main {
 				System.out.println("waiting for command(type(int) params[])");
 				Scanner in = new Scanner(System.in);
 				String cmd = in.next();
-				String param = in.nextLine();
-				String[] params = param.split(" ");
-				Call rc = new Call(Integer.parseInt(cmd), params);
+//				String param = in.nextLine();
+//				String[] params = param.split(" ");
+				Call.Type type = Call.Type.INVALID;
+				if (cmd.equalsIgnoreCase("add"))
+				    type = Call.Type.ADD_FILE;
+				else if (cmd.equalsIgnoreCase("mv"))
+				    type = Call.Type.MOVE_FILE;
+				else if (cmd.equalsIgnoreCase("rm"))
+				    type = Call.Type.REMOVE_FILE;
+//				Call rc = new Call(Integer.parseInt(cmd), params);
+				Call rc = CallFactory.createCall(type);
 				client.sendCommand(rc);
 			}
 		}

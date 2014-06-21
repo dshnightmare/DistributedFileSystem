@@ -2,38 +2,42 @@ package common.observe.call;
 
 import java.io.Serializable;
 
-/**
- * 远程调用命令格式
- * @author geng yufeng
- *
- */
-public class Call implements Serializable {
+public abstract class Call implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	public int callType;
-	public int missionId;
-	public String[] params;
-	
-	/**
-	 * 
-	 * @param _commandType defined in constant.java
-	 * @param _params most commands from client to server have only one parameter.
-	 *  
-	 */
-	public Call(int _commandType, String[] _params){
-		callType = _commandType;
-		params = _params;
-		missionId = -1;
-	}
-	
-	public String getParamsString(){
-		String ret = "";
-		for(int i=0; i<params.length; i++){
-			ret += " "+params[i];
-		}
-		return ret;
-	}
+    private static final long serialVersionUID = -1157466700148810064L;
+    private final Type type;
+
+    public Call(Type type)
+    {
+        this.type = type;
+    }
+
+    public Type getType()
+    {
+        return type;
+    }
+
+    public static enum Type
+    {
+        INVALID("INVALID"),
+        HEARTBEAT("HEARTBEAT"), 
+        REGISTRATION("REGISTRATION"), 
+        ADD_FILE("ADD_FILE"), 
+        REMOVE_FILE("REMOVE_FILE"), 
+        MOVE_FILE("MOVE_FILE"),
+        SYNC("SYNC");
+
+        private String name;
+
+        private Type(String name)
+        {
+            this.name = name;
+        }
+
+        @Override
+        public String toString()
+        {
+            return name;
+        }
+    }
 }

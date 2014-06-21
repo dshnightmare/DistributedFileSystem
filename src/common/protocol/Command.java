@@ -16,7 +16,11 @@ public abstract class Command
 
     public static enum Type
     {
-        HEARTBEAT("HEARTBEAT"), REGISTRATION("REGISTRATION");
+        HEARTBEAT("HEARTBEAT"), 
+        REGISTRATION("REGISTRATION"), 
+        ADD_FILE("ADD_FILE"), 
+        REMOVE_FILE("REMOVE_FILE"), 
+        MOVE_FILE("MOVE_FILE");
 
         private String name;
 

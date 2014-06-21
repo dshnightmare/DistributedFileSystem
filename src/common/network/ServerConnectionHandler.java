@@ -37,11 +37,11 @@ public class ServerConnectionHandler extends Thread{
 		while(true){
 			try {
 				Call rc = (Call)objIn.readObject();
-				String param = "";
-				for(int i=0; i<rc.params.length; i++){
-					param += " "+rc.params[i];
-				}
-				System.out.println("[Server]Command recieved: "+rc.callType+" "+param);
+//				String param = "";
+//				for(int i=0; i<rc.params.length; i++){
+//					param += " "+rc.params[i];
+//				}
+//				System.out.println("[Server]Command recieved: "+rc.callType+" "+param);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

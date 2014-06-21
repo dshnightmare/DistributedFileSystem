@@ -22,7 +22,7 @@ public class CommandReceiver extends Thread{
 			try {
 				Call response = (Call)in.readObject();
 				connector.addResponseCall(response);
-				System.out.println("Response: "+response.callType+response.getParamsString());
+//				System.out.println("Response: "+response.callType+response.getParamsString());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
