@@ -1,21 +1,22 @@
 package test;
 
-import nameserver.heartbeat.HeartbeatEvent;
-import nameserver.heartbeat.HeartbeatEventListener;
-import nameserver.heartbeat.HeartbeatMonitor;
+import nameserver.heartbeat.CardiacArrest;
+import nameserver.heartbeat.CardiacArrestListener;
+import nameserver.heartbeat.CardiacArrestMonitor;
 import nameserver.meta.StorageStatus;
 import junit.framework.TestCase;
 
-public class TestHeartbeatMonitor
+public class TestCardiacArrestMonitor
     extends TestCase
 {
-    private static HeartbeatMonitor monitor;
+    private static CardiacArrestMonitor monitor;
 
     private static StorageStatus nodeA;
 
     private static StorageStatus nodeB;
-    
+
     private static boolean nodeAAlive = true;
+
     private static boolean nodeBAlive = true;
 
     private static long monitorPeriod = 5000; // 5 seconds
@@ -25,7 +26,7 @@ public class TestHeartbeatMonitor
     @Override
     protected void setUp()
     {
-        monitor = new HeartbeatMonitor(monitorPeriod);
+        monitor = new CardiacArrestMonitor(monitorPeriod);
         nodeA = new StorageStatus(1);
         nodeB = new StorageStatus(2);
 
@@ -50,13 +51,13 @@ public class TestHeartbeatMonitor
         });
         heartbeatReporter.start();
 
-        monitor.setEventListener(new HeartbeatEventListener()
+        monitor.setEventListener(new CardiacArrestListener()
         {
             @Override
-            public void handle(HeartbeatEvent event)
+            public void handle(CardiacArrest event)
             {
                 System.out.println("thread " + event.getStorageNode().getId()
-                    + " :" + event.getType());
+                    + " is dead.");
                 if (1 == event.getStorageNode().getId())
                     nodeAAlive = false;
                 else
@@ -78,7 +79,7 @@ public class TestHeartbeatMonitor
         {
             e.printStackTrace();
         }
-        
+
         assertTrue(nodeAAlive);
         assertFalse(nodeBAlive);
     }

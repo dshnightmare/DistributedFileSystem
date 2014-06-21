@@ -21,4 +21,9 @@ public class Constant {
 	public static final int DELETE_DIR = 012;
 	public static final int LIST_DIR = 013;
 	public static final int RENAME_DIR = 014;
+	
+	// Configuration stuff
+	public static final String CONFIGURATION_PATH = "conf.properties";
+	public static final String HEARTBEAT_INTERVAL_KEY = "heartbeat_interval";
+	public static final String LEASE_PERIOD_KEY = "lease_period";
 }

@@ -3,12 +3,12 @@ package test;
 import java.io.IOException;
 
 import common.util.Configuration;
+import common.util.Constant;
 import junit.framework.TestCase;
 
 public class TestConfiguration extends TestCase
 {
     private static Configuration conf;
-    private static String fileName = "conf.properties";
     
     @Override
     protected void setUp()
@@ -20,7 +20,7 @@ public class TestConfiguration extends TestCase
     {
         try
         {
-            conf = Configuration.getInstance(fileName);
+            conf = Configuration.getInstance();
         }
         catch (IOException e)
         {
@@ -28,9 +28,10 @@ public class TestConfiguration extends TestCase
         }
         assertNotNull(conf);
         
-        String heartbeatTime = conf.getProperty("heartbeat_interval");
+        long heartbeatTime = -1;
+        heartbeatTime = conf.getLong(Constant.HEARTBEAT_INTERVAL_KEY);
         System.out.println(heartbeatTime);
-        assertFalse(heartbeatTime.isEmpty());
+        assertFalse(heartbeatTime < 0);
     }
 
     @Override

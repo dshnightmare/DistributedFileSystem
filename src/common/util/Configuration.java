@@ -12,30 +12,47 @@ public class Configuration
 
     private volatile static Configuration instance = null;
 
-    private Configuration(String fileName)
+    private Configuration()
         throws IOException
     {
-        InputStream in = new BufferedInputStream(new FileInputStream(fileName));
+        InputStream in =
+            new BufferedInputStream(new FileInputStream(
+                Constant.CONFIGURATION_PATH));
         prop.load(in);
         in.close();
     }
 
-    public static Configuration getInstance(String fileName) throws IOException
+    public static Configuration getInstance() throws IOException
     {
         if (null == instance)
         {
             synchronized (Configuration.class)
             {
                 if (null == instance)
-                    instance = new Configuration(fileName);
+                    instance = new Configuration();
             }
         }
 
         return instance;
     }
 
-    public String getProperty(String key)
+    private String getProperty(String key)
     {
         return prop.getProperty(key);
+    }
+    
+    public Long getLong(String key)
+    {
+        return Long.valueOf(getProperty(key));
+    }
+    
+    public Integer getInteger(String key)
+    {
+        return Integer.valueOf(getProperty(key));
+    }
+    
+    public String getString(String key)
+    {
+        return getProperty(key);
     }
 }

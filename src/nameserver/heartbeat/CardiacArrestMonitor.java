@@ -8,23 +8,23 @@ import java.util.TimerTask;
 
 import nameserver.meta.StorageStatus;
 
-public class HeartbeatMonitor
-    implements HeartbeatEventDispatcher
+public class CardiacArrestMonitor
+    implements CardiacArrestDispatcher
 {
-    private HeartbeatEventListener listener;
+    private CardiacArrestListener listener;
 
     private Map<StorageStatus, MonitoringThread> monitors =
         new HashMap<StorageStatus, MonitoringThread>();
 
     private long period;
 
-    public HeartbeatMonitor(long period)
+    public CardiacArrestMonitor(long period)
     {
         this.period = period;
     }
 
     @Override
-    public void setEventListener(HeartbeatEventListener listener)
+    public void setEventListener(CardiacArrestListener listener)
     {
         this.listener = listener;
     }
@@ -36,7 +36,7 @@ public class HeartbeatMonitor
     }
 
     @Override
-    public void fireEvent(HeartbeatEvent event)
+    public void fireEvent(CardiacArrest event)
     {
         listener.handle(event);
     }
@@ -91,8 +91,7 @@ public class HeartbeatMonitor
         {
             if (!node.isAlive())
             {
-                HeartbeatEvent event =
-                    new HeartbeatEvent(HeartbeatEvent.Type.DIED, node);
+                CardiacArrest event = new CardiacArrest(node);
                 fireEvent(event);
                 stopMonitoring(node);
             }

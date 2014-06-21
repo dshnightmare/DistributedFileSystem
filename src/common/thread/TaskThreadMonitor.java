@@ -88,7 +88,6 @@ public class TaskThreadMonitor
     private class MonitorTask
         extends TimerTask
     {
-
         @Override
         public void run()
         {
