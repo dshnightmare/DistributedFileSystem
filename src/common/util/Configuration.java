@@ -40,19 +40,28 @@ public class Configuration
     {
         return prop.getProperty(key);
     }
-    
+
     public Long getLong(String key)
     {
-        return Long.valueOf(getProperty(key));
+        if (prop.contains(key))
+            return Long.valueOf(getProperty(key));
+        else
+            return Constant.CONF_DEFAULT_LONG;
     }
-    
+
     public Integer getInteger(String key)
     {
-        return Integer.valueOf(getProperty(key));
+        if (prop.contains(key))
+            return Integer.valueOf(getProperty(key));
+        else
+            return Constant.CONF_DEFAULT_INTEGER;
     }
-    
+
     public String getString(String key)
     {
-        return getProperty(key);
+        if (prop.contains(key))
+            return getProperty(key);
+        else
+            return Constant.CONF_DEFAULT_STRING;
     }
 }
