@@ -86,16 +86,4 @@ public class DirectoryTree
             normalPath = normalPath.substring(1);
         return normalPath;
     }
-
-    public static void main(String[] args)
-    {
-        DirectoryTree tree = new DirectoryTree();
-
-        System.out.println(tree.containNode("/"));
-        System.out.println(tree.containNode("/abc/"));
-        System.out.println(tree.containNode("/abc/def/ghi"));
-        tree.createPath("/abc/def/ghi/");
-        System.out.println(tree.containNode("/abc/"));
-        System.out.println(tree.containNode("/abc/def/ghi"));
-    }
 }

@@ -71,17 +71,4 @@ public class DirectoryNode
     {
         DIR, FILE
     }
-
-    public static void main(String[] args)
-    {
-        DirectoryNode root = new DirectoryNode("root", DirectoryNodeType.DIR);
-        root.addChild(new DirectoryNode("b", DirectoryNodeType.DIR));
-        root.addChild(new DirectoryNode("a", DirectoryNodeType.FILE));
-        root.addChild(new DirectoryNode("c", DirectoryNodeType.DIR));
-
-        for (DirectoryNode n : root.getChilds())
-        {
-            System.out.println(n.getName());
-        }
-    }
 }
