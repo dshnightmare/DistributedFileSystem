@@ -6,7 +6,7 @@ import java.nio.channels.FileLock;
 
 import common.util.Logger;
 
-public class Storage extends StorageInfo {
+public class Storage{
 	public static final Logger LOG = Logger.getLogger(Storage.class);
 
 	public static final String STORAGE_DIR_CURRENT = "current";
@@ -16,6 +16,8 @@ public class Storage extends StorageInfo {
 	public enum StorageState {
 		NORMAL;
 	}
+
+	private StorageDirectory storageDir;
 
 	public static class StorageDirectory {
 		private File root;
@@ -43,26 +45,24 @@ public class Storage extends StorageInfo {
 		public File getCurrentDir() {
 			return new File(root, STORAGE_DIR_CURRENT);
 		}
-		
-		public File getPreviousDir(){
+
+		public File getPreviousDir() {
 			return new File(root, STORAGE_DIR_PREVIOUS);
 		}
-		
-		public File getRemoveTmp(){
+
+		public File getRemoveTmp() {
 			return new File(root, STORAGE_TMP_REMOVE);
 		}
-		
-		public StorageState analyzeStorage() throws IOException{
+
+		public StorageState analyzeStorage() throws IOException {
 			assert root != null;
 			String rootPath = root.getCanonicalPath();
-//			try{
-//				if(!root.exists()){
-//					LOG.warn("storage");
-//				}
-//			}
+			// try{
+			// if(!root.exists()){
+			// LOG.warn("storage");
+			// }
+			// }
 			return StorageState.NORMAL;
 		}
 	}
-
-	private StorageDirectory storageDir;
 }

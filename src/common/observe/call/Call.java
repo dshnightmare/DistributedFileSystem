@@ -23,6 +23,8 @@ public abstract class Call implements Serializable {
         HEARTBEAT("HEARTBEAT"), 
         REGISTRATION("REGISTRATION"), 
         ADD_FILE("ADD_FILE"), 
+        ADD_FILE_SS("ADD_FILE_SS"),
+        GET_FILE_SS("GET_FILE_SS"),
         REMOVE_FILE("REMOVE_FILE"), 
         MOVE_FILE("MOVE_FILE"),
         SYNC("SYNC");

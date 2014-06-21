@@ -13,8 +13,8 @@ public interface SServerNServerProtocol {
 	 *            storagenode registration information
 	 * @return updated registration information
 	 */
-	public StorageNodeRegistration registerStorageNode(
-			StorageNodeRegistration registration) throws IOException;
+	public StorageNodeInfo registerStorageNode(
+			StorageNodeInfo registration) throws IOException;
 
 	/**
 	 * sendHeartbeat() tells the NameNode that the StorageNode is still alive and
@@ -33,12 +33,12 @@ public interface SServerNServerProtocol {
 	 *             on error
 	 */
 	public HeartbeatResponse sendHeartbeat(
-			StorageNodeRegistration registration, StorageReport report,
+			StorageNodeInfo registration, StorageReport report,
 			int taskCount) throws IOException;
 
-	public Command fileReport(StorageNodeRegistration registration, StorageFileReport[] reports) throws IOException;
+	public Command fileReport(StorageNodeInfo registration, StorageFileReport[] reports) throws IOException;
 
-	public Command fileRecievedAndDelete(StorageNodeRegistration registration, StorageFileReport[] reports) throws IOException;
+	public Command fileRecievedAndDelete(StorageNodeInfo registration, StorageFileReport[] reports) throws IOException;
 
-	public void leaseRecovery(StorageNodeRegistration registration, long taskid) throws IOException;
+	public void leaseRecovery(StorageNodeInfo registration, long taskid) throws IOException;
 }
