@@ -30,7 +30,7 @@ public class StorageMasterThread implements Runnable, TaskEventListener,
 	}
 
 	@Override
-	public void handleEvent(TaskEvent event) {
+	public void handle(TaskEvent event) {
 		// TODO Auto-generated method stub
 
 	}

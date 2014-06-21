@@ -6,7 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import common.observe.event.TaskEvent;
-import common.observe.event.TaskEvent.EventType;
+import common.observe.event.TaskEvent.Type;
 import common.observe.event.TaskEventDispatcher;
 import common.observe.event.TaskEventListener;
 
@@ -16,6 +16,8 @@ public class TaskThreadMonitor
     private TaskThreadPool pool;
 
     private List<TaskEventListener> listeners = new ArrayList<TaskEventListener>();
+    
+    private long period;
 
     private Timer timer = new Timer();
 
@@ -23,12 +25,13 @@ public class TaskThreadMonitor
 
     private boolean isMonitoring = false;
 
-    public TaskThreadMonitor(TaskThreadPool pool)
+    public TaskThreadMonitor(TaskThreadPool pool, long period)
     {
-        pool = this.pool;
+        this.pool = pool;
+        this.period = period;
     }
 
-    public void startMonitoring(long period)
+    public void startMonitoring()
     {
         if (!isMonitoring)
         {
@@ -46,10 +49,10 @@ public class TaskThreadMonitor
         }
     }
 
-    public void restartMonitoring(long period)
+    public void restartMonitoring()
     {
         stopMonitoring();
-        startMonitoring(period);
+        startMonitoring();
     }
 
     @Override
@@ -68,7 +71,7 @@ public class TaskThreadMonitor
     public void fireEvent(TaskEvent event)
     {
         for (TaskEventListener l : listeners)
-            l.handleEvent(event);
+            l.handle(event);
     }
 
     private class MonitorTask
@@ -83,7 +86,7 @@ public class TaskThreadMonitor
             {
                 if (thread.isFinished())
                 {
-                    fireEvent(new TaskEvent(EventType.TASK_FINISHED, thread));
+                    fireEvent(new TaskEvent(Type.TASK_FINISHED, thread));
                 }
                 else if (thread.isLeaseValid())
                 {
@@ -91,7 +94,7 @@ public class TaskThreadMonitor
                 }
                 else
                 {
-                    fireEvent(new TaskEvent(EventType.TASK_ABORTED, thread));
+                    fireEvent(new TaskEvent(Type.TASK_ABORTED, thread));
                 }
             }
         }

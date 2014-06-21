@@ -92,7 +92,7 @@ public class HeartbeatMonitor
             if (!node.isAlive())
             {
                 HeartbeatEvent event =
-                    new HeartbeatEvent(node, HeartbeatEvent.Type.DIED);
+                    new HeartbeatEvent(HeartbeatEvent.Type.DIED, node);
                 fireEvent(event);
                 stopMonitoring(node);
             }

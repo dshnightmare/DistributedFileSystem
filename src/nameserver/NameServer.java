@@ -26,7 +26,7 @@ public class NameServer implements TaskEventListener, HeartbeatEventListener
     }
 
     @Override
-    public void handleEvent(TaskEvent event)
+    public void handle(TaskEvent event)
     {
         // TODO Auto-generated method stub
         

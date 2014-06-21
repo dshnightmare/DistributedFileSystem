@@ -16,7 +16,7 @@ public class TaskLease implements Lease {
 
 	@Override
 	public synchronized void decrease() {
-		lease -= 1;
+		lease = lease > 0 ? lease - 1 : 0;
 	}
 
 }

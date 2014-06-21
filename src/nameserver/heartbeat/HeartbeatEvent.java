@@ -8,7 +8,7 @@ public class HeartbeatEvent
 
     private Type type;
 
-    public HeartbeatEvent(StorageNode node, Type type)
+    public HeartbeatEvent(Type type, StorageNode node)
     {
         this.node = node;
         this.type = type;
