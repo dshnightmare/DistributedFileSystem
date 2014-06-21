@@ -6,15 +6,15 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import nameserver.meta.StorageNode;
+import nameserver.meta.StorageStatus;
 
 public class HeartbeatMonitor
     implements HeartbeatEventDispatcher
 {
     private HeartbeatEventListener listener;
 
-    private Map<StorageNode, MonitoringThread> monitors =
-        new HashMap<StorageNode, MonitoringThread>();
+    private Map<StorageStatus, MonitoringThread> monitors =
+        new HashMap<StorageStatus, MonitoringThread>();
 
     private long period;
 
@@ -30,7 +30,7 @@ public class HeartbeatMonitor
     }
 
     @Override
-    public void removeEventListener(HeartbeatEventListener listener)
+    public void removeEventListener()
     {
         listener = null;
     }
@@ -41,14 +41,14 @@ public class HeartbeatMonitor
         listener.handle(event);
     }
 
-    public void startMonitoring(StorageNode node)
+    public void startMonitoring(StorageStatus node)
     {
         MonitoringThread monitor = new MonitoringThread(new Timer(), node);
         monitors.put(node, monitor);
         monitor.start();
     }
 
-    public void stopMonitoring(StorageNode node)
+    public void stopMonitoring(StorageStatus node)
     {
         MonitoringThread monitor = monitors.get(node);
         monitors.remove(node);
@@ -57,7 +57,7 @@ public class HeartbeatMonitor
 
     public void stopAllMonitoring()
     {
-        for (Entry<StorageNode, MonitoringThread> e : monitors.entrySet())
+        for (Entry<StorageStatus, MonitoringThread> e : monitors.entrySet())
             e.getValue().stop();
         monitors.clear();
     }
@@ -68,9 +68,9 @@ public class HeartbeatMonitor
     {
         private Timer timer;
 
-        private StorageNode node;
+        private StorageStatus node;
 
-        public MonitoringThread(Timer timer, StorageNode node)
+        public MonitoringThread(Timer timer, StorageStatus node)
         {
             this.timer = timer;
             this.node = node;
@@ -95,6 +95,10 @@ public class HeartbeatMonitor
                     new HeartbeatEvent(HeartbeatEvent.Type.DIED, node);
                 fireEvent(event);
                 stopMonitoring(node);
+            }
+            else
+            {
+                node.setAlive(false);
             }
         }
 

@@ -1,20 +1,20 @@
 package nameserver.heartbeat;
 
-import nameserver.meta.StorageNode;
+import nameserver.meta.StorageStatus;
 
 public class HeartbeatEvent
 {
-    private StorageNode node;
+    private StorageStatus node;
 
     private Type type;
 
-    public HeartbeatEvent(Type type, StorageNode node)
+    public HeartbeatEvent(Type type, StorageStatus node)
     {
         this.node = node;
         this.type = type;
     }
 
-    public StorageNode getStorageNode()
+    public StorageStatus getStorageNode()
     {
         return node;
     }
@@ -26,6 +26,18 @@ public class HeartbeatEvent
 
     public enum Type
     {
-        SYNC, DIED
+        SYNC("SYNC"), DIED("DIED");
+        
+        private String name;
+        private Type(String name)
+        {
+            this.name = name;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return name;
+        }
     }
 }

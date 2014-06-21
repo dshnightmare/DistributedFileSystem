@@ -3,11 +3,11 @@ package nameserver.meta;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StorageList
+public class StorageStatusList
 {
-    private Map<Long, StorageNode> storages = new HashMap<Long, StorageNode>();
+    private Map<Long, StorageStatus> storages = new HashMap<Long, StorageStatus>();
     
-    public synchronized void addNode(StorageNode node)
+    public synchronized void addNode(StorageStatus node)
     {
         storages.put(node.getId(), node);
     }

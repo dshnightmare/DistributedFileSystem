@@ -1,12 +1,12 @@
 package nameserver.meta;
 
-public class StorageNode
+public class StorageStatus
 {
     private long id;
 
     private boolean alive = true;
     
-    public StorageNode(long id)
+    public StorageStatus(long id)
     {
         this.id = id;
     }
