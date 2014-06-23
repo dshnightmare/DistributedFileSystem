@@ -27,8 +27,8 @@ public class TestCardiacArrestMonitor
     protected void setUp()
     {
         monitor = new CardiacArrestMonitor(monitorPeriod);
-        nodeA = new StorageStatus(1);
-        nodeB = new StorageStatus(2);
+        nodeA = new StorageStatus(1, "localhost");
+        nodeB = new StorageStatus(2, "localhost");
 
         Thread heartbeatReporter = new Thread(new Runnable()
         {
