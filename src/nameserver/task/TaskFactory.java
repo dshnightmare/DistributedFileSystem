@@ -1,9 +1,12 @@
 package nameserver.task;
 
+import nameserver.heartbeat.CardiacArrestMonitor;
 import nameserver.meta.DirectoryTree;
+import nameserver.meta.StorageStatusList;
 import common.observe.call.AddFileCallC2N;
 import common.observe.call.Call;
 import common.observe.call.MoveFileCallC2N;
+import common.observe.call.RegistrationCallS2N;
 import common.observe.call.RemoveFileCallC2N;
 import common.thread.TaskThread;
 
@@ -11,9 +14,17 @@ public class TaskFactory
 {
     private DirectoryTree directory;
 
-    public TaskFactory(DirectoryTree directory)
+    private StorageStatusList activeStorages;
+
+    private CardiacArrestMonitor cardiacArrestMonitor;
+
+    public TaskFactory(DirectoryTree directory,
+        StorageStatusList activeStorages,
+        CardiacArrestMonitor cardiacArrestMonitor)
     {
         this.directory = directory;
+        this.activeStorages = activeStorages;
+        this.cardiacArrestMonitor = cardiacArrestMonitor;
     }
 
     public TaskThread createThread(Call call)
@@ -58,13 +69,15 @@ public class TaskFactory
 
     private TaskRegistration createTaskRegistration(Call call)
     {
-        return new TaskRegistration(call.getTaskId());
+        RegistrationCallS2N rc = (RegistrationCallS2N) call;
+        return new TaskRegistration(rc.getTaskId(), rc.getAddress(),
+            activeStorages, cardiacArrestMonitor);
     }
 
     private TaskRemove createTaskRemove(Call call)
     {
         RemoveFileCallC2N rc = (RemoveFileCallC2N) call;
-        return new TaskRemove(call.getTaskId(), rc.getPath(), directory);
+        return new TaskRemove(rc.getTaskId(), rc.getPath(), directory);
     }
 
     private TaskSync createTaskSync(Call call)

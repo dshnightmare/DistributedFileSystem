@@ -6,6 +6,7 @@ import nameserver.heartbeat.CardiacArrest;
 import nameserver.heartbeat.CardiacArrestListener;
 import nameserver.heartbeat.CardiacArrestMonitor;
 import nameserver.meta.DirectoryTree;
+import nameserver.meta.StorageStatusList;
 import nameserver.task.TaskFactory;
 import common.observe.call.Call;
 import common.observe.call.CallListener;
@@ -30,6 +31,8 @@ public class NameServer
     private TaskFactory taskFactory;
 
     private DirectoryTree directory = new DirectoryTree();
+    
+    private StorageStatusList activeStorages = new StorageStatusList();
 
     public void init()
     {
@@ -44,7 +47,7 @@ public class NameServer
                 new TaskThreadMonitor(
                     conf.getLong(Constant.TASK_CHECK_INTERVAL_KEY) * 1000);
             taskMonitor.addListener(this);
-            taskFactory = new TaskFactory(directory);
+            taskFactory = new TaskFactory(directory, activeStorages, cardiacArrestMonitor);
         }
         catch (IOException e)
         {
