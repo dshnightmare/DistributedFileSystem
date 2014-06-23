@@ -5,8 +5,10 @@ import java.util.Scanner;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.network.ServerListener;
+import common.observe.call.AddFileCallC2N;
 import common.observe.call.Call;
-import common.observe.call.CallFactory;
+import common.observe.call.MoveFileCallC2N;
+import common.observe.call.RemoveFileCallC2N;
 
 public class main {
 
@@ -24,17 +26,15 @@ public class main {
 				System.out.println("waiting for command(type(int) params[])");
 				Scanner in = new Scanner(System.in);
 				String cmd = in.next();
-//				String param = in.nextLine();
-//				String[] params = param.split(" ");
-				Call.Type type = Call.Type.INVALID;
+				String param = in.nextLine();
+				String[] params = param.split(" ");
+				Call rc = null;
 				if (cmd.equalsIgnoreCase("add"))
-				    type = Call.Type.ADD_FILE;
+				    rc = new AddFileCallC2N(params[0]);
 				else if (cmd.equalsIgnoreCase("mv"))
-				    type = Call.Type.MOVE_FILE;
+				    rc = new MoveFileCallC2N(params[0], params[1]);
 				else if (cmd.equalsIgnoreCase("rm"))
-				    type = Call.Type.REMOVE_FILE;
-//				Call rc = new Call(Integer.parseInt(cmd), params);
-				Call rc = CallFactory.createCall(type);
+				    rc = new RemoveFileCallC2N();
 				client.sendCommand(rc);
 			}
 		}

@@ -57,6 +57,11 @@ public class TestTaskMonitor
                     }
                 }
             }
+
+            @Override
+            public void release()
+            {
+            }
         };
         taskA.setLease(new TaskLease(3000));
         taskA.renewLease();
@@ -79,6 +84,11 @@ public class TestTaskMonitor
                         e.printStackTrace();
                     }
                 }
+            }
+
+            @Override
+            public void release()
+            {
             }
         };
         taskB.setLease(new TaskLease(7000));

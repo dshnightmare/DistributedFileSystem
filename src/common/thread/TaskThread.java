@@ -1,15 +1,22 @@
 package common.thread;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import common.observe.event.TaskEvent;
+import common.observe.event.TaskEventDispatcher;
+import common.observe.event.TaskEventListener;
+
 public abstract class TaskThread
-    implements Runnable
+    implements Runnable, TaskEventDispatcher
 {
     private long sid;
 
     private Lease lease = null;
 
-    private boolean isFinish = false;
-
     private boolean hasLease = false;
+    
+    private List<TaskEventListener> listeners = new ArrayList<TaskEventListener>();
 
     public TaskThread(long sid)
     {
@@ -43,16 +50,32 @@ public abstract class TaskThread
             return true;
     }
 
-    public synchronized boolean isFinished()
+    public void setFinish()
     {
-        return isFinish;
+        fireEvent(new TaskEvent(TaskEvent.Type.TASK_FINISHED, this));
+    }
+    
+    @Override
+    public final void addListener(TaskEventListener listener)
+    {
+        listeners.add(listener);
+    }
+    
+    @Override
+    public final void removeListener(TaskEventListener listener)
+    {
+        listeners.remove(listener);
     }
 
-    public synchronized void setFinish()
+    @Override
+    public final void fireEvent(TaskEvent event)
     {
-        isFinish = true;
+        for (TaskEventListener l : listeners)
+            l.handle(event);
     }
     
     @Override
     public abstract void run();
+    
+    public abstract void release();
 }

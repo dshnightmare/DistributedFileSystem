@@ -2,13 +2,12 @@ package nameserver.task;
 
 import common.thread.TaskThread;
 
-public class TaskAppend extends TaskThread
+public class TaskRegistration extends TaskThread
 {
 
-    public TaskAppend(long sid)
+    public TaskRegistration(long sid)
     {
         super(sid);
-        // TODO Auto-generated constructor stub
     }
 
     @Override

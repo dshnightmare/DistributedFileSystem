@@ -36,4 +36,11 @@ public class StorageTaskThread extends TaskThread
     	this.call = call;
     	this.storage = storage;
     }
+
+    @Override
+    public void release()
+    {
+        // TODO Auto-generated method stub
+        
+    }
 }

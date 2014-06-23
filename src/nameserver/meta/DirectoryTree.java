@@ -1,24 +1,78 @@
 package nameserver.meta;
 
-import nameserver.meta.Node.Type;
-
 public class DirectoryTree
 {
     public static final String SEPERATOR = "/";
 
     private Node root = new DirectoryNode("");
 
-    public synchronized Node getNode(String path)
+    public synchronized Node getNode(String path) throws Exception
     {
-        return find(root, normalizePath(path));
+        Node node = find(root, normalizePath(path));
+        if (null == node)
+        {
+            throw new Exception("Failed to get " + path
+                + ", file or dir was not existed.");
+        }
+        return node;
     }
 
-    public synchronized Node createPath(String path)
+    public synchronized Node createPath(String path, boolean isRecursive) throws Exception
     {
-        return create(root, normalizePath(path));
+        if (isExisted(path))
+        {
+            throw new Exception("Failed to create " + path
+                + ", file or dir had already been existed.");
+        }
+
+        Node node = create(root, normalizePath(path), isRecursive);
+        if (null == node)
+        {
+            throw new Exception("Failed to create " + path
+                + ", parent directory was not existed.");
+        }
+        return node;
     }
-    
-    private Node create(Node node, String path)
+
+    public synchronized Node removePath(String path) throws Exception
+    {
+        String parentPath = getPrefixPath(path);
+        String fileName = getSuffixPath(path);
+        Node parentNode = null;
+        try
+        {
+            parentNode = getNode(parentPath);
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Failed to remove " + path
+                + ", file or dir was not existed.");
+        }
+        Node node = parentNode.getChild(fileName);
+        if (null == node)
+        {
+            throw new Exception("Failed to remove " + path
+                + ", file or dir was not existed.");
+        }
+
+        return parentNode.removeChild(node);
+    }
+
+    public boolean isExisted(String path)
+    {
+        try
+        {
+            getNode(path);
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private Node create(Node node, String path, boolean isRecursive)
     {
         if (null == node || null == path)
             return null;
@@ -41,10 +95,15 @@ public class DirectoryTree
         Node childNode = node.getChild(name);
         if (null == childNode)
         {
-            childNode = new DirectoryNode(name);
-            node.addChild(childNode);
+            if (!isRecursive)
+                return null;
+            else
+            {
+                childNode = new DirectoryNode(name);
+                node.addChild(childNode);
+            }
         }
-        return create(childNode, leftPath);
+        return create(childNode, leftPath, isRecursive);
     }
 
     private Node find(Node node, String path)
@@ -70,7 +129,7 @@ public class DirectoryTree
         return find(childNode, leftPath);
     }
 
-    private String normalizePath(String path)
+    public static String normalizePath(String path)
     {
         String normalPath = path;
         // Remove the suffix '/'
@@ -80,5 +139,25 @@ public class DirectoryTree
         if (0 == normalPath.indexOf(SEPERATOR))
             normalPath = normalPath.substring(1);
         return normalPath;
+    }
+
+    public static String getPrefixPath(String path)
+    {
+        String normalPath = normalizePath(path);
+        final int pos = normalPath.lastIndexOf(SEPERATOR);
+        if (pos < 0)
+            return "";
+        else
+            return normalPath.substring(0, pos);
+    }
+
+    public static String getSuffixPath(String path)
+    {
+        String normalPath = normalizePath(path);
+        final int pos = normalPath.indexOf(SEPERATOR);
+        if (pos < 0)
+            return normalPath;
+        else
+            return normalPath.substring(pos + 1);
     }
 }

@@ -18,4 +18,11 @@ public class TaskRemove extends TaskThread
         
     }
 
+    @Override
+    public void release()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
 }
