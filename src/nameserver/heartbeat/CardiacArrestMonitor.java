@@ -15,7 +15,7 @@ public class CardiacArrestMonitor
 
     private Map<StorageStatus, MonitoringThread> monitors =
         new HashMap<StorageStatus, MonitoringThread>();
-
+    
     private long period;
 
     public CardiacArrestMonitor(long period)
@@ -40,7 +40,7 @@ public class CardiacArrestMonitor
     {
         listener.handle(event);
     }
-
+    
     public void startMonitoring(StorageStatus node)
     {
         MonitoringThread monitor = new MonitoringThread(new Timer(), node);

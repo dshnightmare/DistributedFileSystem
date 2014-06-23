@@ -15,7 +15,7 @@ import common.observe.event.TaskEventListener;
 import common.util.Logger;
 
 public class TaskThreadMonitor
-    implements TaskEventDispatcher
+    implements TaskEventDispatcher, TaskEventListener
 {
     private Queue<TaskThread> threads = new LinkedList<TaskThread>();
 
@@ -85,28 +85,35 @@ public class TaskThreadMonitor
             l.handle(event);
     }
 
+    @Override
+    public void handle(TaskEvent event)
+    {
+        fireEvent(event);
+        synchronized (threads)
+        {
+            threads.remove(event.getTaskThread());
+            logger.debug("TASK_FINISHED");
+        }
+    }
+
     private class MonitorTask
         extends TimerTask
     {
         @Override
         public void run()
         {
-            Iterator<TaskThread> iter = threads.iterator();
-            while (iter.hasNext())
+            synchronized (threads)
             {
-                TaskThread thread = iter.next();
-
-                if (thread.isFinished())
+                Iterator<TaskThread> iter = threads.iterator();
+                while (iter.hasNext())
                 {
-                    fireEvent(new TaskEvent(Type.TASK_FINISHED, thread));
-                    iter.remove();
-                    logger.debug("TASK_FINISHED");
-                }
-                else if (!thread.isLeaseValid())
-                {
-                    fireEvent(new TaskEvent(Type.TASK_ABORTED, thread));
-                    iter.remove();
-                    logger.debug("TASK_ABORTED");
+                    TaskThread thread = iter.next();
+                    if (!thread.isLeaseValid())
+                    {
+                        fireEvent(new TaskEvent(Type.TASK_ABORTED, thread));
+                        iter.remove();
+                        logger.debug("TASK_ABORTED");
+                    }
                 }
             }
         }

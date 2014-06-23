@@ -45,4 +45,6 @@ public class Constant
     public static final String HEARTBEAT_INTERVAL_KEY = "heartbeat_interval";
 
     public static final String LEASE_PERIOD_KEY = "lease_period";
+    
+    public static final String TASK_CHECK_INTERVAL_KEY = "task_check_interval";
 }

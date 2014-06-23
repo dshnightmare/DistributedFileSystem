@@ -15,7 +15,7 @@ public abstract class Node
     {
         this.name = name;
     }
-    
+
     public String getName()
     {
         return name;
@@ -32,7 +32,13 @@ public abstract class Node
         Collections.sort(childs);
     }
 
+    public Node removeChild(Node child)
+    {
+        return childs.remove(childs.indexOf(child));
+    }
+
     public abstract boolean isDirectory();
+
     public abstract boolean isFile();
 
     public List<Node> getChilds()
@@ -42,20 +48,20 @@ public abstract class Node
 
     public Node getChild(String name)
     {
-        int index =
-            Collections.binarySearch(childs, new Node(name)
+        int index = Collections.binarySearch(childs, new Node(name)
+        {
+            @Override
+            public boolean isDirectory()
             {
-                @Override
-                public boolean isDirectory()
-                {
-                    return false;
-                }
-                @Override
-                public boolean isFile()
-                {
-                    return false;
-                }
-            });
+                return false;
+            }
+
+            @Override
+            public boolean isFile()
+            {
+                return false;
+            }
+        });
         if (0 > index)
             return null;
         else
