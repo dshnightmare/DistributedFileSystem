@@ -74,7 +74,7 @@ public class TestDirectoryTree
         try
         {
             Node dir = tree.createPath("/dir", true);
-            Node file = new FileNode("file");
+            Node file = new FileNode("file", 1);
             dir.addChild(file);
         }
         catch (Exception e1)

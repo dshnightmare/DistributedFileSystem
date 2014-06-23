@@ -19,7 +19,7 @@ public class DirectoryTree
 
     public synchronized Node createPath(String path, boolean isRecursive) throws Exception
     {
-        if (isExisted(path))
+        if (contains(path))
         {
             throw new Exception("Failed to create " + path
                 + ", file or dir had already been existed.");
@@ -58,7 +58,7 @@ public class DirectoryTree
         return parentNode.removeChild(node);
     }
 
-    public boolean isExisted(String path)
+    public boolean contains(String path)
     {
         try
         {

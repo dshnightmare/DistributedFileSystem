@@ -57,7 +57,8 @@ public class TaskFactory
     private TaskAdd createTaskAdd(Call call)
     {
         AddFileCallC2N ac = (AddFileCallC2N) call;
-        return new TaskAdd(ac.getTaskId(), ac.getFilePath());
+        return new TaskAdd(ac.getTaskId(), ac.getFilePath(), directory,
+            ac.isRecursive());
     }
 
     private TaskMove createTaskMove(Call call)

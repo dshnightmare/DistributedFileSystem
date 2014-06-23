@@ -16,7 +16,7 @@ public class TestDirectoryNode extends TestCase
     {
         Node root = new DirectoryNode("root");
         root.addChild(new DirectoryNode("b"));
-        root.addChild(new FileNode("a"));
+        root.addChild(new FileNode("a", 1));
         root.addChild(new DirectoryNode("c"));
 
         for (Node n : root.getChilds())
