@@ -5,12 +5,12 @@ import java.io.ObjectInputStream;
 
 import common.observe.call.Call;
 
-public class CommandReceiver extends Thread{
+public class ClientReceiver extends Thread{
 
 	private ClientConnector connector;
 	private ObjectInputStream in;
 	
-	public CommandReceiver(ClientConnector _connector, ObjectInputStream _in){
+	public ClientReceiver(ClientConnector _connector, ObjectInputStream _in){
 		connector = _connector;
 		in = _in;
 	}

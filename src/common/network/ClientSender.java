@@ -12,12 +12,12 @@ import common.util.SwitchObjectAndByte;
  * @author geng yufeng
  *
  */
-public class CommandSender extends Thread{
+public class ClientSender extends Thread{
 
 	private ClientConnector connector;
 	private OutputStream out;
 	
-	public CommandSender(ClientConnector _connector, OutputStream _out){
+	public ClientSender(ClientConnector _connector, OutputStream _out){
 		connector = _connector;
 		out = _out;
 	}

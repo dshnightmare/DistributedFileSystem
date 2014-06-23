@@ -13,18 +13,21 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 import common.observe.call.Call;
+import common.util.Constant;
 import common.util.SwitchObjectAndByte;
 
 public class ServerListener extends Thread{
 
 	private int port;
+	private ServerConnector connector;
 	private Selector selector;
 	
-	private ByteBuffer r_buf = ByteBuffer.allocate(1024*8);	//size??
+	private ByteBuffer r_buf = ByteBuffer.allocate(Constant.ByteBufferSize);	//size??
 	private ByteBuffer w_buf;
 	
-	public ServerListener(int _port){
+	public ServerListener(ServerConnector _connector, int _port){
 		port = _port;
+		connector = _connector;
 		try {
 			selector = Selector.open();
 		} catch (IOException e) {
@@ -86,11 +89,14 @@ public class ServerListener extends Thread{
 			sc = (SocketChannel)key.channel();
 			System.out.println("reading data...");
 			r_buf.clear();
-			//将字节序列从此通道中读入给定的缓冲区r_bBuf
+			//read into r_bBuf
 			sc.read(r_buf);
 			r_buf.flip();
 			try {
+				//establish a Call object and bind the socketchannel
 				Call rc = (Call)SwitchObjectAndByte.switchByteToObject(r_buf.array());
+				rc.setChannel(sc);
+				connector.putCallQueue(rc);
 //				System.out.println("Call received:"+rc.callType+" "+rc.getParamsString());
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block

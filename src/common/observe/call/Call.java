@@ -1,11 +1,13 @@
 package common.observe.call;
 
 import java.io.Serializable;
+import java.nio.channels.SocketChannel;
 
 public abstract class Call implements Serializable {
 
     private static final long serialVersionUID = -1157466700148810064L;
     private final Type type;
+    private SocketChannel channel;
 
     public Call(Type type)
     {
@@ -17,7 +19,15 @@ public abstract class Call implements Serializable {
         return type;
     }
 
-    public static enum Type
+    public SocketChannel getChannel() {
+		return channel;
+	}
+
+	public void setChannel(SocketChannel channel) {
+		this.channel = channel;
+	}
+
+	public static enum Type
     {
         INVALID("INVALID"),
         HEARTBEAT("HEARTBEAT"), 

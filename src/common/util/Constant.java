@@ -12,6 +12,7 @@ public class Constant
                                                             // file
 
     public static final int serverPort = 5001;
+	public static final int ByteBufferSize = 2048;
 
     // callType: client-server operation
     public static final int ADD_FILE = 001;

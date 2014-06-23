@@ -6,6 +6,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -20,13 +22,15 @@ import common.util.SwitchObjectAndByte;
  * @author geng yufeng
  *
  */
-public class ClientConnector extends Thread implements IF_Connector, CallDispatcher{
+public class ClientConnector implements IF_Connector, CallDispatcher{
 	
 	private Socket socket = null;
 	private String remoteIP;
 	private int remotePort;
 	private BlockingQueue<Call> commands;
 	private BlockingQueue<Call> responses;
+	
+	private List<CallListener> callListeners = new ArrayList<CallListener>();
 	
 	public ClientConnector(){
 		remoteIP = Constant.serverIP;
@@ -67,6 +71,18 @@ public class ClientConnector extends Thread implements IF_Connector, CallDispatc
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public synchronized void addListener(CallListener listener) {
+		// TODO Auto-generated method stub
+		callListeners.add(listener);
+	}
+
+	@Override
+	public synchronized void removeListener(CallListener listener) {
+		// TODO Auto-generated method stub
+		callListeners.remove(listener);
+	}
 	
 	/**
 	 * setup connection with server, and create two threads to send and recv respectively
@@ -96,24 +112,12 @@ public class ClientConnector extends Thread implements IF_Connector, CallDispatc
 		}
 		System.out.println("Connection established with server.");
 		try {
-			CommandSender cs = new CommandSender(this, socket.getOutputStream());
+			ClientSender cs = new ClientSender(this, socket.getOutputStream());
 			cs.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void addListener(CallListener listener) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void removeListener(CallListener listener) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }
