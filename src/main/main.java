@@ -34,7 +34,7 @@ public class main {
 				else if (cmd.equalsIgnoreCase("mv"))
 				    rc = new MoveFileCallC2N(params[0], params[1]);
 				else if (cmd.equalsIgnoreCase("rm"))
-				    rc = new RemoveFileCallC2N();
+				    rc = new RemoveFileCallC2N(params[0]);
 				client.sendCommand(rc);
 			}
 		}

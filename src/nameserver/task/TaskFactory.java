@@ -4,6 +4,7 @@ import nameserver.meta.DirectoryTree;
 import common.observe.call.AddFileCallC2N;
 import common.observe.call.Call;
 import common.observe.call.MoveFileCallC2N;
+import common.observe.call.RemoveFileCallC2N;
 import common.thread.TaskThread;
 
 public class TaskFactory
@@ -62,7 +63,8 @@ public class TaskFactory
 
     private TaskRemove createTaskRemove(Call call)
     {
-        return new TaskRemove(call.getTaskId());
+        RemoveFileCallC2N rc = (RemoveFileCallC2N) call;
+        return new TaskRemove(call.getTaskId(), rc.getPath(), directory);
     }
 
     private TaskSync createTaskSync(Call call)

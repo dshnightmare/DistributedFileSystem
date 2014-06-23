@@ -1,28 +1,42 @@
 package nameserver.task;
 
+import nameserver.meta.DirectoryTree;
 import common.thread.TaskThread;
 
-public class TaskRemove extends TaskThread
+public class TaskRemove
+    extends TaskThread
 {
+    private String path;
 
-    public TaskRemove(long sid)
+    private DirectoryTree directory;
+
+    public TaskRemove(long sid, String path, DirectoryTree directory)
     {
         super(sid);
-        // TODO Auto-generated constructor stub
+        this.path = path;
+        this.directory = directory;
     }
 
     @Override
     public void run()
     {
-        // TODO Auto-generated method stub
-        
+        try
+        {
+            directory.removePath(path);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            // TODO: Send error call back to client.
+        }
+        setFinish();
     }
 
     @Override
     public void release()
     {
         // TODO Auto-generated method stub
-        
+
     }
 
 }
