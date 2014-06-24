@@ -1,4 +1,4 @@
-package test;
+package test.nameserver;
 
 import nameserver.meta.DirectoryNode;
 import nameserver.meta.FileNode;

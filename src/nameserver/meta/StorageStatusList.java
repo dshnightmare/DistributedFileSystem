@@ -1,21 +1,27 @@
 package nameserver.meta;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class StorageStatusList
 {
-    private Map<Long, StorageStatus> storages =
-        new HashMap<Long, StorageStatus>();
+    private List<StorageStatus> storages = new ArrayList<StorageStatus>();
 
     public synchronized void addNode(StorageStatus node)
     {
-        storages.put(node.getId(), node);
+        storages.add(node);
+        Collections.sort(storages);
     }
 
     public synchronized boolean contains(Long id)
     {
-        return storages.containsKey(id);
+        for (StorageStatus s : storages)
+        {
+            if (s.getId() == id)
+                return true;
+        }
+        return false;
     }
 
     public synchronized void removeNode(Long id)

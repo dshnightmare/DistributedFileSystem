@@ -28,7 +28,7 @@ public class TestTaskMonitor
             public void handle(TaskEvent event)
             {
                 System.out.println(event.getType() + ": thread "
-                    + event.getTaskThread().getSid());
+                    + event.getTaskThread().getTaskId());
             }
         });
         
@@ -46,7 +46,7 @@ public class TestTaskMonitor
             {
                 while (true)
                 {
-                    System.out.println(this.getSid());
+                    System.out.println(this.getTaskId());
                     try
                     {
                         Thread.sleep(1000);
@@ -74,7 +74,7 @@ public class TestTaskMonitor
             {
                 while (true)
                 {
-                    System.out.println(this.getSid());
+                    System.out.println(this.getTaskId());
                     try
                     {
                         Thread.sleep(1000);

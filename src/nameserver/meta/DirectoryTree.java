@@ -17,7 +17,8 @@ public class DirectoryTree
         return node;
     }
 
-    public synchronized Node createPath(String path, boolean isRecursive) throws Exception
+    public synchronized Node createPath(String path, boolean isRecursive)
+        throws Exception
     {
         if (contains(path))
         {
@@ -131,6 +132,9 @@ public class DirectoryTree
 
     public static String normalizePath(String path)
     {
+        if (path.isEmpty())
+            return path;
+
         String normalPath = path;
         // Remove the suffix '/'
         if (normalPath.length() - 1 == normalPath.lastIndexOf(SEPERATOR))

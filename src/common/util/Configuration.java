@@ -22,14 +22,24 @@ public class Configuration
         in.close();
     }
 
-    public static Configuration getInstance() throws IOException
+    public static Configuration getInstance()
     {
         if (null == instance)
         {
             synchronized (Configuration.class)
             {
                 if (null == instance)
-                    instance = new Configuration();
+                {
+                    try
+                    {
+                        instance = new Configuration();
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                        instance = null;
+                    }
+                }
             }
         }
 

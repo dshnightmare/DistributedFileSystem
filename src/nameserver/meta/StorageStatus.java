@@ -4,14 +4,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class StorageStatus
+    implements Comparable<StorageStatus>
 {
     private long id;
 
     private String address;
 
     private boolean alive = true;
-    
+
     private Set<FileNode> files = new HashSet<FileNode>();
+
+    private int load = 0;
 
     public StorageStatus(long id, String address)
     {
@@ -38,17 +41,17 @@ public class StorageStatus
     {
         return address;
     }
-    
+
     public synchronized void addFile(FileNode node)
     {
         files.add(node);
     }
-    
+
     public synchronized void removeFile(FileNode node)
     {
         files.remove(node);
     }
-    
+
     public synchronized void diff(Set<Long> fidSet)
     {
         for (FileNode node : files)
@@ -58,5 +61,16 @@ public class StorageStatus
                 fidSet.remove(node.getFid());
             }
         }
+    }
+
+    public synchronized int getLoad()
+    {
+        return load;
+    }
+
+    @Override
+    public int compareTo(StorageStatus o)
+    {
+        return load - o.getLoad();
     }
 }

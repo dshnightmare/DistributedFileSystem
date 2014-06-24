@@ -9,14 +9,20 @@ import common.observe.call.MoveFileCallC2N;
 import common.observe.call.RegistrationCallS2N;
 import common.observe.call.RemoveFileCallC2N;
 import common.thread.TaskThread;
+import common.util.Configuration;
+import common.util.Constant;
 
 public class TaskFactory
 {
-    private DirectoryTree directory;
+    private final DirectoryTree directory;
 
-    private StorageStatusList activeStorages;
+    private final StorageStatusList activeStorages;
 
-    private CardiacArrestMonitor cardiacArrestMonitor;
+    private final CardiacArrestMonitor cardiacArrestMonitor;
+
+    private final Configuration conf;
+
+    private final int duplicate;
 
     public TaskFactory(DirectoryTree directory,
         StorageStatusList activeStorages,
@@ -25,6 +31,8 @@ public class TaskFactory
         this.directory = directory;
         this.activeStorages = activeStorages;
         this.cardiacArrestMonitor = cardiacArrestMonitor;
+        this.conf = Configuration.getInstance();
+        duplicate = conf.getInteger(Constant.DUPLICATE_KEY);
     }
 
     public TaskThread createThread(Call call)
@@ -58,7 +66,7 @@ public class TaskFactory
     {
         AddFileCallC2N ac = (AddFileCallC2N) call;
         return new TaskAdd(ac.getTaskId(), ac.getFilePath(), directory,
-            ac.isRecursive());
+            ac.isRecursive(), duplicate);
     }
 
     private TaskMove createTaskMove(Call call)

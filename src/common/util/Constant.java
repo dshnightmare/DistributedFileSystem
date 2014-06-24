@@ -12,7 +12,8 @@ public class Constant
                                                             // file
 
     public static final int serverPort = 5001;
-	public static final int ByteBufferSize = 2048;
+
+    public static final int ByteBufferSize = 2048;
 
     // callType: client-server operation
     public static final int ADD_FILE = 001;
@@ -45,6 +46,8 @@ public class Constant
     public static final String HEARTBEAT_INTERVAL_KEY = "heartbeat_interval";
 
     public static final String LEASE_PERIOD_KEY = "lease_period";
-    
+
     public static final String TASK_CHECK_INTERVAL_KEY = "task_check_interval";
+
+    public static final String DUPLICATE_KEY = "duplicate_number";
 }

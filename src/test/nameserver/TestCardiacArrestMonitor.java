@@ -1,4 +1,4 @@
-package test;
+package test.nameserver;
 
 import nameserver.heartbeat.CardiacArrest;
 import nameserver.heartbeat.CardiacArrestListener;

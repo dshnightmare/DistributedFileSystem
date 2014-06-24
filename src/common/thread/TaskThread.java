@@ -10,7 +10,7 @@ import common.observe.event.TaskEventListener;
 public abstract class TaskThread
     implements Runnable, TaskEventDispatcher
 {
-    private long sid;
+    private long tid;
 
     private Lease lease = null;
 
@@ -18,14 +18,14 @@ public abstract class TaskThread
     
     private List<TaskEventListener> listeners = new ArrayList<TaskEventListener>();
 
-    public TaskThread(long sid)
+    public TaskThread(long tid)
     {
-        this.sid = sid;
+        this.tid = tid;
     }
 
-    public long getSid()
+    public long getTaskId()
     {
-        return sid;
+        return tid;
     }
 
     public void setLease(Lease lease)

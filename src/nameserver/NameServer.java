@@ -31,28 +31,22 @@ public class NameServer
     private TaskFactory taskFactory;
 
     private DirectoryTree directory = new DirectoryTree();
-    
+
     private StorageStatusList activeStorages = new StorageStatusList();
 
     public void init()
     {
-        try
-        {
-            Configuration conf = Configuration.getInstance();
-            cardiacArrestMonitor =
-                new CardiacArrestMonitor(
-                    conf.getLong(Constant.HEARTBEAT_INTERVAL_KEY));
-            cardiacArrestMonitor.setEventListener(this);
-            taskMonitor =
-                new TaskThreadMonitor(
-                    conf.getLong(Constant.TASK_CHECK_INTERVAL_KEY) * 1000);
-            taskMonitor.addListener(this);
-            taskFactory = new TaskFactory(directory, activeStorages, cardiacArrestMonitor);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        Configuration conf = Configuration.getInstance();
+        cardiacArrestMonitor =
+            new CardiacArrestMonitor(
+                conf.getLong(Constant.HEARTBEAT_INTERVAL_KEY));
+        cardiacArrestMonitor.setEventListener(this);
+        taskMonitor =
+            new TaskThreadMonitor(
+                conf.getLong(Constant.TASK_CHECK_INTERVAL_KEY) * 1000);
+        taskMonitor.addListener(this);
+        taskFactory =
+            new TaskFactory(directory, activeStorages, cardiacArrestMonitor);
     }
 
     @Override
@@ -63,12 +57,12 @@ public class NameServer
         if (event.getType() == TaskEvent.Type.TASK_ABORTED)
         {
             task.release();
-            logger.fatal("Task: " + task.getSid() + " " + event.getType());
+            logger.fatal("Task: " + task.getTaskId() + " " + event.getType());
         }
         else if (event.getType() == TaskEvent.Type.TASK_FINISHED)
         {
             task.release();
-            logger.info("Task: " + task.getSid() + " " + event.getType());
+            logger.info("Task: " + task.getTaskId() + " " + event.getType());
         }
     }
 

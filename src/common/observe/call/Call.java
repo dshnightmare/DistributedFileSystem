@@ -9,8 +9,11 @@ public abstract class Call
     private static final long serialVersionUID = -1157466700148810064L;
 
     private final Type type;
+
     private SocketChannel channel;
-    private long taskId;
+
+    private long taskId = -1;
+
     public Call(Type type)
     {
         this.type = type;
@@ -21,13 +24,15 @@ public abstract class Call
         return type;
     }
 
-    public SocketChannel getChannel() {
-		return channel;
-	}
+    public SocketChannel getChannel()
+    {
+        return channel;
+    }
 
-	public void setChannel(SocketChannel channel) {
-		this.channel = channel;
-	}
+    public void setChannel(SocketChannel channel)
+    {
+        this.channel = channel;
+    }
 
     public void setTaskId(long taskId)
     {
@@ -84,7 +89,12 @@ public abstract class Call
         /**
          * Synchronize call from storage server to name server
          */
-        SYNC_S2N("SYNC_S2N");
+        SYNC_S2N("SYNC_S2N"),
+
+        /**
+         * Notify task finish
+         */
+        FINISH("FINISH");
 
         private String name;
 
