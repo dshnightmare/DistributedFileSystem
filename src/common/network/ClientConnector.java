@@ -14,6 +14,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import common.observe.call.Call;
 import common.observe.call.CallDispatcher;
 import common.observe.call.CallListener;
+import common.util.Configuration;
 import common.util.Constant;
 import common.util.SwitchObjectAndByte;
 
@@ -27,14 +28,22 @@ public class ClientConnector implements IF_Connector, CallDispatcher{
 	private Socket socket = null;
 	private String remoteIP;
 	private int remotePort;
+	private Configuration cf;
 	private BlockingQueue<Call> commands;
 	private BlockingQueue<Call> responses;
 	
 	private List<CallListener> callListeners = new ArrayList<CallListener>();
 	
 	public ClientConnector(){
-		remoteIP = Constant.serverIP;
-		remotePort = Constant.serverPort;
+		try {
+			cf = Configuration.getInstance();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(0);
+		}
+		remoteIP = cf.getString("nameserver_ip");
+		remotePort = cf.getInteger("nameserver_port");
 		commands = new LinkedBlockingDeque<Call>();
 		responses = new LinkedBlockingDeque<Call>();
 	}

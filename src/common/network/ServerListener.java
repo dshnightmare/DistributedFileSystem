@@ -13,16 +13,18 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 import common.observe.call.Call;
+import common.util.Configuration;
 import common.util.Constant;
 import common.util.SwitchObjectAndByte;
 
 public class ServerListener extends Thread{
 
 	private int port;
+	private Configuration cf;
 	private ServerConnector connector;
 	private Selector selector;
 	
-	private ByteBuffer r_buf = ByteBuffer.allocate(Constant.ByteBufferSize);	//size??
+	private ByteBuffer r_buf;
 	private ByteBuffer w_buf;
 	
 	public ServerListener(ServerConnector _connector, int _port){
@@ -30,6 +32,8 @@ public class ServerListener extends Thread{
 		connector = _connector;
 		try {
 			selector = Selector.open();
+			cf = Configuration.getInstance();
+			r_buf = ByteBuffer.allocate(cf.getInteger("ByteBuffer_size"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -8,6 +8,11 @@ import common.observe.call.Call;
 import common.util.Constant;
 import common.util.SwitchObjectAndByte;
 
+/**
+ * watch over responseQueue of ServerConnector, and send responses(Call)
+ * @author gengyufeng
+ *
+ */
 public class ServerResponser extends Thread{
 
 	private ServerConnector connector;

@@ -12,6 +12,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import common.observe.call.Call;
 import common.observe.call.CallDispatcher;
 import common.observe.call.CallListener;
+import common.util.Configuration;
 import common.util.Constant;
 
 /**
@@ -22,13 +23,21 @@ import common.util.Constant;
 public class ServerConnector implements CallDispatcher{
 
 	private int port;
+	private Configuration cf;
 	private BlockingQueue<Call> callQueue;	//calls from client
 	private BlockingQueue<Call> responseQueue;	//responses to client
 
 	private List<CallListener> callListeners = new ArrayList<CallListener>();
 	
 	public ServerConnector(){
-		port = Constant.serverPort;	//should be read from conf
+		try {
+			cf = Configuration.getInstance();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(0);
+		}
+		port = cf.getInteger("nameserver_port");
 		callQueue = new LinkedBlockingDeque<Call>();
 		responseQueue = new LinkedBlockingDeque<Call>();
 	}
@@ -75,6 +84,8 @@ public class ServerConnector implements CallDispatcher{
 		//start listener(accept connection and read data)
 		ServerListener sl = new ServerListener(this, port);
 		sl.start();
+		ServerResponser sr = new ServerResponser(this);
+		sr.start();
 	}
 
 
