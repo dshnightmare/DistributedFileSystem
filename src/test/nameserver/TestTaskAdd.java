@@ -10,7 +10,7 @@ public class TestTaskAdd
     {
     }
 
-    public void testXXX()
+    public void testTask()
     {
     }
 

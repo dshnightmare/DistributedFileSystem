@@ -4,6 +4,7 @@ import nameserver.heartbeat.CardiacArrestMonitor;
 import nameserver.meta.StorageStatus;
 import nameserver.meta.StorageStatusList;
 import common.thread.TaskThread;
+import common.util.IdGenerator;
 
 public class TaskRegistration
     extends TaskThread
@@ -27,10 +28,11 @@ public class TaskRegistration
     @Override
     public void run()
     {
-        StorageStatus node =
-            new StorageStatus(activeStorages.getSize(), address);
+        long id = IdGenerator.getInstance().getLongId();
+        StorageStatus node = new StorageStatus(id, address);
         activeStorages.addNode(node);
         cardiacArrestMonitor.startMonitoring(node);
+        setFinish();
     }
 
     @Override
