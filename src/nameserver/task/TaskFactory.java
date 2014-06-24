@@ -16,7 +16,7 @@ public class TaskFactory
 {
     private final DirectoryTree directory;
 
-    private final StorageStatusList activeStorages;
+    private final StorageStatusList storages;
 
     private final CardiacArrestMonitor cardiacArrestMonitor;
 
@@ -24,12 +24,11 @@ public class TaskFactory
 
     private final int duplicate;
 
-    public TaskFactory(DirectoryTree directory,
-        StorageStatusList activeStorages,
+    public TaskFactory(DirectoryTree directory, StorageStatusList storages,
         CardiacArrestMonitor cardiacArrestMonitor)
     {
         this.directory = directory;
-        this.activeStorages = activeStorages;
+        this.storages = storages;
         this.cardiacArrestMonitor = cardiacArrestMonitor;
         this.conf = Configuration.getInstance();
         duplicate = conf.getInteger(Constant.DUPLICATE_KEY);
@@ -66,7 +65,7 @@ public class TaskFactory
     {
         AddFileCallC2N ac = (AddFileCallC2N) call;
         return new TaskAdd(ac.getTaskId(), ac.getFilePath(), directory,
-            ac.isRecursive(), duplicate);
+            storages, ac.isRecursive(), duplicate);
     }
 
     private TaskMove createTaskMove(Call call)
@@ -79,8 +78,8 @@ public class TaskFactory
     private TaskRegistration createTaskRegistration(Call call)
     {
         RegistrationCallS2N rc = (RegistrationCallS2N) call;
-        return new TaskRegistration(rc.getTaskId(), rc.getAddress(),
-            activeStorages, cardiacArrestMonitor);
+        return new TaskRegistration(rc.getTaskId(), rc.getAddress(), storages,
+            cardiacArrestMonitor);
     }
 
     private TaskRemove createTaskRemove(Call call)

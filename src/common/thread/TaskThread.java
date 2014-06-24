@@ -15,8 +15,9 @@ public abstract class TaskThread
     private Lease lease = null;
 
     private boolean hasLease = false;
-    
-    private List<TaskEventListener> listeners = new ArrayList<TaskEventListener>();
+
+    private List<TaskEventListener> listeners =
+        new ArrayList<TaskEventListener>();
 
     public TaskThread(long tid)
     {
@@ -54,13 +55,13 @@ public abstract class TaskThread
     {
         fireEvent(new TaskEvent(TaskEvent.Type.TASK_FINISHED, this));
     }
-    
+
     @Override
     public final void addListener(TaskEventListener listener)
     {
         listeners.add(listener);
     }
-    
+
     @Override
     public final void removeListener(TaskEventListener listener)
     {
@@ -73,9 +74,12 @@ public abstract class TaskThread
         for (TaskEventListener l : listeners)
             l.handle(event);
     }
-    
+
     @Override
     public abstract void run();
-    
+
+    /**
+     * Release resources such as locks, in order to GC
+     */
     public abstract void release();
 }

@@ -52,6 +52,11 @@ public abstract class Call
         INVALID("INVALID"),
 
         /**
+         * Abort the task
+         */
+        ABORT("ABORT"),
+
+        /**
          * Heartbeat call from storage server to names erver
          */
         HEARTBEAT_S2N("HEARTBEAT_S2N"),
@@ -65,6 +70,11 @@ public abstract class Call
          * Add file call from client to name server
          */
         ADD_FILE_C2N("ADD_FILE_C2N"),
+
+        /**
+         * Add file return call from name server to client
+         */
+        ADD_FILE_N2C("ADD_FILE_N2C"),
 
         /**
          * 

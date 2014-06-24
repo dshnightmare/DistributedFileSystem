@@ -1,12 +1,17 @@
 package nameserver.task;
 
+import java.util.List;
 import java.util.Random;
 
 import nameserver.meta.DirectoryTree;
 import nameserver.meta.FileNode;
 import nameserver.meta.Node;
+import nameserver.meta.StorageStatus;
+import nameserver.meta.StorageStatusList;
+import common.observe.call.AddFileCallN2C;
 import common.observe.call.Call;
 import common.observe.call.CallListener;
+import common.observe.call.FinishCall;
 import common.thread.TaskThread;
 
 public class TaskAdd
@@ -23,12 +28,15 @@ public class TaskAdd
 
     private Object syncRoot = new Object();
 
+    private StorageStatusList storages;
+
     public TaskAdd(long sid, String path, DirectoryTree directory,
-        boolean isRecursive, int duplicate)
+        StorageStatusList storages, boolean isRecursive, int duplicate)
     {
         super(sid);
         this.path = path;
         this.directory = directory;
+        this.storages = storages;
         this.isRecursive = isRecursive;
         this.duplicate = duplicate;
     }
@@ -60,7 +68,10 @@ public class TaskAdd
         Random rand = new Random(System.currentTimeMillis());
         Node node = new FileNode(fileName, rand.nextLong());
 
-        // TODO Send continue to client
+        List<StorageStatus> targets = storages.allocateStorages(duplicate);
+        Call back = new AddFileCallN2C(targets);
+        back.setTaskId(getTaskId());
+        // TODO: Send to client.
 
         try
         {
@@ -74,16 +85,18 @@ public class TaskAdd
             e.printStackTrace();
         }
 
-        // TODO Wait for Storage server send finish packet
-
         parentNode.addChild(node);
+
+        back = new FinishCall(getTaskId());
+        // Send to client.
+
+        setFinish();
     }
 
     @Override
     public void release()
     {
         // TODO Auto-generated method stub
-
     }
 
     @Override

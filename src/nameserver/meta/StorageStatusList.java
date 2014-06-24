@@ -33,4 +33,22 @@ public class StorageStatusList
     {
         return storages.size();
     }
+
+    public synchronized void update()
+    {
+        Collections.sort(storages);
+    }
+
+    public synchronized List<StorageStatus> allocateStorages(int num)
+    {
+        List<StorageStatus> result = new ArrayList<StorageStatus>();
+        for (StorageStatus s : storages)
+        {
+            if (num <= 0)
+                break;
+            result.add(s);
+            num--;
+        }
+        return result;
+    }
 }
