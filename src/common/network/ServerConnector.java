@@ -20,7 +20,7 @@ import common.util.Constant;
  * @author geng yufeng
  *
  */
-public class ServerConnector implements CallDispatcher{
+public class ServerConnector implements CallDispatcher, Connector{
 
 	private int port;
 	private Configuration cf;
@@ -30,13 +30,7 @@ public class ServerConnector implements CallDispatcher{
 	private List<CallListener> callListeners = new ArrayList<CallListener>();
 	
 	public ServerConnector(){
-		try {
-			cf = Configuration.getInstance();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.exit(0);
-		}
+		cf = Configuration.getInstance();
 		port = cf.getInteger("nameserver_port");
 		callQueue = new LinkedBlockingDeque<Call>();
 		responseQueue = new LinkedBlockingDeque<Call>();
@@ -57,7 +51,8 @@ public class ServerConnector implements CallDispatcher{
 	 * when completed with a client call, put the response here
 	 * @param response
 	 */
-	public void putResponseQueue(Call response){
+	@Override
+	public void sendCall(Call response){
 		try {
 			responseQueue.put(response);
 		} catch (InterruptedException e) {

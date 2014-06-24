@@ -6,7 +6,7 @@ import common.observe.call.Call;
  * @author gengyufeng
  *
  */
-public interface IF_Connector
+public interface Connector
 {
-    public void sendCommand(Call command);
+    public void sendCall(Call command);
 }

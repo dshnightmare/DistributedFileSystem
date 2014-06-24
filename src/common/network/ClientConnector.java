@@ -23,7 +23,7 @@ import common.util.SwitchObjectAndByte;
  * @author geng yufeng
  *
  */
-public class ClientConnector implements IF_Connector, CallDispatcher{
+public class ClientConnector implements Connector, CallDispatcher{
 	
 	private Socket socket = null;
 	private String remoteIP;
@@ -35,13 +35,7 @@ public class ClientConnector implements IF_Connector, CallDispatcher{
 	private List<CallListener> callListeners = new ArrayList<CallListener>();
 	
 	public ClientConnector(){
-		try {
-			cf = Configuration.getInstance();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.exit(0);
-		}
+		cf = Configuration.getInstance();
 		remoteIP = cf.getString("nameserver_ip");
 		remotePort = cf.getInteger("nameserver_port");
 		commands = new LinkedBlockingDeque<Call>();
@@ -52,7 +46,7 @@ public class ClientConnector implements IF_Connector, CallDispatcher{
 	/**
 	 * call this method to send a command to nameserver.
 	 */
-	public void sendCommand(Call command) {
+	public void sendCall(Call command) {
 		// TODO Auto-generated method stub
 		try {
 			commands.put(command);
