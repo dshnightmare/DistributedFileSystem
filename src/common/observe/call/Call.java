@@ -77,6 +77,16 @@ public abstract class Call
         ADD_FILE_N2C("ADD_FILE_N2C"),
 
         /**
+         * Append file from client to name server.
+         */
+        APPEND_FILE_C2N("APPEND_FILE_C2N"),
+
+        /**
+         * Append file return call from name server to client.
+         */
+        APPEND_FILE_N2C("APPEND_FILE_N2C"),
+
+        /**
          * 
          */
         ADD_FILE_SS("ADD_FILE_SS"),
@@ -100,6 +110,16 @@ public abstract class Call
          * Synchronize call from storage server to name server
          */
         SYNC_S2N("SYNC_S2N"),
+
+        /**
+         * Synchronize return call from name server to storage server.
+         */
+        SYNC_N2S("SYNC_N2S"),
+
+        /**
+         * Migrate data from one storage server to others when it's dead.
+         */
+        MIGRATE_FILE_N2S("MIGRATE_FILE_N2S"),
 
         /**
          * Notify task finish

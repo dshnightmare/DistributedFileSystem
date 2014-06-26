@@ -5,24 +5,24 @@ public class AddFileCallC2N
 {
     private static final long serialVersionUID = -805598603013291328L;
 
-    private String filePath;
-    
-    private boolean recursive;
+    private String dirName;
 
-    public AddFileCallC2N(String filePath, boolean recursive)
+    private String fileName;
+
+    public AddFileCallC2N(String dirName, String fileName)
     {
         super(Call.Type.ADD_FILE_C2N);
-        this.filePath = filePath;
-        this.recursive = recursive;
+        this.dirName = dirName;
+        this.fileName = fileName;
     }
 
-    public String getFilePath()
+    public String getDirName()
     {
-        return filePath;
+        return dirName;
     }
 
-    public boolean isRecursive()
+    public String getFileName()
     {
-        return recursive;
+        return fileName;
     }
 }

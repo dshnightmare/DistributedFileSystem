@@ -1,14 +1,31 @@
 package common.observe.call;
 
-public class SyncCallS2N extends Call
+import java.util.List;
+
+public class SyncCallS2N
+    extends Call
 {
 
     private static final long serialVersionUID = 5000625749190241770L;
 
-    public SyncCallS2N()
+    private final String address;
+
+    private final List<Long> files;
+
+    public SyncCallS2N(String address, List<Long> files)
     {
         super(Call.Type.SYNC_S2N);
-        // TODO Auto-generated constructor stub
+        this.address = address;
+        this.files = files;
     }
 
+    public String getAddress()
+    {
+        return address;
+    }
+
+    public List<Long> getFiles()
+    {
+        return files;
+    }
 }

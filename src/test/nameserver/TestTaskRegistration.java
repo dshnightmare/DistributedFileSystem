@@ -1,8 +1,9 @@
 package test.nameserver;
 
-import nameserver.heartbeat.CardiacArrestMonitor;
-import nameserver.meta.StorageStatusList;
-import nameserver.task.TaskRegistration;
+import nameserver.meta.Status;
+import nameserver.task.RegisterStorageTask;
+import common.network.ServerConnector;
+import common.observe.call.RegistrationCallS2N;
 import common.observe.event.TaskEvent;
 import common.observe.event.TaskEventListener;
 import common.thread.TaskThread;
@@ -18,12 +19,15 @@ public class TestTaskRegistration
 
     public void testTask()
     {
-        StorageStatusList storages = new StorageStatusList();
-        assertEquals(0, storages.getSize());
-        
-        CardiacArrestMonitor monitor = new CardiacArrestMonitor(5000);
-        TaskThread task =
-            new TaskRegistration(1, "localhost", storages, monitor);
+        Status status = new Status();
+
+        assertNull(status.getStorage("localhost"));
+
+        ServerConnector connector = new ServerConnector();
+        connector.start();
+
+        RegistrationCallS2N call = new RegistrationCallS2N("localhost");
+        TaskThread task = new RegisterStorageTask(1, call, status, connector);
         task.addListener(new TaskEventListener()
         {
             @Override
@@ -41,7 +45,7 @@ public class TestTaskRegistration
         {
             e.printStackTrace();
         }
-        assertEquals(1, storages.getSize());
+        assertNotNull(status.getStorage("localhost"));
     }
 
     @Override

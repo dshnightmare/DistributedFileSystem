@@ -1,19 +1,29 @@
 package common.observe.call;
 
-public class RemoveFileCallC2N extends Call
+public class RemoveFileCallC2N
+    extends Call
 {
 
     private static final long serialVersionUID = 7834245963090160026L;
-    private String path;
 
-    public RemoveFileCallC2N(String path)
+    private String dirName;
+
+    private String fileName;
+
+    public RemoveFileCallC2N(String dirName, String fileName)
     {
         super(Call.Type.REMOVE_FILE_C2N);
-        this.path = path;
+        this.dirName = dirName;
+        this.fileName = fileName;
     }
 
-    public String getPath()
+    public String getDirName()
     {
-        return path;
+        return dirName;
+    }
+
+    public String getFileName()
+    {
+        return fileName;
     }
 }

@@ -5,24 +5,41 @@ public class MoveFileCallC2N
 {
     private static final long serialVersionUID = 1336355298379688981L;
 
-    private String oldPath;
+    private String oldDirName;
 
-    private String newPath;
+    private String oldFileName;
 
-    public MoveFileCallC2N(String oldPath, String newPath)
+    private String newDirName;
+
+    private String newFileName;
+
+    public MoveFileCallC2N(String oldDirName, String oldFileName,
+        String newDirName, String newFileName)
     {
         super(Call.Type.MOVE_FILE_C2N);
-        this.oldPath = oldPath;
-        this.newPath = newPath;
+        this.oldDirName = oldDirName;
+        this.oldFileName = newFileName;
+        this.newDirName = newDirName;
+        this.newFileName = newFileName;
     }
 
-    public String getOldPath()
+    public String getOldDirName()
     {
-        return oldPath;
+        return oldDirName;
     }
 
-    public String getNewPath()
+    public String getOldFileName()
     {
-        return newPath;
+        return oldFileName;
+    }
+
+    public String getNewDirName()
+    {
+        return newDirName;
+    }
+
+    public String getNewFileName()
+    {
+        return newFileName;
     }
 }
