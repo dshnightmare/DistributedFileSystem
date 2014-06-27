@@ -23,7 +23,7 @@ public class TestNameServer
 
         Call call = null;
 
-        call = new AddFileCallC2N("/a", false);
+        call = new AddFileCallC2N("/a/", "b");
         ns.handleCall(call);
     }
 

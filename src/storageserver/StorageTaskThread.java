@@ -43,4 +43,11 @@ public class StorageTaskThread extends TaskThread
         // TODO Auto-generated method stub
         
     }
+
+    @Override
+    public void handleCall(Call call)
+    {
+        // TODO Auto-generated method stub
+        
+    }
 }

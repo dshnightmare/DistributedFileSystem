@@ -1,5 +1,6 @@
 package test;
 
+import common.observe.call.Call;
 import common.observe.event.TaskEvent;
 import common.observe.event.TaskEventListener;
 import common.thread.TaskLease;
@@ -62,6 +63,13 @@ public class TestTaskMonitor
             public void release()
             {
             }
+
+            @Override
+            public void handleCall(Call call)
+            {
+                // TODO Auto-generated method stub
+                
+            }
         };
         taskA.setLease(new TaskLease(3000));
         taskA.renewLease();
@@ -89,6 +97,13 @@ public class TestTaskMonitor
             @Override
             public void release()
             {
+            }
+
+            @Override
+            public void handleCall(Call call)
+            {
+                // TODO Auto-generated method stub
+                
             }
         };
         taskB.setLease(new TaskLease(7000));

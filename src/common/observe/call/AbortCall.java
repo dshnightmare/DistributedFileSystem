@@ -5,9 +5,17 @@ public class AbortCall
 {
     private static final long serialVersionUID = -4194888093602447089L;
 
-    public AbortCall(long taskId)
+    private String reason;
+
+    public AbortCall(long taskId, String reason)
     {
         super(Call.Type.ABORT);
         super.setTaskId(taskId);
+        this.reason = reason;
+    }
+
+    public String getReason()
+    {
+        return reason;
     }
 }

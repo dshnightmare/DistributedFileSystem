@@ -44,11 +44,13 @@ public class main
                 String[] params = param.split(" ");
                 Call rc = null;
                 if (cmd.equalsIgnoreCase("add"))
-                    rc = new AddFileCallC2N(params[0], false);
+                    rc = new AddFileCallC2N(params[0], params[1]);
                 else if (cmd.equalsIgnoreCase("mv"))
-                    rc = new MoveFileCallC2N(params[0], params[1]);
+                    rc =
+                        new MoveFileCallC2N(params[0], params[1], params[2],
+                            params[3]);
                 else if (cmd.equalsIgnoreCase("rm"))
-                    rc = new RemoveFileCallC2N(params[0]);
+                    rc = new RemoveFileCallC2N(params[0], params[1]);
                 client.sendCall(rc);
             }
         }

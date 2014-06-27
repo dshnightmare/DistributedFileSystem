@@ -16,7 +16,7 @@ public class IdGenerator
     {
         if (null == instance)
         {
-            synchronized (Configuration.class)
+            synchronized (IdGenerator.class)
             {
                 if (null == instance)
                 {
@@ -30,11 +30,11 @@ public class IdGenerator
 
     public synchronized Long getLongId()
     {
-        return rand.nextLong();
+        return Math.abs(rand.nextLong());
     }
 
     public synchronized Integer getIntegerId()
     {
-        return rand.nextInt();
+        return Math.abs(rand.nextInt());
     }
 }
