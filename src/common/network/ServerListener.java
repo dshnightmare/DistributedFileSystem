@@ -80,8 +80,8 @@ public class ServerListener extends Thread{
 			sc.configureBlocking(false);
 			//注册读事件
 			sc.register(selector, SelectionKey.OP_READ);
-			connector.setAddressChannel(sc.getRemoteAddress().toString(), sc);
-			System.out.println("New connection accepted...("+sc.getRemoteAddress().toString()+")");
+			connector.setAddressChannel(sc.socket().getRemoteSocketAddress().toString(), sc);
+			System.out.println("New connection accepted...("+sc.socket().getRemoteSocketAddress().toString()+")");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -100,7 +100,7 @@ public class ServerListener extends Thread{
 			try {
 				//establish a Call object and bind the socketchannel
 				Call rc = (Call)SwitchObjectAndByte.switchByteToObject(r_buf.array());
-				rc.setInitiator(sc.getRemoteAddress().toString());
+				rc.setInitiator(sc.socket().getRemoteSocketAddress().toString());
 				connector.putCallQueue(rc);
 //				System.out.println("Call received:"+rc.callType+" "+rc.getParamsString());
 			} catch (ClassNotFoundException e) {
