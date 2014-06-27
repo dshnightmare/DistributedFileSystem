@@ -33,6 +33,10 @@ public class Constant
     public static final int LIST_DIR = 013;
 
     public static final int RENAME_DIR = 014;
+    
+    //storage server operation code
+    public static final int READ_FILE = 100;
+    public static final int WRITE_FILE = 101;
 
     // Configuration stuff
     public static final String CONFIGURATION_PATH = "conf.properties";

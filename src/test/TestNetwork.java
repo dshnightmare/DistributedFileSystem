@@ -21,8 +21,7 @@ public class TestNetwork extends TestCase{
 	    if (startType.equals("c"))
 	    {
 	        System.out.println("Start as client...");
-	        ClientConnector client = new ClientConnector();
-	        client.setupSocket();
+	        ClientConnector client = ClientConnector.getInstance();
 	        while (true)
 	        {
 	            System.out.println("waiting for command(type(int) params[])");
@@ -43,8 +42,7 @@ public class TestNetwork extends TestCase{
 	    else if (startType.equals("n"))
 	    {
 	        System.out.println("Start as nameserver...");
-	        ServerConnector sc = new ServerConnector();
-	        sc.start();
+	        ServerConnector sc = ServerConnector.getInstance();
 	        // ServerConnector sc = new ServerConnector();
 	        // sc.setupSocket();
 	    }

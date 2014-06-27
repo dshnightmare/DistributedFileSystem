@@ -25,6 +25,8 @@ import common.util.SwitchObjectAndByte;
  */
 public class ClientConnector implements Connector, CallDispatcher{
 	
+	private volatile static ClientConnector instance;
+	
 	private Socket socket = null;
 	private String remoteIP;
 	private int remotePort;
@@ -40,6 +42,16 @@ public class ClientConnector implements Connector, CallDispatcher{
 		remotePort = cf.getInteger("nameserver_port");
 		commands = new LinkedBlockingDeque<Call>();
 		responses = new LinkedBlockingDeque<Call>();
+	}
+	
+	public static ClientConnector getInstance(){
+		if(null == instance){
+			synchronized (ClientConnector.class) {
+				instance = new ClientConnector();
+				instance.setupSocket();
+			}
+		}
+		return instance;
 	}
 	
 	@Override

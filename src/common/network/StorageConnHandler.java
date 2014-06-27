@@ -1,5 +1,6 @@
 package common.network;
 
+import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import common.observe.call.Call;
+import common.util.Constant;
 
 /**
  * deals with connection with one client.
@@ -16,19 +18,13 @@ import common.observe.call.Call;
  * @author geng yufeng
  *
  */
-public class ServerConnectionHandler extends Thread{
+public class StorageConnHandler extends Thread{
 
 	private Socket clientSocket;
-	private ObjectInputStream objIn;
+	private DataInputStream inputStream;
 	
-	public ServerConnectionHandler(Socket _client){
+	public StorageConnHandler(Socket _client){
 		clientSocket = _client;
-		try {
-			objIn = new ObjectInputStream(clientSocket.getInputStream());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	@Override
@@ -36,16 +32,25 @@ public class ServerConnectionHandler extends Thread{
 		// TODO Auto-generated method stub
 		while(true){
 			try {
-				Call rc = (Call)objIn.readObject();
-//				String param = "";
-//				for(int i=0; i<rc.params.length; i++){
-//					param += " "+rc.params[i];
-//				}
-//				System.out.println("[Server]Command recieved: "+rc.callType+" "+param);
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				break;
+				inputStream = new DataInputStream(
+						new BufferedInputStream(
+								clientSocket.getInputStream()));
+				
+				byte op = inputStream.readByte();
+				
+				switch (op) {
+				case Constant.READ_FILE:
+					
+					break;
+
+				case Constant.WRITE_FILE:
+					
+					break;
+					
+				default:
+					System.out.println("Wrong Op code!");
+					break;
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

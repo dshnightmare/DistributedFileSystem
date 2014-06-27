@@ -22,6 +22,8 @@ import common.util.Constant;
  */
 public class ServerConnector implements CallDispatcher, Connector{
 
+	private volatile static ServerConnector instance = null;
+	
 	private int port;
 	private Configuration cf;
 	private BlockingQueue<Call> callQueue;	//calls from client
@@ -34,6 +36,16 @@ public class ServerConnector implements CallDispatcher, Connector{
 		port = cf.getInteger("nameserver_port");
 		callQueue = new LinkedBlockingDeque<Call>();
 		responseQueue = new LinkedBlockingDeque<Call>();
+	}
+	
+	public static ServerConnector getInstance(){
+		if(null == instance){
+			synchronized (ServerConnector.class) {
+				instance = new ServerConnector();
+				instance.start();
+			}
+		}
+		return instance;
 	}
 	
 	
