@@ -100,7 +100,7 @@ public class ServerListener extends Thread{
 			try {
 				//establish a Call object and bind the socketchannel
 				Call rc = (Call)SwitchObjectAndByte.switchByteToObject(r_buf.array());
-				rc.setAddress(sc.getRemoteAddress().toString());
+				rc.setInitiator(sc.getRemoteAddress().toString());
 				connector.putCallQueue(rc);
 //				System.out.println("Call received:"+rc.callType+" "+rc.getParamsString());
 			} catch (ClassNotFoundException e) {
