@@ -35,7 +35,7 @@ public class AddFileTask
 
     private Connector connector;
 
-    private SocketChannel channel;
+    private String initiator;
 
     public AddFileTask(long sid, Call call, Meta meta, Status status,
         Connector connector)
@@ -47,7 +47,7 @@ public class AddFileTask
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
         this.connector = connector;
-        this.channel = c.getChannel();
+        this.initiator = c.getInitiator();
     }
 
     @Override
@@ -60,7 +60,7 @@ public class AddFileTask
             back =
                 new AbortCall(getTaskId(),
                     "Task aborted, there has been a directory with the same name.");
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
             setFinish();
             return;
@@ -77,7 +77,7 @@ public class AddFileTask
                 back =
                     new AbortCall(getTaskId(),
                         "Task aborted, there has been a file with the same name.");
-                back.setChannel(channel);
+                back.setInitiator(initiator);;
                 connector.sendCall(back);
                 setFinish();
                 return;
@@ -96,7 +96,7 @@ public class AddFileTask
         for (Storage s : storages)
             locations.add(s.getAddress());
         back = new AddFileCallN2C(locations);
-        back.setChannel(channel);
+        back.setInitiator(initiator);;
         back.setTaskId(getTaskId());
         connector.sendCall(back);
 
@@ -121,7 +121,7 @@ public class AddFileTask
         }
 
         back = new FinishCall(getTaskId());
-        back.setChannel(channel);
+        back.setInitiator(initiator);;
         connector.sendCall(back);
 
         setFinish();

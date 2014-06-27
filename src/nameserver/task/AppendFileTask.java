@@ -29,7 +29,7 @@ public class AppendFileTask
 
     private Connector connector;
 
-    private SocketChannel channel;
+    private String initiator;
 
     public AppendFileTask(long sid, Call call, Meta meta, Connector connector)
     {
@@ -39,7 +39,7 @@ public class AppendFileTask
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
         this.connector = connector;
-        this.channel = c.getChannel();
+        this.initiator = c.getInitiator();
     }
 
     @Override
@@ -51,7 +51,7 @@ public class AppendFileTask
         {
             back =
                 new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
             setFinish();
             return;
@@ -62,7 +62,7 @@ public class AppendFileTask
         {
             back =
                 new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
             setFinish();
             return;
@@ -73,7 +73,7 @@ public class AppendFileTask
         for (Storage s : file.getLocations())
             locations.add(s.getAddress());
         back = new AppendFileCallN2C(locations);
-        back.setChannel(channel);
+        back.setInitiator(initiator);;
         back.setTaskId(getTaskId());
         connector.sendCall(back);
 
@@ -92,7 +92,7 @@ public class AppendFileTask
         // TODO: Finished! Release locks.
 
         back = new FinishCall(getTaskId());
-        back.setChannel(channel);
+        back.setInitiator(initiator);;
         connector.sendCall(back);
 
         setFinish();

@@ -21,7 +21,7 @@ public class SyncTask
 
     private Status status;
 
-    private SocketChannel channel;
+    private String initiator;
 
     private Connector connector;
 
@@ -33,7 +33,7 @@ public class SyncTask
         super(sid);
         SyncCallS2N c = (SyncCallS2N) call;
         this.address = c.getAddress();
-        this.channel = c.getChannel();
+        this.initiator = c.getInitiator();
         this.files = c.getFiles();
         this.status = status;
         this.connector = connector;
@@ -49,7 +49,7 @@ public class SyncTask
             back =
                 new AbortCall(getTaskId(),
                     "Task aborted, unidentified storage server.");
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
             setFinish();
             return;
@@ -63,7 +63,7 @@ public class SyncTask
         }
 
         back = new SyncCallN2S(files);
-        back.setChannel(channel);
+        back.setInitiator(initiator);;
         back.setTaskId(getTaskId());
         connector.sendCall(back);
 

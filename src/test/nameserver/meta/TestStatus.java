@@ -12,9 +12,9 @@ public class TestStatus
     public void testStatus()
     {
         Status s = new Status();
-        Storage st1 = new Storage(1, "localhost", null);
-        Storage st2 = new Storage(2, "localhost", null);
-        Storage st3 = new Storage(3, "localhost", null);
+        Storage st1 = new Storage(1, "localhost");
+        Storage st2 = new Storage(2, "localhost");
+        Storage st3 = new Storage(3, "localhost");
 
         s.addStorage(st1);
         s.addStorage(st2);

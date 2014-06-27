@@ -24,7 +24,7 @@ public class RemoveFileTask
 
     private Connector connector;
 
-    private SocketChannel channel;
+    private String initiator;
 
     public RemoveFileTask(long sid, Call call, Meta meta, Connector connector)
     {
@@ -33,7 +33,7 @@ public class RemoveFileTask
         RemoveFileCallC2N c = (RemoveFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
-        this.channel = c.getChannel();
+        this.initiator = c.getInitiator();
         this.connector = connector;
     }
 
@@ -46,7 +46,7 @@ public class RemoveFileTask
         {
             back =
                 new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
             setFinish();
             return;
@@ -57,7 +57,7 @@ public class RemoveFileTask
         {
             back =
                 new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
             setFinish();
             return;
@@ -71,7 +71,7 @@ public class RemoveFileTask
         // TODO: Finished! Release locks.
 
         back = new FinishCall(getTaskId());
-        back.setChannel(channel);
+        back.setInitiator(initiator);;
         connector.sendCall(back);
 
         setFinish();

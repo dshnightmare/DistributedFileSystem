@@ -19,7 +19,7 @@ public class RegisterStorageTask
 
     private Status status;
 
-    private SocketChannel channel;
+    private String initiator;
 
     private Connector connector;
 
@@ -29,7 +29,7 @@ public class RegisterStorageTask
         super(sid);
         RegistrationCallS2N c = (RegistrationCallS2N) call;
         this.address = c.getAddress();
-        this.channel = c.getChannel();
+        this.initiator = c.getInitiator();
         this.status = status;
         this.connector = connector;
     }
@@ -44,20 +44,20 @@ public class RegisterStorageTask
             back =
                 new AbortCall(getTaskId(),
                     "There has been a storage server using the same address.");
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
             setFinish();
             return;
         }
 
         Storage storage =
-            new Storage(IdGenerator.getInstance().getLongId(), address, channel);
+            new Storage(IdGenerator.getInstance().getLongId(), address);
         status.addStorage(storage);
 
         // TODO: Add heartbeat monitor.
 
         back = new FinishCall(getTaskId());
-        back.setChannel(channel);
+        back.setInitiator(initiator);;
         connector.sendCall(back);
         setFinish();
     }

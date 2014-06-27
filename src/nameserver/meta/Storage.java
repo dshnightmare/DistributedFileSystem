@@ -1,6 +1,5 @@
 package nameserver.meta;
 
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +13,6 @@ public class Storage
 
     private long heartbeatTime;
 
-    private SocketChannel channel;
-
     private int load;
 
     private List<File> files = new ArrayList<File>();
@@ -23,11 +20,10 @@ public class Storage
     private Map<Storage, List<File>> migrateFiles =
         new HashMap<Storage, List<File>>();
 
-    public Storage(long id, String address, SocketChannel channel)
+    public Storage(long id, String address)
     {
         this.id = id;
         this.address = address;
-        this.channel = channel;
     }
 
     public synchronized void setHeartbeatTime(long time)
@@ -58,11 +54,6 @@ public class Storage
     public String getAddress()
     {
         return address;
-    }
-
-    public SocketChannel getChannel()
-    {
-        return channel;
     }
 
     public synchronized List<File> getFiles()

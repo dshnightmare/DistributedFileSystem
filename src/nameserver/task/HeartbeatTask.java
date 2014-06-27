@@ -24,7 +24,7 @@ public class HeartbeatTask
 
     private Connector connector;
 
-    private SocketChannel channel;
+    private String initiator;
 
     private String address;
     
@@ -34,7 +34,7 @@ public class HeartbeatTask
     {
         super(tid);
         HeartbeatCallS2N c = (HeartbeatCallS2N) call;
-        this.channel = c.getChannel();
+        this.initiator = c.getInitiator();
         this.address = c.getAddress();
         this.status = status;
         this.connector = connector;
@@ -63,7 +63,7 @@ public class HeartbeatTask
             Call back =
                 new MigrateFileCallN2S(IdGenerator.getInstance().getLongId(),
                     mf);
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
         }
         

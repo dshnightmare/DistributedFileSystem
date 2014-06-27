@@ -1,7 +1,6 @@
 package common.observe.call;
 
 import java.io.Serializable;
-import java.nio.channels.SocketChannel;
 
 public abstract class Call
     implements Serializable
@@ -10,7 +9,7 @@ public abstract class Call
 
     private final Type type;
 
-    private String address;
+    private String initiator;
 
     private long taskId = -1;
 
@@ -34,12 +33,12 @@ public abstract class Call
         return taskId;
     }
 
-    public String getAddress() {
-		return address;
+    public String getInitiator() {
+		return initiator;
 	}
 
-	public void setAddress(String address) {
-		this.address = address;
+	public void setInitiator(String initiator) {
+		this.initiator = initiator;
 	}
 
 	public static enum Type

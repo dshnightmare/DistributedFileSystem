@@ -27,7 +27,7 @@ public class MoveFileTask
 
     private Connector connector;
 
-    private SocketChannel channel;
+    private String initiator;
 
     public MoveFileTask(long sid, Call call, Meta meta, Connector connector)
     {
@@ -39,7 +39,7 @@ public class MoveFileTask
         this.newDirName = c.getNewDirName();
         this.newFileName = c.getNewFileName();
         this.connector = connector;
-        this.channel = c.getChannel();
+        this.initiator = c.getInitiator();
     }
 
     @Override
@@ -51,7 +51,7 @@ public class MoveFileTask
         {
             back =
                 new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
             setFinish();
             return;
@@ -62,7 +62,7 @@ public class MoveFileTask
         {
             back =
                 new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setChannel(channel);
+            back.setInitiator(initiator);;
             connector.sendCall(back);
             setFinish();
             return;
@@ -81,7 +81,7 @@ public class MoveFileTask
         dir.addFile(file);
 
         back = new FinishCall(getTaskId());
-        back.setChannel(channel);
+        back.setInitiator(initiator);;
         connector.sendCall(back);
 
         // TODO: Finished! Release locks.
