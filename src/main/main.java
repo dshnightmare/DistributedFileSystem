@@ -2,6 +2,10 @@ package main;
 
 import java.util.Scanner;
 
+import javax.swing.JFrame;
+
+import client.ClientWindow;
+
 import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.network.ServerListener;
@@ -15,6 +19,12 @@ public class main
     public static void main(String[] args)
     {
         // TODO Auto-generated method stub
+    	
+
+		//设置Swing窗口使用Java风格
+		JFrame.setDefaultLookAndFeelDecorated(true); 
+		new ClientWindow().init();
+    	
         System.out
             .print("Start type is(c:client, n:nameserver, s:storageserver):");
         Scanner input = new Scanner(System.in);
