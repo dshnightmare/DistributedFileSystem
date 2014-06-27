@@ -53,7 +53,7 @@ public class Configuration
 
     public Long getLong(String key)
     {
-        if (prop.contains(key))
+        if (prop.containsKey(key))
             return Long.valueOf(getProperty(key));
         else
             return Constant.CONF_DEFAULT_LONG;
@@ -61,7 +61,7 @@ public class Configuration
 
     public Integer getInteger(String key)
     {
-        if (prop.contains(key))
+        if (prop.containsKey(key))
             return Integer.valueOf(getProperty(key));
         else
             return Constant.CONF_DEFAULT_INTEGER;
@@ -69,7 +69,7 @@ public class Configuration
 
     public String getString(String key)
     {
-        if (prop.contains(key))
+        if (prop.containsKey(key))
             return getProperty(key);
         else
             return Constant.CONF_DEFAULT_STRING;

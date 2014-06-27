@@ -1,7 +1,5 @@
 package test;
 
-import java.io.IOException;
-
 import common.util.Configuration;
 import common.util.Constant;
 import junit.framework.TestCase;
@@ -26,6 +24,11 @@ public class TestConfiguration
         heartbeatTime = conf.getLong(Constant.HEARTBEAT_INTERVAL_KEY);
         System.out.println(heartbeatTime);
         assertFalse(heartbeatTime < 0);
+        
+        int size = -1;
+        size = conf.getInteger("ByteBuffer_size");
+        System.out.println(size);
+        assertFalse(size < 0);
     }
 
     @Override
