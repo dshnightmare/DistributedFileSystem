@@ -73,7 +73,7 @@ public class MoveFileTask
             file.setName(newFileName);
         if (meta.contains(newDirName))
         {
-            dir.removeFile(file);
+            dir.removeFile(file.getName());
             dir = meta.getDirectory(newDirName);
         }
         else

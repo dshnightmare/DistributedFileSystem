@@ -1,7 +1,5 @@
 package nameserver.task;
 
-import java.nio.channels.SocketChannel;
-
 import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
@@ -66,7 +64,7 @@ public class RemoveFileTask
         File file = dir.getFile(fileName);
         for (Storage s : file.getLocations())
             s.removeFile(file);
-        dir.removeFile(file);
+        dir.removeFile(file.getName());
 
         // TODO: Finished! Release locks.
 

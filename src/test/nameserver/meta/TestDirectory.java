@@ -10,13 +10,21 @@ public class TestDirectory
     public void testDirectory()
     {
         Directory d = new Directory("/");
+        File f;
 
         assertFalse(d.contains("f"));
-        assertNull(d.getFile("f"));
+        f = d.getFile("f");
+        assertNull(f);
 
         d.addFile(new File("f", 1));
 
+        f = d.getFile("f");
         assertTrue(d.contains("f"));
-        assertNotNull(d.getFile("f"));
+        assertNotNull(f);
+        
+        d.removeFile(f.getName());
+        assertFalse(d.contains("f"));
+        f = d.getFile("f");
+        assertNull(f);
     }
 }

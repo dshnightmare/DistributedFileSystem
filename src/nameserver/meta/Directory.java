@@ -29,9 +29,9 @@ public class Directory
         files.put(file.getName(), file);
     }
 
-    public synchronized void removeFile(File file)
+    public synchronized void removeFile(String fileName)
     {
-        files.remove(file);
+        files.remove(fileName);
     }
 
     public synchronized boolean contains(String fileName)
