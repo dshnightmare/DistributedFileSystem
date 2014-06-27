@@ -2,16 +2,16 @@ package common.observe.call;
 
 import java.util.List;
 
-public class AddFileCallN2C
+public class AppendFileCallN2C
     extends Call
 {
-    private static final long serialVersionUID = 32014432346467370L;
+    private static final long serialVersionUID = -3738634987359667308L;
 
     private final List<String> locations;
 
-    public AddFileCallN2C(List<String> locations)
+    public AppendFileCallN2C(List<String> locations)
     {
-        super(Call.Type.ADD_FILE_N2C);
+        super(Call.Type.APPEND_FILE_N2C);
         this.locations = locations;
     }
 
