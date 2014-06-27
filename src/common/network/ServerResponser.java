@@ -28,7 +28,7 @@ public class ServerResponser extends Thread{
 	public void run(){
 		while (true) {
 			Call resp = connector.getResponse();	//will block here
-			SocketChannel sc = resp.getChannel();
+			SocketChannel sc = connector.getChannel(resp.getAddress());
 			w_buff.clear();
 			try {
 				w_buff.put(SwitchObjectAndByte.switchObjectToByte(resp));

@@ -56,6 +56,14 @@ public class ClientWindow
 	{
 		//创建一个装载了文本框、按钮的JPanel
 		okButton.setPreferredSize(new Dimension(80, 30));
+		okButton.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				ta.append("OK button clicked\n");
+			}
+		});
 		JPanel bottom = new JPanel();
 		bottom.add(name);
 		bottom.add(okButton);

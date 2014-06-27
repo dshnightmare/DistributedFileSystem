@@ -10,7 +10,7 @@ public abstract class Call
 
     private final Type type;
 
-    private SocketChannel channel;
+    private String address;
 
     private long taskId = -1;
 
@@ -24,16 +24,6 @@ public abstract class Call
         return type;
     }
 
-    public SocketChannel getChannel()
-    {
-        return channel;
-    }
-
-    public void setChannel(SocketChannel channel)
-    {
-        this.channel = channel;
-    }
-
     public void setTaskId(long taskId)
     {
         this.taskId = taskId;
@@ -44,7 +34,15 @@ public abstract class Call
         return taskId;
     }
 
-    public static enum Type
+    public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public static enum Type
     {
         /**
          * It's the default value when you create a Call

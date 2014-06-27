@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -28,6 +31,7 @@ public class ServerConnector implements CallDispatcher, Connector{
 	private Configuration cf;
 	private BlockingQueue<Call> callQueue;	//calls from client
 	private BlockingQueue<Call> responseQueue;	//responses to client
+	private Map<String, SocketChannel> channelMap;
 
 	private List<CallListener> callListeners = new ArrayList<CallListener>();
 	
@@ -36,6 +40,7 @@ public class ServerConnector implements CallDispatcher, Connector{
 		port = cf.getInteger("nameserver_port");
 		callQueue = new LinkedBlockingDeque<Call>();
 		responseQueue = new LinkedBlockingDeque<Call>();
+		channelMap = new HashMap<String, SocketChannel>();
 	}
 	
 	public static ServerConnector getInstance(){
@@ -107,5 +112,13 @@ public class ServerConnector implements CallDispatcher, Connector{
 	public void removeListener(CallListener listener) {
 		// TODO Auto-generated method stub
 		callListeners.remove(listener);
+	}
+	
+	public void setAddressChannel(String address, SocketChannel channel){
+		channelMap.put(address, channel);
+	}
+	
+	public SocketChannel getChannel(String address){
+		return channelMap.get(address);
 	}
 }
