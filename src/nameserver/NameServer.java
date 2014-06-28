@@ -19,6 +19,7 @@ import common.observe.call.Call;
 import common.observe.call.CallListener;
 import common.observe.event.TaskEvent;
 import common.observe.event.TaskEventListener;
+import common.thread.TaskLease;
 import common.thread.TaskThread;
 import common.thread.TaskThreadMonitor;
 import common.util.Configuration;
@@ -70,50 +71,61 @@ public class NameServer
     {
         TaskThread task = null;
         long tid = call.getTaskId();
+        Configuration conf = Configuration.getInstance();
 
         if (tid >= 0)
         {
-            tasks.get(tid).handleCall(call);
-            return;
+            // Should we send a abort call? Maybe not.
+            if (tasks.containsKey(tid))
+                tasks.get(tid).handleCall(call);
         }
-
-        tid = IdGenerator.getInstance().getLongId();
-
-        if (Call.Type.ADD_FILE_C2N == call.getType())
-        {
-            task = new AddFileTask(tid, call, connector);
-        }
-        else if (Call.Type.APPEND_FILE_C2N == call.getType())
-        {
-            task = new AppendFileTask(tid, call, connector);
-        }
-        else if (Call.Type.MOVE_FILE_C2N == call.getType())
-        {
-            task = new MoveFileTask(tid, call, connector);
-        }
-        else if (Call.Type.REGISTRATION_S2N == call.getType())
-        {
-            task =
-                new HeartbeatTask(tid, call, connector, Configuration
-                    .getInstance()
-                    .getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
-        }
-        else if (Call.Type.REMOVE_FILE_C2N == call.getType())
-        {
-            task = new RemoveFileTask(tid, call, connector);
-        }
-        else if (Call.Type.SYNC_S2N == call.getType())
-        {
-            task = new SyncTask(tid, call, connector);
-        }
-        else if (Call.Type.HEARTBEAT_S2N == call.getType())
+        else
         {
 
-        }
+            tid = IdGenerator.getInstance().getLongId();
 
-        synchronized (tasks)
-        {
-            tasks.put(tid, task);
+            if (Call.Type.ADD_FILE_C2N == call.getType())
+            {
+                task = new AddFileTask(tid, call, connector);
+                task.setLease(new TaskLease(conf
+                    .getLong(Configuration.LEASE_PERIOD_KEY)));
+            }
+            else if (Call.Type.APPEND_FILE_C2N == call.getType())
+            {
+                task = new AppendFileTask(tid, call, connector);
+                task.setLease(new TaskLease(conf
+                    .getLong(Configuration.LEASE_PERIOD_KEY)));
+            }
+            else if (Call.Type.MOVE_FILE_C2N == call.getType())
+            {
+                task = new MoveFileTask(tid, call, connector);
+                task.setLease(new TaskLease(conf
+                    .getLong(Configuration.LEASE_PERIOD_KEY)));
+            }
+            else if (Call.Type.REGISTRATION_S2N == call.getType())
+            {
+                // Heartbeat task doesn't need lease.
+                task =
+                    new HeartbeatTask(tid, call, connector,
+                        conf.getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
+            }
+            else if (Call.Type.REMOVE_FILE_C2N == call.getType())
+            {
+                task = new RemoveFileTask(tid, call, connector);
+                task.setLease(new TaskLease(conf
+                    .getLong(Configuration.LEASE_PERIOD_KEY)));
+            }
+            else if (Call.Type.SYNC_S2N == call.getType())
+            {
+                task = new SyncTask(tid, call, connector);
+                task.setLease(new TaskLease(conf
+                    .getLong(Configuration.LEASE_PERIOD_KEY)));
+            }
+
+            synchronized (tasks)
+            {
+                tasks.put(tid, task);
+            }
         }
     }
 

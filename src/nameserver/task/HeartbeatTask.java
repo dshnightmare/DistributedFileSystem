@@ -32,6 +32,7 @@ public class HeartbeatTask
     public HeartbeatTask(long tid, Call call, Connector connector, long period)
     {
         super(tid);
+        // Notice that the type is RegistrationCall.
         RegistrationCallS2N c = (RegistrationCallS2N) call;
         this.initiator = c.getInitiator();
         this.storage = Status.getInstance().getStorage(c.getAddress());
@@ -47,8 +48,8 @@ public class HeartbeatTask
             try
             {
                 Thread.sleep(period);
-                long currentTime = System.currentTimeMillis();
-                if ((currentTime - storage.getHearbeatTime()) > (period * 2))
+
+                if (longTimeNoSee())
                 {
                     fireEvent(new TaskEvent(TaskEvent.Type.HEARTBEAT_FATAL,
                         this));
@@ -58,6 +59,7 @@ public class HeartbeatTask
             catch (InterruptedException e)
             {
                 e.printStackTrace();
+                break;
             }
         }
     }
@@ -76,47 +78,62 @@ public class HeartbeatTask
 
         if (call.getType() == Call.Type.HEARTBEAT_S2N)
         {
-            // refresh heartbeat task lease.
-            renewLease();
+            updateHeartbeatTimestamp();
 
-            // refresh storage server heartbeaet timestamp
-            storage.setHeartbeatTime(System.currentTimeMillis());
+            removeMigratedFilesFromMigrateList(((HeartbeatCallS2N) call)
+                .getMigratedFiles());
 
-            // update migrated files
-            HeartbeatCallS2N c = (HeartbeatCallS2N) call;
-            Map<String, List<Long>> migratedFiles = c.getMigratedFiles();
-            storage.removeMigrateFiles(migratedFiles);
-
-            // As to heartbeaet call, name server always send the migration call
-            // back to storage server. So, if storage server doesn't receive the
-            // migration call, it will realize he is dead and should register
-            // again.
-            Map<Storage, List<File>> migrateFiles = storage.getMigrateFiles();
-            Map<String, List<Long>> mf = new HashMap<String, List<Long>>();
-
-            for (Entry<Storage, List<File>> e : migrateFiles.entrySet())
-            {
-                List<Long> fi = new ArrayList<Long>();
-
-                for (File f : e.getValue())
-                {
-                    fi.add(f.getId());
-                }
-                mf.put(e.getKey().getAddress(), fi);
-            }
-
-            Call back =
-                new MigrateFileCallN2S(IdGenerator.getInstance().getLongId(),
-                    mf);
-            back.setInitiator(initiator);
-            connector.sendCall(back);
-
-            return;
+            sendMigrationCall();
         }
     }
 
     public Storage getStorage()
     {
         return storage;
+    }
+
+    private boolean longTimeNoSee()
+    {
+        final long currentTime = System.currentTimeMillis();
+        if ((currentTime - storage.getHearbeatTime()) > (period * 2))
+            return true;
+        return false;
+    }
+
+    private void updateHeartbeatTimestamp()
+    {
+        storage.setHeartbeatTime(System.currentTimeMillis());
+    }
+
+    private void removeMigratedFilesFromMigrateList(
+        Map<String, List<Long>> migratedFiles)
+    {
+        storage.removeMigrateFiles(migratedFiles);
+    }
+
+    private void sendMigrationCall()
+    {
+        // As to heartbeaet call, name server always send the migration call
+        // back to storage server. So, if storage server doesn't receive the
+        // migration call, it will realize he is dead and should register
+        // again.
+        Map<Storage, List<File>> migrateFiles = storage.getMigrateFiles();
+        Map<String, List<Long>> rawMigrateFiles = new HashMap<String, List<Long>>();
+
+        for (Entry<Storage, List<File>> e : migrateFiles.entrySet())
+        {
+            List<Long> fileList = new ArrayList<Long>();
+
+            for (File f : e.getValue())
+            {
+                fileList.add(f.getId());
+            }
+            rawMigrateFiles.put(e.getKey().getAddress(), fileList);
+        }
+
+        Call back =
+            new MigrateFileCallN2S(getTaskId(), rawMigrateFiles);
+        back.setInitiator(initiator);
+        connector.sendCall(back);
     }
 }

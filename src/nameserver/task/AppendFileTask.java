@@ -3,7 +3,6 @@ package nameserver.task;
 import java.util.ArrayList;
 import java.util.List;
 
-import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Storage;
@@ -15,6 +14,8 @@ import common.observe.call.Call;
 import common.observe.call.FinishCall;
 import common.thread.TaskThread;
 
+// TODO: If append file task failed, what can we do? The files could be
+// inconsistent.
 public class AppendFileTask
     extends TaskThread
 {
@@ -27,6 +28,10 @@ public class AppendFileTask
     private Connector connector;
 
     private String initiator;
+
+    private boolean hasLock = false;
+
+    private File file = null;
 
     public AppendFileTask(long sid, Call call, Connector connector)
     {
@@ -41,64 +46,36 @@ public class AppendFileTask
     @Override
     public void run()
     {
-        Call back = null;
+        lock();
 
-        if (!Meta.getInstance().contains(dirName))
+        if (!fileExists())
         {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
+            sendAbortCall("Task aborted, file does not exist.");
+        }
+        else
+        {
+            file = Meta.getInstance().getDirectory(dirName).getFile(fileName);
+            file.setValid(false);
+
+            sendResponseCall();
+
+            unlock();
+            waitUntilTaskFinish();
+            lock();
+
+            file.setValid(true);
+            sendFinishCall();
         }
 
-        Directory dir = Meta.getInstance().getDirectory(dirName);
-        if (!dir.contains(fileName))
-        {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
-        }
-
-        File file = dir.getFile(fileName);
-        List<String> locations = new ArrayList<String>();
-        for (Storage s : file.getLocations())
-            locations.add(s.getAddress());
-        back = new AppendFileCallN2C(locations);
-        back.setInitiator(initiator);;
-        back.setTaskId(getTaskId());
-        connector.sendCall(back);
-
-        try
-        {
-            synchronized (syncRoot)
-            {
-                syncRoot.wait();
-            }
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-
-        // TODO: Finished! Release locks.
-
-        back = new FinishCall(getTaskId());
-        back.setInitiator(initiator);;
-        connector.sendCall(back);
-
-        setFinish();
+        unlock();
     }
 
     @Override
     public void release()
     {
-        // TODO Auto-generated method stub
-
+        lock();
+        file.setValid(true);
+        unlock();
     }
 
     @Override
@@ -120,5 +97,76 @@ public class AppendFileTask
             }
             return;
         }
+    }
+
+    private boolean fileExists()
+    {
+        if (Meta.getInstance().contains(dirName))
+        {
+            if (Meta.getInstance().getDirectory(dirName).contains(fileName))
+                return true;
+        }
+
+        return false;
+    }
+
+    private void sendAbortCall(String reason)
+    {
+        Call back = new AbortCall(getTaskId(), reason);
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
+    }
+
+    private void sendResponseCall()
+    {
+        List<String> locations = new ArrayList<String>();
+        for (Storage s : file.getLocations())
+            locations.add(s.getAddress());
+        Call back = new AppendFileCallN2C(locations);
+        back.setInitiator(initiator);
+        back.setTaskId(getTaskId());
+        connector.sendCall(back);
+    }
+
+    private void sendFinishCall()
+    {
+        Call back = new FinishCall(getTaskId());
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
+    }
+
+    private void waitUntilTaskFinish()
+    {
+        try
+        {
+            synchronized (syncRoot)
+            {
+                syncRoot.wait();
+            }
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void lock()
+    {
+        if (hasLock)
+            return;
+        Meta.getInstance().lock(dirName);
+        hasLock = true;
+    }
+
+    private void unlock()
+    {
+        if (!hasLock)
+            return;
+        Meta.getInstance().unlock();
+        hasLock = false;
     }
 }
