@@ -9,6 +9,12 @@ public class Directory
 
     private Map<String, File> files = new HashMap<String, File>();
 
+    /**
+     * Indicate whether this directory has committed. If it's false, someone
+     * could be using the directory now.
+     */
+    private boolean valid = false;
+
     public Directory(String name)
     {
         this.name = name;
@@ -37,5 +43,15 @@ public class Directory
     public synchronized boolean contains(String fileName)
     {
         return files.containsKey(fileName);
+    }
+
+    public synchronized void setValid(boolean valid)
+    {
+        this.valid = valid;
+    }
+
+    public synchronized boolean isValid()
+    {
+        return valid;
     }
 }

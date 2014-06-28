@@ -1,14 +1,14 @@
 package nameserver.task;
 
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import nameserver.heartbeat.HeartbeatEvent;
+import nameserver.heartbeat.HeartbeatListener;
 import nameserver.meta.File;
-import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
 import common.observe.call.Call;
@@ -20,71 +20,44 @@ import common.util.IdGenerator;
 public class HeartbeatTask
     extends TaskThread
 {
-    private Status status;
+    private final Storage storage;
 
-    private Connector connector;
+    private final Connector connector;
 
-    private String initiator;
+    private final String initiator;
 
-    private String address;
+    private final long period;
     
-    private Object syncRoot = new Object();
+    private List<HeartbeatListener> listeners = new ArrayList<HeartbeatListener>();
 
-    public HeartbeatTask(long tid, Call call, Status status, Connector connector)
+    public HeartbeatTask(long tid, String initiator, Storage storage,
+        Connector connector, long period)
     {
         super(tid);
-        HeartbeatCallS2N c = (HeartbeatCallS2N) call;
-        this.initiator = c.getInitiator();
-        this.address = c.getAddress();
-        this.status = status;
+        this.initiator = initiator;
+        this.storage = storage;
         this.connector = connector;
+        this.period = period;
     }
 
     @Override
     public void run()
     {
-        Storage storage = status.getStorage(address);
-        status.updateTimestamp(storage);
-        Map<Storage, List<File>> migrateFiles = storage.cleanMigrateFiles();
-        Map<String, List<Long>> mf = new HashMap<String, List<Long>>();
-
-        for (Entry<Storage, List<File>> e : migrateFiles.entrySet())
-        {
-            List<Long> fi = new ArrayList<Long>();
-
-            for (File f : e.getValue())
-            {
-                fi.add(f.getId());
-            }
-            mf.put(e.getKey().getAddress(), fi);
-        }
-        if (!migrateFiles.isEmpty())
-        {
-            Call back =
-                new MigrateFileCallN2S(IdGenerator.getInstance().getLongId(),
-                    mf);
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-        }
-        
-        synchronized (syncRoot)
+        while (true)
         {
             try
             {
-                syncRoot.wait();
+                Thread.sleep(period);
+                long currentTime = System.currentTimeMillis();
+                if ((currentTime - storage.getHearbeatTime()) > (period * 2 ))
+                {
+                    fireEvent(new HeartbeatEvent(storage));
+                    break;
+                }
             }
-            catch (InterruptedException e1)
+            catch (InterruptedException e)
             {
-                e1.printStackTrace();
-            }
-        }
-        
-        for (List<File> fl : migrateFiles.values())
-        {
-            for (File f : fl)
-            {
-                storage.addFile(f);
-                f.addLocation(storage);
+                e.printStackTrace();
             }
         }
     }
@@ -93,7 +66,6 @@ public class HeartbeatTask
     public void release()
     {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -104,16 +76,58 @@ public class HeartbeatTask
 
         if (call.getType() == Call.Type.HEARTBEAT_S2N)
         {
+            // refresh heartbeat task lease.
             renewLease();
-        }
 
-        if (call.getType() == Call.Type.FINISH)
-        {
-            synchronized (syncRoot)
+            // refresh storage server heartbeaet timestamp
+            storage.setHeartbeatTime(System.currentTimeMillis());
+
+            // update migrated files
+            HeartbeatCallS2N c = (HeartbeatCallS2N) call;
+            Map<String, List<Long>> migratedFiles = c.getMigratedFiles();
+            storage.removeMigrateFiles(migratedFiles);
+
+            // As to heartbeaet call, name server always send the migration call
+            // back to storage server. So, if storage server doesn't receive the
+            // migration call, it will realize he is dead and should register
+            // again.
+            Map<Storage, List<File>> migrateFiles = storage.getMigrateFiles();
+            Map<String, List<Long>> mf = new HashMap<String, List<Long>>();
+
+            for (Entry<Storage, List<File>> e : migrateFiles.entrySet())
             {
-                syncRoot.notify();
+                List<Long> fi = new ArrayList<Long>();
+
+                for (File f : e.getValue())
+                {
+                    fi.add(f.getId());
+                }
+                mf.put(e.getKey().getAddress(), fi);
             }
+
+            Call back =
+                new MigrateFileCallN2S(IdGenerator.getInstance().getLongId(),
+                    mf);
+            back.setInitiator(initiator);
+            connector.sendCall(back);
+
             return;
         }
+    }
+    
+    public void addHeartbeatListener(HeartbeatListener listener)
+    {
+        listeners.add(listener);
+    }
+    
+    public void removeHeartbeatListener(HeartbeatListener listener)
+    {
+        listeners.remove(listener);
+    }
+    
+    private void fireEvent(HeartbeatEvent event)
+    {
+        for (HeartbeatListener l : listeners)
+            l.handleHeatbeatEvent(event);
     }
 }

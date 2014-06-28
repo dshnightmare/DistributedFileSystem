@@ -33,15 +33,17 @@ public abstract class Call
         return taskId;
     }
 
-    public String getInitiator() {
-		return initiator;
-	}
+    public String getInitiator()
+    {
+        return initiator;
+    }
 
-	public void setInitiator(String initiator) {
-		this.initiator = initiator;
-	}
+    public void setInitiator(String initiator)
+    {
+        this.initiator = initiator;
+    }
 
-	public static enum Type
+    public static enum Type
     {
         /**
          * It's the default value when you create a Call
@@ -119,9 +121,14 @@ public abstract class Call
         MIGRATE_FILE_N2S("MIGRATE_FILE_N2S"),
 
         /**
-         * Notify task finish
+         * Notify task finish.
          */
-        FINISH("FINISH");
+        FINISH("FINISH"),
+
+        /**
+         * Renew lease call.
+         */
+        LEASE("LEASE");
 
         private String name;
 

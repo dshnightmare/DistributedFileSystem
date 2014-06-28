@@ -1,7 +1,5 @@
 package nameserver.task;
 
-import java.nio.channels.SocketChannel;
-
 import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
@@ -23,16 +21,13 @@ public class MoveFileTask
 
     private String newFileName;
 
-    private Meta meta;
-
     private Connector connector;
 
     private String initiator;
 
-    public MoveFileTask(long sid, Call call, Meta meta, Connector connector)
+    public MoveFileTask(long sid, Call call, Connector connector)
     {
         super(sid);
-        this.meta = meta;
         MoveFileCallC2N c = (MoveFileCallC2N) call;
         this.oldDirName = c.getOldDirName();
         this.oldFileName = c.getOldFileName();
@@ -47,7 +42,7 @@ public class MoveFileTask
     {
         Call back = null;
 
-        if (!meta.contains(oldDirName))
+        if (!Meta.getInstance().contains(oldDirName))
         {
             back =
                 new AbortCall(getTaskId(), "Task aborted, file does not exist.");
@@ -57,7 +52,7 @@ public class MoveFileTask
             return;
         }
 
-        Directory dir = meta.getDirectory(oldDirName);
+        Directory dir = Meta.getInstance().getDirectory(oldDirName);
         if (!dir.contains(oldFileName))
         {
             back =
@@ -71,10 +66,10 @@ public class MoveFileTask
         File file = dir.getFile(oldFileName);
         if (oldFileName.compareTo(newFileName) != 0)
             file.setName(newFileName);
-        if (meta.contains(newDirName))
+        if (Meta.getInstance().contains(newDirName))
         {
             dir.removeFile(file.getName());
-            dir = meta.getDirectory(newDirName);
+            dir = Meta.getInstance().getDirectory(newDirName);
         }
         else
             dir = new Directory(newDirName);

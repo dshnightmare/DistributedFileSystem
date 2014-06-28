@@ -1,10 +1,8 @@
 package nameserver.task;
 
-import java.nio.channels.SocketChannel;
 import java.util.List;
 
 import nameserver.meta.File;
-import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
@@ -19,23 +17,19 @@ public class SyncTask
 {
     private String address;
 
-    private Status status;
-
     private String initiator;
 
     private Connector connector;
 
     private List<Long> files;
 
-    public SyncTask(long sid, Call call, Meta meta, Status status,
-        Connector connector)
+    public SyncTask(long sid, Call call, Connector connector)
     {
         super(sid);
         SyncCallS2N c = (SyncCallS2N) call;
         this.address = c.getAddress();
         this.initiator = c.getInitiator();
         this.files = c.getFiles();
-        this.status = status;
         this.connector = connector;
     }
 
@@ -44,7 +38,7 @@ public class SyncTask
     {
         Call back = null;
 
-        if (!status.contains(address))
+        if (!Status.getInstance().contains(address))
         {
             back =
                 new AbortCall(getTaskId(),
@@ -55,7 +49,7 @@ public class SyncTask
             return;
         }
 
-        Storage storage = status.getStorage(address);
+        Storage storage = Status.getInstance().getStorage(address);
         for (File f : storage.getFiles())
         {
             if (files.contains(f.getId()))

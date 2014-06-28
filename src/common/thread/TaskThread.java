@@ -80,7 +80,10 @@ public abstract class TaskThread
     public abstract void run();
 
     /**
-     * Release resources such as locks, in order to GC
+     * Release the resources hold by this task.
+     * <p>
+     * <strong>Warning:</strong> This method should only be called when task is
+     * aborted.
      */
     public abstract void release();
 }

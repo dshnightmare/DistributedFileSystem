@@ -11,7 +11,7 @@ public class TestStatus
 {
     public void testStatus()
     {
-        Status s = new Status();
+        Status s = Status.getInstance();
         Storage st1 = new Storage(1, "localhost");
         Storage st2 = new Storage(2, "localhost");
         Storage st3 = new Storage(3, "localhost");

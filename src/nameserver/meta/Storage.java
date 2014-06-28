@@ -2,6 +2,7 @@ package nameserver.meta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -71,10 +72,9 @@ public class Storage
         files.remove(file);
     }
 
-    public synchronized Map<Storage, List<File>> cleanMigrateFiles()
+    public synchronized Map<Storage, List<File>> getMigrateFiles()
     {
         Map<Storage, List<File>> result = migrateFiles;
-        migrateFiles = new HashMap<Storage, List<File>>();
 
         return result;
     }
@@ -88,5 +88,27 @@ public class Storage
             migrateFiles.put(storage, list);
         }
         list.add(file);
+    }
+
+    // <storage address, <file id list>>
+    public synchronized void removeMigrateFiles(Map<String, List<Long>> files)
+    {
+        List<Long> list = null;
+        for (Storage storage : migrateFiles.keySet())
+        {
+            list = files.get(storage.getAddress());
+            Iterator<File> iter = migrateFiles.get(storage).iterator();
+            File file = null;
+            while (iter.hasNext())
+            {
+                file = iter.next();
+                if (list.contains(file.getId()))
+                {
+                    file.addLocation(this);
+                    addFile(file);
+                    iter.remove();
+                }
+            }
+        }
     }
 }

@@ -9,6 +9,12 @@ public class File
 
     private final long id;
 
+    /**
+     * Indicate whether this file has committed. If it's false, someone could be
+     * using the file now.
+     */
+    private boolean valid = false;
+
     private List<Storage> locations = new ArrayList<Storage>();
 
     public File(String name, long id)
@@ -50,5 +56,15 @@ public class File
     public synchronized List<Storage> getLocations()
     {
         return locations;
+    }
+
+    public synchronized boolean isValid()
+    {
+        return valid;
+    }
+
+    public synchronized void setValid(boolean valid)
+    {
+        this.valid = valid;
     }
 }

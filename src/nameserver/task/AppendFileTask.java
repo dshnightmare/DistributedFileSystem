@@ -1,6 +1,5 @@
 package nameserver.task;
 
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,18 +22,15 @@ public class AppendFileTask
 
     private String fileName;
 
-    private Meta meta;
-
     private Object syncRoot = new Object();
 
     private Connector connector;
 
     private String initiator;
 
-    public AppendFileTask(long sid, Call call, Meta meta, Connector connector)
+    public AppendFileTask(long sid, Call call, Connector connector)
     {
         super(sid);
-        this.meta = meta;
         AppendFileCallC2N c = (AppendFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
@@ -47,7 +43,7 @@ public class AppendFileTask
     {
         Call back = null;
 
-        if (!meta.contains(dirName))
+        if (!Meta.getInstance().contains(dirName))
         {
             back =
                 new AbortCall(getTaskId(), "Task aborted, file does not exist.");
@@ -57,7 +53,7 @@ public class AppendFileTask
             return;
         }
 
-        Directory dir = meta.getDirectory(dirName);
+        Directory dir = Meta.getInstance().getDirectory(dirName);
         if (!dir.contains(fileName))
         {
             back =

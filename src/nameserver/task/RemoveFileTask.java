@@ -18,16 +18,13 @@ public class RemoveFileTask
 
     private String fileName;
 
-    private Meta meta;
-
     private Connector connector;
 
     private String initiator;
 
-    public RemoveFileTask(long sid, Call call, Meta meta, Connector connector)
+    public RemoveFileTask(long sid, Call call, Connector connector)
     {
         super(sid);
-        this.meta = meta;
         RemoveFileCallC2N c = (RemoveFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
@@ -40,7 +37,7 @@ public class RemoveFileTask
     {
         Call back = null;
 
-        if (!meta.contains(dirName))
+        if (!Meta.getInstance().contains(dirName))
         {
             back =
                 new AbortCall(getTaskId(), "Task aborted, file does not exist.");
@@ -50,7 +47,7 @@ public class RemoveFileTask
             return;
         }
 
-        Directory dir = meta.getDirectory(dirName);
+        Directory dir = Meta.getInstance().getDirectory(dirName);
         if (!dir.contains(fileName))
         {
             back =

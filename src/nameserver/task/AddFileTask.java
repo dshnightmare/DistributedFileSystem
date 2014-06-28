@@ -1,6 +1,5 @@
 package nameserver.task;
 
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,22 +26,26 @@ public class AddFileTask
 
     private String fileName;
 
-    private Meta meta;
-
-    private Status status;
-
     private Object syncRoot = new Object();
 
     private Connector connector;
 
     private String initiator;
 
-    public AddFileTask(long sid, Call call, Meta meta, Status status,
-        Connector connector)
+    /**
+     * Indicates whether the directory is already existed before adding this
+     * file. If the directory is already existed, we should not delete it when
+     * task aborts, but if it isn't, we can consider this.
+     */
+    private boolean hasDir = false;
+
+    private boolean hasLock = false;
+
+    private File file = null;
+
+    public AddFileTask(long sid, Call call, Connector connector)
     {
         super(sid);
-        this.meta = meta;
-        this.status = status;
         AddFileCallC2N c = (AddFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
@@ -53,83 +56,38 @@ public class AddFileTask
     @Override
     public void run()
     {
-        Call back = null;
+        lock();
 
-        if (meta.contains(dirName + fileName))
+        if (fileExists())
         {
-            back =
-                new AbortCall(getTaskId(),
-                    "Task aborted, there has been a directory with the same name.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
-        }
-
-        Directory dir = null;
-        boolean hasDir = false;
-        if (meta.contains(dirName))
-        {
-            hasDir = true;
-            dir = meta.getDirectory(dirName);
-            if (dir.contains(fileName))
-            {
-                back =
-                    new AbortCall(getTaskId(),
-                        "Task aborted, there has been a file with the same name.");
-                back.setInitiator(initiator);;
-                connector.sendCall(back);
-                setFinish();
-                return;
-            }
+            sendAbortCall("Task aborted, there has been a directory/file with the same name.");
         }
         else
         {
-            hasDir = false;
-            dir = new Directory(dirName);
+            file = new File(fileName, IdGenerator.getInstance().getLongId());
+
+            addFileToMeta();
+            sendResponseCall();
+
+            unlock();
+            waitUntilTaskFinish();
+            lock();
+
+            commit();
+            sendFinishCall();
         }
 
-        File file = new File(fileName, IdGenerator.getInstance().getLongId());
-        List<Storage> storages = status.allocateStorage(duplicate);
-        file.setLocations(storages);
-        List<String> locations = new ArrayList<String>();
-        for (Storage s : storages)
-            locations.add(s.getAddress());
-        back = new AddFileCallN2C(locations);
-        back.setInitiator(initiator);;
-        back.setTaskId(getTaskId());
-        connector.sendCall(back);
-
-        try
-        {
-            synchronized (syncRoot)
-            {
-                syncRoot.wait();
-            }
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-
-        // TODO: Finished! Release locks.
-
-        dir.addFile(file);
-        if (!hasDir)
-        {
-            meta.addDirectory(dir);
-        }
-
-        back = new FinishCall(getTaskId());
-        back.setInitiator(initiator);;
-        connector.sendCall(back);
-
-        setFinish();
+        unlock();
     }
 
     @Override
     public void release()
     {
+        lock();
+
+        removeFileFromMeta();
+
+        unlock();
     }
 
     @Override
@@ -138,7 +96,7 @@ public class AddFileTask
         if (call.getTaskId() != getTaskId())
             return;
 
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
+        if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
         }
@@ -151,5 +109,131 @@ public class AddFileTask
             }
             return;
         }
+    }
+
+    private boolean fileExists()
+    {
+        if (Meta.getInstance().contains(dirName + fileName))
+            return true;
+
+        if (Meta.getInstance().contains(dirName))
+        {
+            hasDir = true;
+            if (Meta.getInstance().getDirectory(dirName).contains(fileName))
+                return true;
+        }
+
+        return false;
+    }
+
+    private void addFileToMeta()
+    {
+        Directory dir = Meta.getInstance().getDirectory(dirName);
+        if (!hasDir)
+        {
+            dir = new Directory(dirName);
+            Meta.getInstance().addDirectory(dir);
+        }
+
+        List<Storage> storages =
+            Status.getInstance().allocateStorage(duplicate);
+        file.setLocations(storages);
+        for (Storage s : storages)
+            s.addFile(file);
+        dir.addFile(file);
+    }
+
+    private void removeFileFromMeta()
+    {
+        Directory dir = Meta.getInstance().getDirectory(dirName);
+        // The directory exists.
+        if (dir != null)
+        {
+            // The directory is invalid and doesn't exist before.
+            if (!hasDir && !dir.isValid())
+            {
+                Meta.getInstance().removeDirectory(dir.getName());
+            }
+            else
+            {
+                dir.removeFile(file.getName());
+            }
+        }
+
+        for (Storage s : file.getLocations())
+        {
+            s.removeFile(file);
+        }
+    }
+
+    private void waitUntilTaskFinish()
+    {
+        try
+        {
+            synchronized (syncRoot)
+            {
+                syncRoot.wait();
+            }
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendAbortCall(String reason)
+    {
+        Call back = new AbortCall(getTaskId(), reason);
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
+    }
+
+    private void sendResponseCall()
+    {
+        List<Storage> storages = file.getLocations();
+        List<String> locations = new ArrayList<String>();
+        for (Storage s : storages)
+            locations.add(s.getAddress());
+
+        Call back = new AddFileCallN2C(locations);
+        back.setInitiator(initiator);
+        back.setTaskId(getTaskId());
+        connector.sendCall(back);
+    }
+
+    private void sendFinishCall()
+    {
+        Call back = new FinishCall(getTaskId());
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
+    }
+
+    private void lock()
+    {
+        if (hasLock)
+            return;
+        Meta.getInstance().lock(dirName);
+        hasLock = true;
+    }
+
+    private void unlock()
+    {
+        if (!hasLock)
+            return;
+        Meta.getInstance().unlock();
+        hasLock = false;
+    }
+
+    private void commit()
+    {
+        Directory dir = Meta.getInstance().getDirectory(dirName);
+        if (null == dir)
+            return;
+        dir.setValid(true);
+        file.setValid(true);
     }
 }

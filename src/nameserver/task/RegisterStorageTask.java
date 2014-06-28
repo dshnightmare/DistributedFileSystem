@@ -1,7 +1,5 @@
 package nameserver.task;
 
-import java.nio.channels.SocketChannel;
-
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
@@ -17,20 +15,16 @@ public class RegisterStorageTask
 {
     private String address;
 
-    private Status status;
-
     private String initiator;
 
     private Connector connector;
 
-    public RegisterStorageTask(long sid, Call call, Status status,
-        Connector connector)
+    public RegisterStorageTask(long sid, Call call, Connector connector)
     {
         super(sid);
         RegistrationCallS2N c = (RegistrationCallS2N) call;
         this.address = c.getAddress();
         this.initiator = c.getInitiator();
-        this.status = status;
         this.connector = connector;
     }
 
@@ -39,7 +33,7 @@ public class RegisterStorageTask
     {
         Call back = null;
 
-        if (status.contains(address))
+        if (Status.getInstance().contains(address))
         {
             back =
                 new AbortCall(getTaskId(),
@@ -52,7 +46,7 @@ public class RegisterStorageTask
 
         Storage storage =
             new Storage(IdGenerator.getInstance().getLongId(), address);
-        status.addStorage(storage);
+        Status.getInstance().addStorage(storage);
 
         // TODO: Add heartbeat monitor.
 

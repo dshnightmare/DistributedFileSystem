@@ -1,11 +1,9 @@
 package nameserver;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import nameserver.heartbeat.HeartbeatEvent;
 import nameserver.heartbeat.HeartbeatListener;
@@ -22,7 +20,6 @@ import nameserver.task.SyncTask;
 import common.network.ServerConnector;
 import common.observe.call.Call;
 import common.observe.call.CallListener;
-import common.observe.call.MigrateFileCallN2S;
 import common.observe.event.TaskEvent;
 import common.observe.event.TaskEventListener;
 import common.thread.TaskThread;
@@ -32,17 +29,34 @@ import common.util.Constant;
 import common.util.IdGenerator;
 import common.util.Logger;
 
+/**
+ * Name server implementation.
+ * <p>
+ * It is responsible for:
+ * <p>
+ * 1. Manage meta data, the directory structure.
+ * <p>
+ * 2. Manage status data, the storage server status.
+ * <p>
+ * <strong>Warning:</strong> Name server will never send call to anyone
+ * initially, it only reply other's call.
+ * 
+ * @author lishunyang
+ * 
+ */
 public class NameServer
     implements TaskEventListener, HeartbeatListener, CallListener
 {
-
+    /**
+     * Logger.
+     */
     private static final Logger logger = Logger.getLogger(NameServer.class);
 
+    /**
+     * The task thread monitor, it will check lease validation of task threads
+     * regularly, notify the listeners if someone is dead.
+     */
     private TaskThreadMonitor taskMonitor;
-
-    private Meta meta = new Meta();
-
-    private Status status = new Status();
 
     private ServerConnector connector = new ServerConnector();
 
@@ -74,31 +88,32 @@ public class NameServer
 
         if (Call.Type.ADD_FILE_C2N == call.getType())
         {
-            task = new AddFileTask(tid, call, meta, status, connector);
+            task = new AddFileTask(tid, call, connector);
         }
         else if (Call.Type.APPEND_FILE_C2N == call.getType())
         {
-            task = new AppendFileTask(tid, call, meta, connector);
+            task = new AppendFileTask(tid, call, connector);
         }
         else if (Call.Type.MOVE_FILE_C2N == call.getType())
         {
-            task = new MoveFileTask(tid, call, meta, connector);
+            task = new MoveFileTask(tid, call, connector);
         }
         else if (Call.Type.REGISTRATION_S2N == call.getType())
         {
-            task = new RegisterStorageTask(tid, call, status, connector);
+            task = new RegisterStorageTask(tid, call, connector);
+            // TODO create heartbeat task and launch it.
         }
         else if (Call.Type.REMOVE_FILE_C2N == call.getType())
         {
-            task = new RemoveFileTask(tid, call, meta, connector);
+            task = new RemoveFileTask(tid, call, connector);
         }
         else if (Call.Type.SYNC_S2N == call.getType())
         {
-            task = new SyncTask(tid, call, meta, status, connector);
+            task = new SyncTask(tid, call, connector);
         }
         else if (Call.Type.HEARTBEAT_S2N == call.getType())
         {
-            
+
         }
 
         task.addListener(this);
@@ -129,7 +144,7 @@ public class NameServer
     public void handleHeatbeatEvent(HeartbeatEvent event)
     {
         Storage storage = event.getStorage();
-        status.removeStorage(storage);
+        Status.getInstance().removeStorage(storage);
 
         List<File> files = storage.getFiles();
         for (File file : files)
@@ -137,7 +152,7 @@ public class NameServer
             file.removeLocations(storage);
         }
 
-        List<Storage> storages = status.getStorages();
+        List<Storage> storages = Status.getInstance().getStorages();
         if (0 == storages.size())
         {
             logger

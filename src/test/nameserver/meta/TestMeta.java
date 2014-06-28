@@ -9,7 +9,7 @@ public class TestMeta
 {
     public void testMeta()
     {
-        Meta m = new Meta();
+        Meta m = Meta.getInstance();
 
         assertNull(m.getDirectory("/"));
         assertFalse(m.contains("/"));
