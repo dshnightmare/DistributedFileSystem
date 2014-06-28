@@ -6,14 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import nameserver.heartbeat.HeartbeatEvent;
-import nameserver.heartbeat.HeartbeatListener;
 import nameserver.meta.File;
+import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
 import common.observe.call.Call;
 import common.observe.call.HeartbeatCallS2N;
 import common.observe.call.MigrateFileCallN2S;
+import common.observe.call.RegistrationCallS2N;
+import common.observe.event.TaskEvent;
 import common.thread.TaskThread;
 import common.util.IdGenerator;
 
@@ -27,15 +28,13 @@ public class HeartbeatTask
     private final String initiator;
 
     private final long period;
-    
-    private List<HeartbeatListener> listeners = new ArrayList<HeartbeatListener>();
 
-    public HeartbeatTask(long tid, String initiator, Storage storage,
-        Connector connector, long period)
+    public HeartbeatTask(long tid, Call call, Connector connector, long period)
     {
         super(tid);
-        this.initiator = initiator;
-        this.storage = storage;
+        RegistrationCallS2N c = (RegistrationCallS2N) call;
+        this.initiator = c.getInitiator();
+        this.storage = Status.getInstance().getStorage(c.getAddress());
         this.connector = connector;
         this.period = period;
     }
@@ -49,9 +48,10 @@ public class HeartbeatTask
             {
                 Thread.sleep(period);
                 long currentTime = System.currentTimeMillis();
-                if ((currentTime - storage.getHearbeatTime()) > (period * 2 ))
+                if ((currentTime - storage.getHearbeatTime()) > (period * 2))
                 {
-                    fireEvent(new HeartbeatEvent(storage));
+                    fireEvent(new TaskEvent(TaskEvent.Type.HEARTBEAT_FATAL,
+                        this));
                     break;
                 }
             }
@@ -114,20 +114,9 @@ public class HeartbeatTask
             return;
         }
     }
-    
-    public void addHeartbeatListener(HeartbeatListener listener)
+
+    public Storage getStorage()
     {
-        listeners.add(listener);
-    }
-    
-    public void removeHeartbeatListener(HeartbeatListener listener)
-    {
-        listeners.remove(listener);
-    }
-    
-    private void fireEvent(HeartbeatEvent event)
-    {
-        for (HeartbeatListener l : listeners)
-            l.handleHeatbeatEvent(event);
+        return storage;
     }
 }

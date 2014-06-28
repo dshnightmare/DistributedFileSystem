@@ -5,16 +5,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nameserver.heartbeat.HeartbeatEvent;
-import nameserver.heartbeat.HeartbeatListener;
 import nameserver.meta.File;
-import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import nameserver.task.AddFileTask;
 import nameserver.task.AppendFileTask;
+import nameserver.task.HeartbeatTask;
 import nameserver.task.MoveFileTask;
-import nameserver.task.RegisterStorageTask;
 import nameserver.task.RemoveFileTask;
 import nameserver.task.SyncTask;
 import common.network.ServerConnector;
@@ -25,7 +22,6 @@ import common.observe.event.TaskEventListener;
 import common.thread.TaskThread;
 import common.thread.TaskThreadMonitor;
 import common.util.Configuration;
-import common.util.Constant;
 import common.util.IdGenerator;
 import common.util.Logger;
 
@@ -45,7 +41,7 @@ import common.util.Logger;
  * 
  */
 public class NameServer
-    implements TaskEventListener, HeartbeatListener, CallListener
+    implements TaskEventListener, CallListener
 {
     /**
      * Logger.
@@ -64,10 +60,7 @@ public class NameServer
 
     public void init()
     {
-        Configuration conf = Configuration.getInstance();
-        taskMonitor =
-            new TaskThreadMonitor(
-                conf.getLong(Constant.TASK_CHECK_INTERVAL_KEY) * 1000);
+        taskMonitor = TaskThreadMonitor.getInstance();
         taskMonitor.addListener(this);
         connector.start();
     }
@@ -100,8 +93,10 @@ public class NameServer
         }
         else if (Call.Type.REGISTRATION_S2N == call.getType())
         {
-            task = new RegisterStorageTask(tid, call, connector);
-            // TODO create heartbeat task and launch it.
+            task =
+                new HeartbeatTask(tid, call, connector, Configuration
+                    .getInstance()
+                    .getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
         }
         else if (Call.Type.REMOVE_FILE_C2N == call.getType())
         {
@@ -116,7 +111,6 @@ public class NameServer
 
         }
 
-        task.addListener(this);
         synchronized (tasks)
         {
             tasks.put(tid, task);
@@ -138,14 +132,19 @@ public class NameServer
             task.release();
             logger.info("Task: " + task.getTaskId() + " " + event.getType());
         }
+        else if (event.getType() == TaskEvent.Type.HEARTBEAT_FATAL)
+        {
+            handleHeartbeatFatal(event);
+        }
     }
 
-    @Override
-    public void handleHeatbeatEvent(HeartbeatEvent event)
+    private void handleHeartbeatFatal(TaskEvent event)
     {
-        Storage storage = event.getStorage();
+        Storage storage =
+            ((HeartbeatTask) (event.getTaskThread())).getStorage();
         Status.getInstance().removeStorage(storage);
 
+        // Remove files' location.
         List<File> files = storage.getFiles();
         for (File file : files)
         {
@@ -160,6 +159,7 @@ public class NameServer
             return;
         }
 
+        // Allocate migration work.
         Iterator<Storage> iter = storages.iterator();
         for (File f : files)
         {

@@ -37,21 +37,4 @@ public class Constant
     //storage server operation code
     public static final int READ_FILE = 100;
     public static final int WRITE_FILE = 101;
-
-    // Configuration stuff
-    public static final String CONFIGURATION_PATH = "conf.properties";
-
-    public static final String CONF_DEFAULT_STRING = "NOT FOUND";
-
-    public static final long CONF_DEFAULT_LONG = -1;
-
-    public static final int CONF_DEFAULT_INTEGER = -1;
-
-    public static final String HEARTBEAT_INTERVAL_KEY = "heartbeat_interval";
-
-    public static final String LEASE_PERIOD_KEY = "lease_period";
-
-    public static final String TASK_CHECK_INTERVAL_KEY = "task_check_interval";
-
-    public static final String DUPLICATE_KEY = "duplicate_number";
 }

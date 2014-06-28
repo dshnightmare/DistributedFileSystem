@@ -1,10 +1,10 @@
 package common.thread;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Queue;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -12,12 +12,15 @@ import common.observe.event.TaskEvent;
 import common.observe.event.TaskEvent.Type;
 import common.observe.event.TaskEventDispatcher;
 import common.observe.event.TaskEventListener;
+import common.util.Configuration;
 import common.util.Logger;
 
 public class TaskThreadMonitor
     implements TaskEventDispatcher, TaskEventListener
 {
-    private Queue<TaskThread> threads = new LinkedList<TaskThread>();
+    private static TaskThreadMonitor instance = null;
+
+    private Map<Long, TaskThread> threads = new HashMap<Long, TaskThread>();
 
     private List<TaskEventListener> listeners =
         new ArrayList<TaskEventListener>();
@@ -32,17 +35,36 @@ public class TaskThreadMonitor
 
     private static Logger logger = Logger.getLogger(TaskThreadMonitor.class);
 
-    public TaskThreadMonitor(long period)
+    private TaskThreadMonitor()
     {
-        this.period = period;
+        this.period =
+            Configuration.getInstance().getLong(Configuration.LEASE_PERIOD_KEY) * 2;
+    }
+
+    public static TaskThreadMonitor getInstance()
+    {
+        if (null == instance)
+        {
+            synchronized (TaskThreadMonitor.class)
+            {
+                if (null == instance)
+                {
+                    instance = new TaskThreadMonitor();
+                    instance.startMonitoring();
+                }
+            }
+        }
+
+        return instance;
     }
 
     public synchronized void addThread(TaskThread thread)
     {
-        threads.add(thread);
+        threads.put(thread.getTaskId(), thread);
+        thread.addListener(this);
     }
 
-    public void startMonitoring()
+    private void startMonitoring()
     {
         if (!isMonitoring)
         {
@@ -60,11 +82,11 @@ public class TaskThreadMonitor
         }
     }
 
-    public void restartMonitoring()
-    {
-        stopMonitoring();
-        startMonitoring();
-    }
+//    private void restartMonitoring()
+//    {
+//        stopMonitoring();
+//        startMonitoring();
+//    }
 
     @Override
     public synchronized void addListener(TaskEventListener listener)
@@ -85,6 +107,12 @@ public class TaskThreadMonitor
             l.handle(event);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Once a task has finished, it will notify task monitor and taskmonitor
+     * will notify its listeners.
+     */
     @Override
     public void handle(TaskEvent event)
     {
@@ -104,16 +132,17 @@ public class TaskThreadMonitor
         {
             synchronized (threads)
             {
-                Iterator<TaskThread> iter = threads.iterator();
-                while (iter.hasNext())
+                List<Long> abortedList = new ArrayList<Long>();
+                for (Entry<Long, TaskThread> e : threads.entrySet())
                 {
-                    TaskThread thread = iter.next();
-                    if (!thread.isLeaseValid())
-                    {
-                        fireEvent(new TaskEvent(Type.TASK_ABORTED, thread));
-                        iter.remove();
-                        logger.debug("TASK_ABORTED");
-                    }
+                    if (!e.getValue().isLeaseValid())
+                        abortedList.add(e.getKey());
+                }
+                for (Long l : abortedList)
+                {
+                    fireEvent(new TaskEvent(Type.TASK_ABORTED, threads.get(l)));
+                    listeners.remove(threads.remove(l));
+                    logger.debug("TASK_ABORTED");
                 }
             }
         }

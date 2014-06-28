@@ -13,8 +13,6 @@ public class TestTaskMonitor
 {
     private static TaskThreadMonitor monitor;
 
-    private static long period = 1000;
-
     private static TaskThread taskA;
 
     private static TaskThread taskB;
@@ -22,7 +20,7 @@ public class TestTaskMonitor
     @Override
     protected void setUp()
     {
-        monitor = new TaskThreadMonitor(period);
+        monitor = TaskThreadMonitor.getInstance();
         monitor.addListener(new TaskEventListener()
         {
             @Override
@@ -38,8 +36,6 @@ public class TestTaskMonitor
 
     public void testStartMonitoring()
     {
-        monitor.startMonitoring();
-
         taskA = new TaskThread(1)
         {
             @Override
@@ -56,6 +52,8 @@ public class TestTaskMonitor
                     {
                         e.printStackTrace();
                     }
+                    if (!isLeaseValid())
+                        break;
                 }
             }
 
@@ -67,13 +65,12 @@ public class TestTaskMonitor
             @Override
             public void handleCall(Call call)
             {
-                // TODO Auto-generated method stub
-                
             }
         };
         taskA.setLease(new TaskLease(3000));
         taskA.renewLease();
         monitor.addThread(taskA);
+        new Thread(taskA).start();
         
         taskB = new TaskThread(2)
         {
@@ -91,6 +88,8 @@ public class TestTaskMonitor
                     {
                         e.printStackTrace();
                     }
+                    if (!isLeaseValid())
+                        break;
                 }
             }
 
@@ -102,12 +101,11 @@ public class TestTaskMonitor
             @Override
             public void handleCall(Call call)
             {
-                // TODO Auto-generated method stub
-                
             }
         };
         taskB.setLease(new TaskLease(7000));
         monitor.addThread(taskB);
+        new Thread(taskB).start();
         
         try
         {
@@ -124,6 +122,6 @@ public class TestTaskMonitor
     @Override
     protected void tearDown()
     {
-
+        monitor.stopMonitoring();
     }
 }

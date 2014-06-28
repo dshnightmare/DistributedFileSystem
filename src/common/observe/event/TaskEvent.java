@@ -26,8 +26,25 @@ public class TaskEvent
 
     public static enum Type
     {
-        TASK_FINISHED("TASK_FINISHED"), TASK_ABORTED("TASK_ABORTED"), INVALID(
-            "INVALID");
+        /**
+         * 
+         */
+        TASK_FINISHED("TASK_FINISHED"),
+
+        /**
+         * 
+         */
+        TASK_ABORTED("TASK_ABORTED"),
+
+        /**
+         * 
+         */
+        HEARTBEAT_FATAL("HEARTBEAT_FATAL"),
+
+        /**
+         * 
+         */
+        INVALID("INVALID");
 
         private String name;
 

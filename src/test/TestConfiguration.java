@@ -1,7 +1,6 @@
 package test;
 
 import common.util.Configuration;
-import common.util.Constant;
 import junit.framework.TestCase;
 
 public class TestConfiguration
@@ -21,7 +20,7 @@ public class TestConfiguration
         assertNotNull(conf);
 
         long heartbeatTime = -1;
-        heartbeatTime = conf.getLong(Constant.HEARTBEAT_INTERVAL_KEY);
+        heartbeatTime = conf.getLong(Configuration.HEARTBEAT_INTERVAL_KEY);
         System.out.println(heartbeatTime);
         assertFalse(heartbeatTime < 0);
         
