@@ -24,8 +24,6 @@ public class SyncTask
 
     private List<Long> files;
 
-    private boolean hasLock = false;
-
     private int duplicate;
 
     public SyncTask(long sid, Call call, Connector connector, int duplicate)
@@ -42,34 +40,32 @@ public class SyncTask
     @Override
     public void run()
     {
-        lock();
-
-        if (!storageExists())
+        synchronized (Meta.getInstance())
         {
-            sendAbortCall("Task aborted, unidentified storage server.");
-        }
-        else
-        {
-            List<Long> removeList = new ArrayList<Long>();
-            for (Long l : files)
+            if (!storageExists())
             {
-                File file = Meta.getInstance().getFile(l);
-                if (null == file)
-                    removeList.add(l);
-                else
+                sendAbortCall("Task aborted, unidentified storage server.");
+            }
+            else
+            {
+                List<Long> removeList = new ArrayList<Long>();
+                for (Long l : files)
                 {
-                    if (file.getLocationsCount() > duplicate)
+                    File file = Meta.getInstance().getFile(l);
+                    if (null == file)
                         removeList.add(l);
                     else
-                        file.addLocation(Status.getInstance().getStorage(
-                            address));
+                    {
+                        if (file.getLocationsCount() > duplicate)
+                            removeList.add(l);
+                        else
+                            file.addLocation(Status.getInstance().getStorage(
+                                address));
+                    }
                 }
+                sendResponseCall(removeList);
             }
-            
-            sendResponseCall(removeList);
         }
-
-        unlock();
     }
 
     @Override
@@ -86,6 +82,7 @@ public class SyncTask
         if (call.getType() == Call.Type.HEARTBEAT_S2N)
         {
             renewLease();
+            return;
         }
     }
 
@@ -98,30 +95,14 @@ public class SyncTask
         setFinish();
     }
 
-    private void lock()
-    {
-        if (hasLock)
-            return;
-        Meta.getInstance().lock("useless");
-        hasLock = true;
-    }
-
-    private void unlock()
-    {
-        if (!hasLock)
-            return;
-        Meta.getInstance().unlock();
-        hasLock = false;
-    }
-    
     private boolean storageExists()
     {
         return Status.getInstance().contains(address);
     }
-    
+
     private void sendResponseCall(List<Long> removeList)
     {
-        
+
         Call back = new SyncCallN2S(removeList);
         back.setInitiator(initiator);
         back.setTaskId(getTaskId());

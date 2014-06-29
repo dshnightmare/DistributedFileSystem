@@ -18,8 +18,6 @@ public class RemoveFileTask
     private Connector connector;
 
     private String initiator;
-    
-    private boolean hasLock = false;
 
     public RemoveFileTask(long sid, Call call, Connector connector)
     {
@@ -34,19 +32,18 @@ public class RemoveFileTask
     @Override
     public void run()
     {
-        lock();
-        
-        if (!fileExists())
+        synchronized (Meta.getInstance())
         {
-            sendAbortCall("Task aborted, file does not exist.");
+            if (!fileExists())
+            {
+                sendAbortCall("Task aborted, file does not exist.");
+            }
+            else
+            {
+                Meta.getInstance().removeFile(dirName, fileName);
+                sendFinishCall();
+            }
         }
-        else
-        {
-            Meta.getInstance().removeFile(dirName, fileName);
-            sendFinishCall();
-        }
-        
-        unlock();
     }
 
     @Override
@@ -63,30 +60,15 @@ public class RemoveFileTask
         if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
+            return;
         }
     }
-    
-    private void lock()
-    {
-        if (hasLock)
-            return;
-        Meta.getInstance().lock(dirName);
-        hasLock = true;
-    }
 
-    private void unlock()
-    {
-        if (!hasLock)
-            return;
-        Meta.getInstance().unlock();
-        hasLock = false;
-    }
-    
     private boolean fileExists()
     {
         return Meta.getInstance().containFile(dirName, fileName);
     }
-    
+
     private void sendAbortCall(String reason)
     {
         Call back = new AbortCall(getTaskId(), reason);
@@ -95,7 +77,7 @@ public class RemoveFileTask
         release();
         setFinish();
     }
-    
+
     private void sendFinishCall()
     {
         Call back = new FinishCall(getTaskId());

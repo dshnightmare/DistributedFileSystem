@@ -96,6 +96,7 @@ public class HeartbeatTask
                 .getMigratedFiles());
 
             sendMigrationCall();
+            return;
         }
     }
 

@@ -2,12 +2,10 @@ package nameserver.meta;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Meta
 {
-    private static Meta instance = null;
+    private static Meta instance = new Meta();;
 
     private Map<String, Directory> directories =
         new HashMap<String, Directory>();
@@ -16,25 +14,12 @@ public class Meta
 
     public static final String SEPERATOR = "/";
 
-    private Lock lock = new ReentrantLock();
-
     private Meta()
     {
     }
 
     public static Meta getInstance()
     {
-        if (null == instance)
-        {
-            synchronized (Meta.class)
-            {
-                if (null == instance)
-                {
-                    instance = new Meta();
-                }
-            }
-        }
-
         return instance;
     }
 
@@ -167,20 +152,5 @@ public class Meta
             return;
         file.setName(newFileName);
         addFile(newDirName, file);
-    }
-
-    public void lock(String dirName)
-    {
-        lock.lock();
-    }
-
-    public void unlock()
-    {
-        lock.unlock();
-    }
-
-    public boolean tryLock()
-    {
-        return lock.tryLock();
     }
 }

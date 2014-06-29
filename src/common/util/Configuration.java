@@ -40,21 +40,18 @@ public class Configuration
 
     public static Configuration getInstance()
     {
-        if (null == instance)
+        synchronized (Configuration.class)
         {
-            synchronized (Configuration.class)
+            if (null == instance)
             {
-                if (null == instance)
+                try
                 {
-                    try
-                    {
-                        instance = new Configuration();
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                        instance = null;
-                    }
+                    instance = new Configuration();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                    instance = null;
                 }
             }
         }

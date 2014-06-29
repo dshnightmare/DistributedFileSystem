@@ -6,7 +6,7 @@ public class IdGenerator
 {
     private Random rand = new Random(System.currentTimeMillis());
 
-    private static IdGenerator instance = null;
+    private static IdGenerator instance = new IdGenerator();
 
     private IdGenerator()
     {
@@ -14,17 +14,6 @@ public class IdGenerator
 
     public static IdGenerator getInstance()
     {
-        if (null == instance)
-        {
-            synchronized (IdGenerator.class)
-            {
-                if (null == instance)
-                {
-                    instance = new IdGenerator();
-                }
-            }
-        }
-
         return instance;
     }
 

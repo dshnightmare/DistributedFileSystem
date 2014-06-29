@@ -40,8 +40,6 @@ public class AddFileTask
      */
     private boolean hasDir = false;
 
-    private boolean hasLock = false;
-
     private File file = null;
 
     public AddFileTask(long sid, Call call, Connector connector, int duplicate)
@@ -58,40 +56,44 @@ public class AddFileTask
     @Override
     public void run()
     {
-        lock();
-
-        if (fileExists())
+        synchronized (Meta.getInstance())
         {
-            sendAbortCall("Task aborted, there has been a directory/file with the same name.");
+
+            if (fileExists())
+            {
+                sendAbortCall("Task aborted, there has been a directory/file with the same name.");
+                return;
+            }
+            else
+            {
+                file =
+                    new File(fileName, IdGenerator.getInstance().getLongId());
+                // This must success, because we create this file.
+                file.tryLockWrite(1, TimeUnit.SECONDS);
+                // This should be a problem: if here comes an exception, then it
+                // will never release the lock.
+                addFileToMeta();
+                sendResponseCall();
+            }
         }
-        else
-        {
-            file = new File(fileName, IdGenerator.getInstance().getLongId());
-            file.tryLockWrite(1, TimeUnit.SECONDS);
 
-            addFileToMeta();
-            sendResponseCall();
-            unlock();
-            
-            waitUntilTaskFinish();
-            
-            lock();
+        waitUntilTaskFinish();
+
+        synchronized (Meta.getInstance())
+        {
             commit();
             file.unlockWrite();
             sendFinishCall();
         }
-
-        unlock();
     }
 
     @Override
     public void release()
     {
-        lock();
-
-        removeFileFromMeta();
-
-        unlock();
+        synchronized (Meta.getInstance())
+        {
+            removeFileFromMeta();
+        }
     }
 
     @Override
@@ -103,6 +105,7 @@ public class AddFileTask
         if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
+            return;
         }
 
         if (call.getType() == Call.Type.FINISH)
@@ -197,22 +200,6 @@ public class AddFileTask
         connector.sendCall(back);
         release();
         setFinish();
-    }
-
-    private void lock()
-    {
-        if (hasLock)
-            return;
-        Meta.getInstance().lock(dirName);
-        hasLock = true;
-    }
-
-    private void unlock()
-    {
-        if (!hasLock)
-            return;
-        Meta.getInstance().unlock();
-        hasLock = false;
     }
 
     private void commit()

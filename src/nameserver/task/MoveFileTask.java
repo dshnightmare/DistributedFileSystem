@@ -23,8 +23,6 @@ public class MoveFileTask
 
     private String initiator;
 
-    private boolean hasLock = false;
-
     public MoveFileTask(long sid, Call call, Connector connector)
     {
         super(sid);
@@ -40,30 +38,28 @@ public class MoveFileTask
     @Override
     public void run()
     {
-        lock();
-
-        if (!oldFileExists())
+        synchronized (Meta.getInstance())
         {
-            sendAbortCall("Task aborted, old file does not exist.");
+            if (!oldFileExists())
+            {
+                sendAbortCall("Task aborted, old file does not exist.");
+            }
+            else if (newFileExists())
+            {
+                sendAbortCall("Task aborted, new file has arealdy existed.");
+            }
+            else
+            {
+                Meta.getInstance().renameFile(oldDirName, oldFileName,
+                    newDirName, newFileName);
+                sendFinishCall();
+            }
         }
-        else if (newFileExists())
-        {
-            sendAbortCall("Task aborted, new file has arealdy existed.");
-        }
-        else
-        {
-            Meta.getInstance().renameFile(oldDirName, oldFileName, newDirName,
-                newFileName);
-            sendFinishCall();
-        }
-
-        unlock();
     }
 
     @Override
     public void release()
     {
-        // TODO Auto-generated method stub
     }
 
     @Override
@@ -75,6 +71,7 @@ public class MoveFileTask
         if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
+            return;
         }
     }
 
@@ -109,21 +106,5 @@ public class MoveFileTask
         back.setInitiator(initiator);
         connector.sendCall(back);
         setFinish();
-    }
-
-    private void lock()
-    {
-        if (hasLock)
-            return;
-        Meta.getInstance().lock(oldDirName);
-        hasLock = true;
-    }
-
-    private void unlock()
-    {
-        if (!hasLock)
-            return;
-        Meta.getInstance().unlock();
-        hasLock = false;
     }
 }

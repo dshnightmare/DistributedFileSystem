@@ -9,7 +9,7 @@ import common.util.Timestamp;
 
 public class Status
 {
-    private static Status instance = null;
+    private static Status instance = new Status();
 
     private Map<Storage, Long> status = new HashMap<Storage, Long>();
 
@@ -19,17 +19,6 @@ public class Status
 
     public static Status getInstance()
     {
-        if (null == instance)
-        {
-            synchronized (Status.class)
-            {
-                if (null == instance)
-                {
-                    instance = new Status();
-                }
-            }
-        }
-
         return instance;
     }
 

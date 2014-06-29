@@ -30,8 +30,6 @@ public class AppendFileTask
 
     private String initiator;
 
-    private boolean hasLock = false;
-
     private File file = null;
 
     public AppendFileTask(long sid, Call call, Connector connector)
@@ -47,41 +45,42 @@ public class AppendFileTask
     @Override
     public void run()
     {
-        lock();
-
-        if (!fileExists())
+        synchronized (Meta.getInstance())
         {
-            sendAbortCall("Task aborted, file does not exist.");
-        }
-        else
-        {
-            file = Meta.getInstance().getFile(dirName, fileName);
-            if (file.tryLockWrite(1, TimeUnit.SECONDS))
+            if (!fileExists())
             {
-                sendResponseCall();
-                unlock();
-                
-                waitUntilTaskFinish();
-                
-                lock();
-                file.unlockWrite();
-                sendFinishCall();
+                sendAbortCall("Task aborted, file does not exist.");
+                return;
             }
             else
             {
-                sendAbortCall("Task aborted, someone is using the file.");
+                file = Meta.getInstance().getFile(dirName, fileName);
+                if (file.tryLockWrite(1, TimeUnit.SECONDS))
+                {
+                    sendResponseCall();
+                }
+                else
+                {
+                    sendAbortCall("Task aborted, someone is using the file.");
+                    return;
+                }
             }
         }
+        
+        waitUntilTaskFinish();
+        
+        synchronized (Meta.getInstance())
+        {
+            file.unlockWrite();
+            sendFinishCall();
+        }
 
-        unlock();
     }
 
     @Override
     public void release()
     {
-        lock();
         file.unlockWrite();
-        unlock();
     }
 
     @Override
@@ -93,6 +92,7 @@ public class AppendFileTask
         if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
+            return;
         }
 
         if (call.getType() == Call.Type.FINISH)
@@ -152,21 +152,5 @@ public class AppendFileTask
         {
             e.printStackTrace();
         }
-    }
-
-    private void lock()
-    {
-        if (hasLock)
-            return;
-        Meta.getInstance().lock(dirName);
-        hasLock = true;
-    }
-
-    private void unlock()
-    {
-        if (!hasLock)
-            return;
-        Meta.getInstance().unlock();
-        hasLock = false;
     }
 }
