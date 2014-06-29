@@ -6,6 +6,6 @@ package common.network;
  * @author gengyufeng
  *
  */
-public class DataConnSender extends Thread{
+public class XConnSender extends Thread{
 
 }
