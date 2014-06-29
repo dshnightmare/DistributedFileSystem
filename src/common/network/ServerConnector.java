@@ -19,6 +19,7 @@ import common.observe.call.CallDispatcher;
 import common.observe.call.CallListener;
 import common.util.Configuration;
 import common.util.Constant;
+import common.util.Logger;
 
 /**
  * create an object and @TODO pass callback functions, then call start();
@@ -73,6 +74,7 @@ public class ServerConnector implements CallDispatcher, Connector{
 	@Override
 	public void sendCall(Call response){
 		try {
+			System.out.println("Server trying to send response to "+response.getInitiator());
 			responseQueue.put(response);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
