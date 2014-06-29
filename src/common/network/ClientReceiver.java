@@ -25,11 +25,11 @@ public class ClientReceiver extends Thread{
 			try {
 				int buffer_size = Configuration.getInstance().getInteger("ByteBuffer_size");
 				byte[] buffer = new byte[buffer_size];
-				in.read(buffer);
+				int received = in.read(buffer);
+				System.out.println("Received response: "+received);
 				Call response = (Call)SwitchObjectAndByte.switchByteToObject(buffer);
-				System.out.println("Received response: "+response.getType());
 				connector.addResponseCall(response);
-//				System.out.println("Response: "+response.callType+response.getParamsString());
+				System.out.println("Client received response: "+response.getType());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

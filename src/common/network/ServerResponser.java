@@ -32,6 +32,8 @@ public class ServerResponser extends Thread{
 			w_buff.clear();
 			try {
 				w_buff.put(SwitchObjectAndByte.switchObjectToByte(resp));
+				w_buff.flip();
+				System.out.println("Server response sent: "+resp.getType()+", size:"+SwitchObjectAndByte.switchObjectToByte(resp).length+" "+w_buff.remaining());
 				sc.write(w_buff);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

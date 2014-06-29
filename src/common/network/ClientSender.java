@@ -29,7 +29,7 @@ public class ClientSender extends Thread{
 			try {
 				Call cmd = connector.getCommandCall();
 				out.write(SwitchObjectAndByte.switchObjectToByte(cmd));
-//				System.out.println("Command sent: "+cmd.callType+cmd.getParamsString());
+				System.out.println("Command sent: "+cmd.getType()+", size="+SwitchObjectAndByte.switchObjectToByte(cmd).length);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
