@@ -2,25 +2,20 @@ package test.nameserver.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
-import nameserver.meta.Directory;
 import nameserver.meta.File;
-import nameserver.meta.Meta;
-import nameserver.meta.Status;
 import nameserver.meta.Storage;
-import nameserver.task.RegisterStorageTask;
 import nameserver.task.SyncTask;
 import common.network.ServerConnector;
 import common.network.XConnector;
 import common.observe.call.Call;
 import common.observe.call.CallListener;
-import common.observe.call.RegistrationCallS2N;
 import common.observe.call.SyncCallN2S;
 import common.observe.call.SyncCallS2N;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
 import common.thread.TaskThread;
+import common.util.Configuration;
 
 public class TestSyncTask
     extends TestCase
@@ -35,7 +30,7 @@ public class TestSyncTask
         NConnector = ServerConnector.getInstance();
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -61,7 +56,7 @@ public class TestSyncTask
 
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -81,7 +76,9 @@ public class TestSyncTask
         public void handleCall(Call call)
         {
             System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new SyncTask(1, call, NConnector);
+            TaskThread task =
+                new SyncTask(1, call, NConnector, Configuration.getInstance()
+                    .getInteger(Configuration.DUPLICATE_KEY));
             new Thread(task).start();
         }
     }

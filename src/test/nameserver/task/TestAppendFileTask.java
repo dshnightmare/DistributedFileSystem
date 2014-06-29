@@ -1,5 +1,7 @@
 package test.nameserver.task;
 
+import java.util.concurrent.TimeUnit;
+
 import junit.framework.TestCase;
 import nameserver.meta.Directory;
 import nameserver.meta.File;
@@ -31,7 +33,7 @@ public class TestAppendFileTask
         NConnector = ServerConnector.getInstance();
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -62,7 +64,7 @@ public class TestAppendFileTask
 
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {

@@ -2,6 +2,7 @@ package nameserver.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import nameserver.meta.File;
 import nameserver.meta.Meta;
@@ -29,8 +30,6 @@ public class AppendFileTask
 
     private String initiator;
 
-    private boolean hasLock = false;
-
     private File file = null;
 
     public AppendFileTask(long sid, Call call, Connector connector)
@@ -46,36 +45,42 @@ public class AppendFileTask
     @Override
     public void run()
     {
-        lock();
-
-        if (!fileExists())
+        synchronized (Meta.getInstance())
         {
-            sendAbortCall("Task aborted, file does not exist.");
+            if (!fileExists())
+            {
+                sendAbortCall("Task aborted, file does not exist.");
+                return;
+            }
+            else
+            {
+                file = Meta.getInstance().getFile(dirName, fileName);
+                if (file.tryLockWrite(1, TimeUnit.SECONDS))
+                {
+                    sendResponseCall();
+                }
+                else
+                {
+                    sendAbortCall("Task aborted, someone is using the file.");
+                    return;
+                }
+            }
         }
-        else
+        
+        waitUntilTaskFinish();
+        
+        synchronized (Meta.getInstance())
         {
-            file = Meta.getInstance().getDirectory(dirName).getFile(fileName);
-            file.setValid(false);
-
-            sendResponseCall();
-
-            unlock();
-            waitUntilTaskFinish();
-            lock();
-
-            file.setValid(true);
+            file.unlockWrite();
             sendFinishCall();
         }
 
-        unlock();
     }
 
     @Override
     public void release()
     {
-        lock();
-        file.setValid(true);
-        unlock();
+        file.unlockWrite();
     }
 
     @Override
@@ -84,9 +89,10 @@ public class AppendFileTask
         if (call.getTaskId() != getTaskId())
             return;
 
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
+        if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
+            return;
         }
 
         if (call.getType() == Call.Type.FINISH)
@@ -101,13 +107,7 @@ public class AppendFileTask
 
     private boolean fileExists()
     {
-        if (Meta.getInstance().contains(dirName))
-        {
-            if (Meta.getInstance().getDirectory(dirName).contains(fileName))
-                return true;
-        }
-
-        return false;
+        return Meta.getInstance().containFile(dirName, fileName);
     }
 
     private void sendAbortCall(String reason)
@@ -152,21 +152,5 @@ public class AppendFileTask
         {
             e.printStackTrace();
         }
-    }
-
-    private void lock()
-    {
-        if (hasLock)
-            return;
-        Meta.getInstance().lock(dirName);
-        hasLock = true;
-    }
-
-    private void unlock()
-    {
-        if (!hasLock)
-            return;
-        Meta.getInstance().unlock();
-        hasLock = false;
     }
 }

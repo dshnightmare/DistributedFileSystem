@@ -1,9 +1,6 @@
 package nameserver.task;
 
-import nameserver.meta.Directory;
-import nameserver.meta.File;
 import nameserver.meta.Meta;
-import nameserver.meta.Storage;
 import common.network.Connector;
 import common.observe.call.AbortCall;
 import common.observe.call.Call;
@@ -35,48 +32,23 @@ public class RemoveFileTask
     @Override
     public void run()
     {
-        Call back = null;
-
-        if (!Meta.getInstance().contains(dirName))
+        synchronized (Meta.getInstance())
         {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
+            if (!fileExists())
+            {
+                sendAbortCall("Task aborted, file does not exist.");
+            }
+            else
+            {
+                Meta.getInstance().removeFile(dirName, fileName);
+                sendFinishCall();
+            }
         }
-
-        Directory dir = Meta.getInstance().getDirectory(dirName);
-        if (!dir.contains(fileName))
-        {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
-        }
-
-        File file = dir.getFile(fileName);
-        for (Storage s : file.getLocations())
-            s.removeFile(file);
-        dir.removeFile(file.getName());
-
-        // TODO: Finished! Release locks.
-
-        back = new FinishCall(getTaskId());
-        back.setInitiator(initiator);;
-        connector.sendCall(back);
-
-        setFinish();
     }
 
     @Override
     public void release()
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -85,9 +57,33 @@ public class RemoveFileTask
         if (call.getTaskId() != getTaskId())
             return;
 
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
+        if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
+            return;
         }
+    }
+
+    private boolean fileExists()
+    {
+        return Meta.getInstance().containFile(dirName, fileName);
+    }
+
+    private void sendAbortCall(String reason)
+    {
+        Call back = new AbortCall(getTaskId(), reason);
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
+    }
+
+    private void sendFinishCall()
+    {
+        Call back = new FinishCall(getTaskId());
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
     }
 }

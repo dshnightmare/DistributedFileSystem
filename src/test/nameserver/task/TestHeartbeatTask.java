@@ -3,13 +3,12 @@ package test.nameserver.task;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
-import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import nameserver.task.HeartbeatTask;
-import nameserver.task.RegisterStorageTask;
 import common.network.ServerConnector;
 import common.network.XConnector;
 import common.observe.call.Call;
@@ -17,7 +16,6 @@ import common.observe.call.CallListener;
 import common.observe.call.FinishCall;
 import common.observe.call.HeartbeatCallS2N;
 import common.observe.call.MigrateFileCallN2S;
-import common.observe.call.RegistrationCallS2N;
 import common.observe.event.TaskEvent;
 import common.observe.event.TaskEventListener;
 import common.thread.TaskThread;
@@ -35,7 +33,7 @@ public class TestHeartbeatTask
         NConnector = ServerConnector.getInstance();
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -58,7 +56,7 @@ public class TestHeartbeatTask
 
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -81,10 +79,7 @@ public class TestHeartbeatTask
         public void handleCall(Call call)
         {
             System.out.println("Server received a call: " + call.getType());
-            TaskThread task =
-                new HeartbeatTask(1, call.getInitiator(),
-                    Status.getInstance().getStorage(((HeartbeatCallS2N) call).getAddress()),
-                    NConnector, 2000);
+            TaskThread task = new HeartbeatTask(1, call, NConnector, 2000);
             task.addListener(new TaskListener());
             new Thread(task).start();
         }
@@ -107,7 +102,7 @@ public class TestHeartbeatTask
                         System.out.println("\t" + l);
                 }
                 Call back = new FinishCall(call.getTaskId());
-                SConnector.send(back);
+                SConnector.sendCall(back);
             }
         }
     }

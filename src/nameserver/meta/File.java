@@ -2,12 +2,19 @@ package nameserver.meta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class File
 {
     private String name;
 
     private final long id;
+
+    private long version = 0;
+
+    private ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
     /**
      * Indicate whether this file has committed. If it's false, someone could be
@@ -38,33 +45,88 @@ public class File
         return id;
     }
 
-    public synchronized void setLocations(List<Storage> locations)
+    public void setLocations(List<Storage> locations)
     {
         this.locations = locations;
     }
 
-    public synchronized void addLocation(Storage storage)
+    public void addLocation(Storage storage)
     {
-        this.locations.add(storage);
+        if (!locations.contains(storage))
+            this.locations.add(storage);
     }
 
-    public synchronized void removeLocations(Storage storage)
+    public int getLocationsCount()
+    {
+        return locations.size();
+    }
+
+    public void removeLocations(Storage storage)
     {
         this.locations.remove(storage);
     }
 
-    public synchronized List<Storage> getLocations()
+    public List<Storage> getLocations()
     {
         return locations;
     }
 
-    public synchronized boolean isValid()
+    public boolean isValid()
     {
         return valid;
     }
 
-    public synchronized void setValid(boolean valid)
+    public void setValid(boolean valid)
     {
         this.valid = valid;
+    }
+
+    public void setVersion(long version)
+    {
+        this.version = version;
+    }
+
+    public long getVersion()
+    {
+        return version;
+    }
+
+    public boolean tryLockRead(long time, TimeUnit unit)
+    {
+        try
+        {
+            return rwLock.readLock().tryLock(time, unit);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+            // Is that correct?
+            rwLock.readLock().unlock();
+            return false;
+        }
+    }
+
+    public void unlockRead()
+    {
+        rwLock.readLock().unlock();
+    }
+
+    public boolean tryLockWrite(long time, TimeUnit unit)
+    {
+        try
+        {
+            return rwLock.writeLock().tryLock(time, unit);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+            rwLock.writeLock().unlock();
+            return false;
+        }
+    }
+
+    public void unlockWrite()
+    {
+        rwLock.writeLock().unlock();
     }
 }

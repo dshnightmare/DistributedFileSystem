@@ -86,7 +86,9 @@ public class NameServer
 
             if (Call.Type.ADD_FILE_C2N == call.getType())
             {
-                task = new AddFileTask(tid, call, connector);
+                task =
+                    new AddFileTask(tid, call, connector,
+                        conf.getInteger(Configuration.DUPLICATE_KEY));
                 task.setLease(new TaskLease(conf
                     .getLong(Configuration.LEASE_PERIOD_KEY)));
             }
@@ -117,7 +119,9 @@ public class NameServer
             }
             else if (Call.Type.SYNC_S2N == call.getType())
             {
-                task = new SyncTask(tid, call, connector);
+                task =
+                    new SyncTask(tid, call, connector,
+                        conf.getInteger(Configuration.DUPLICATE_KEY));
                 task.setLease(new TaskLease(conf
                     .getLong(Configuration.LEASE_PERIOD_KEY)));
             }

@@ -1,7 +1,5 @@
 package nameserver.task;
 
-import nameserver.meta.Directory;
-import nameserver.meta.File;
 import nameserver.meta.Meta;
 import common.network.Connector;
 import common.observe.call.AbortCall;
@@ -40,55 +38,28 @@ public class MoveFileTask
     @Override
     public void run()
     {
-        Call back = null;
-
-        if (!Meta.getInstance().contains(oldDirName))
+        synchronized (Meta.getInstance())
         {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
+            if (!oldFileExists())
+            {
+                sendAbortCall("Task aborted, old file does not exist.");
+            }
+            else if (newFileExists())
+            {
+                sendAbortCall("Task aborted, new file has arealdy existed.");
+            }
+            else
+            {
+                Meta.getInstance().renameFile(oldDirName, oldFileName,
+                    newDirName, newFileName);
+                sendFinishCall();
+            }
         }
-
-        Directory dir = Meta.getInstance().getDirectory(oldDirName);
-        if (!dir.contains(oldFileName))
-        {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
-        }
-
-        File file = dir.getFile(oldFileName);
-        if (oldFileName.compareTo(newFileName) != 0)
-            file.setName(newFileName);
-        if (Meta.getInstance().contains(newDirName))
-        {
-            dir.removeFile(file.getName());
-            dir = Meta.getInstance().getDirectory(newDirName);
-        }
-        else
-            dir = new Directory(newDirName);
-        dir.addFile(file);
-
-        back = new FinishCall(getTaskId());
-        back.setInitiator(initiator);;
-        connector.sendCall(back);
-
-        // TODO: Finished! Release locks.
-
-        setFinish();
     }
 
     @Override
     public void release()
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -97,9 +68,43 @@ public class MoveFileTask
         if (call.getTaskId() != getTaskId())
             return;
 
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
+        if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
+            return;
         }
+    }
+
+    private boolean oldFileExists()
+    {
+        if (Meta.getInstance().containFile(oldDirName, oldFileName))
+            return true;
+        else
+            return false;
+    }
+
+    private boolean newFileExists()
+    {
+        if (Meta.getInstance().containFile(newDirName, newFileName))
+            return true;
+        else
+            return false;
+    }
+
+    private void sendAbortCall(String reason)
+    {
+        Call back = new AbortCall(getTaskId(), reason);
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
+    }
+
+    private void sendFinishCall()
+    {
+        Call back = new FinishCall(getTaskId());
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        setFinish();
     }
 }

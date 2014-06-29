@@ -2,6 +2,7 @@ package nameserver.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import nameserver.meta.Directory;
 import nameserver.meta.File;
@@ -20,7 +21,7 @@ import common.util.IdGenerator;
 public class AddFileTask
     extends TaskThread
 {
-    private int duplicate = 1;
+    private int duplicate;
 
     private String dirName;
 
@@ -39,11 +40,9 @@ public class AddFileTask
      */
     private boolean hasDir = false;
 
-    private boolean hasLock = false;
-
     private File file = null;
 
-    public AddFileTask(long sid, Call call, Connector connector)
+    public AddFileTask(long sid, Call call, Connector connector, int duplicate)
     {
         super(sid);
         AddFileCallC2N c = (AddFileCallC2N) call;
@@ -51,43 +50,50 @@ public class AddFileTask
         this.fileName = c.getFileName();
         this.connector = connector;
         this.initiator = c.getInitiator();
+        this.duplicate = duplicate;
     }
 
     @Override
     public void run()
     {
-        lock();
-
-        if (fileExists())
+        synchronized (Meta.getInstance())
         {
-            sendAbortCall("Task aborted, there has been a directory/file with the same name.");
+
+            if (fileExists())
+            {
+                sendAbortCall("Task aborted, there has been a directory/file with the same name.");
+                return;
+            }
+            else
+            {
+                file =
+                    new File(fileName, IdGenerator.getInstance().getLongId());
+                // This must success, because we create this file.
+                file.tryLockWrite(1, TimeUnit.SECONDS);
+                // This should be a problem: if here comes an exception, then it
+                // will never release the lock.
+                addFileToMeta();
+                sendResponseCall();
+            }
         }
-        else
+
+        waitUntilTaskFinish();
+
+        synchronized (Meta.getInstance())
         {
-            file = new File(fileName, IdGenerator.getInstance().getLongId());
-
-            addFileToMeta();
-            sendResponseCall();
-
-            unlock();
-            waitUntilTaskFinish();
-            lock();
-
             commit();
+            file.unlockWrite();
             sendFinishCall();
         }
-
-        unlock();
     }
 
     @Override
     public void release()
     {
-        lock();
-
-        removeFileFromMeta();
-
-        unlock();
+        synchronized (Meta.getInstance())
+        {
+            removeFileFromMeta();
+        }
     }
 
     @Override
@@ -99,6 +105,7 @@ public class AddFileTask
         if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
+            return;
         }
 
         if (call.getType() == Call.Type.FINISH)
@@ -113,57 +120,40 @@ public class AddFileTask
 
     private boolean fileExists()
     {
-        if (Meta.getInstance().contains(dirName + fileName))
-            return true;
-
-        if (Meta.getInstance().contains(dirName))
-        {
+        if (Meta.getInstance().containDirectory(dirName))
             hasDir = true;
-            if (Meta.getInstance().getDirectory(dirName).contains(fileName))
-                return true;
+        else
+        {
+            hasDir = false;
+            return false;
         }
 
-        return false;
+        if (Meta.getInstance().containFile(dirName, fileName))
+            return true;
+        else
+            return false;
     }
 
     private void addFileToMeta()
     {
-        Directory dir = Meta.getInstance().getDirectory(dirName);
-        if (!hasDir)
-        {
-            dir = new Directory(dirName);
-            Meta.getInstance().addDirectory(dir);
-        }
+        Meta.getInstance().addFile(dirName, file);
 
         List<Storage> storages =
             Status.getInstance().allocateStorage(duplicate);
         file.setLocations(storages);
         for (Storage s : storages)
             s.addFile(file);
-        dir.addFile(file);
     }
 
     private void removeFileFromMeta()
     {
-        Directory dir = Meta.getInstance().getDirectory(dirName);
-        // The directory exists.
-        if (dir != null)
-        {
-            // The directory is invalid and doesn't exist before.
-            if (!hasDir && !dir.isValid())
-            {
-                Meta.getInstance().removeDirectory(dir.getName());
-            }
-            else
-            {
-                dir.removeFile(file.getName());
-            }
-        }
+        Meta.getInstance().removeFile(dirName, fileName);
+        // The directory is invalid and doesn't exist before.
+        if (!hasDir && !Meta.getInstance().isDirectoryValid(dirName))
+            Meta.getInstance().removeDirectory(dirName);
 
         for (Storage s : file.getLocations())
-        {
             s.removeFile(file);
-        }
     }
 
     private void waitUntilTaskFinish()
@@ -210,22 +200,6 @@ public class AddFileTask
         connector.sendCall(back);
         release();
         setFinish();
-    }
-
-    private void lock()
-    {
-        if (hasLock)
-            return;
-        Meta.getInstance().lock(dirName);
-        hasLock = true;
-    }
-
-    private void unlock()
-    {
-        if (!hasLock)
-            return;
-        Meta.getInstance().unlock();
-        hasLock = false;
     }
 
     private void commit()
