@@ -2,6 +2,10 @@ package nameserver.meta;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Meta
 {
@@ -152,5 +156,17 @@ public class Meta
             return;
         file.setName(newFileName);
         addFile(newDirName, file);
+    }
+    
+    public JSONArray getJsonData()
+    {
+        JSONArray json = new JSONArray();
+        
+        for (Directory dir : directories.values())
+        {
+            json.put(dir.getJsonData());
+        }
+        
+        return json;
     }
 }
