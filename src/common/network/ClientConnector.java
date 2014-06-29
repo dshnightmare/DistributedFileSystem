@@ -135,6 +135,7 @@ public class ClientConnector implements Connector, CallDispatcher{
 			ClientSender cs = new ClientSender(this, socket.getOutputStream());
 			cs.start();
 			ClientReceiver cr = new ClientReceiver(this, socket.getInputStream());
+			cr.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

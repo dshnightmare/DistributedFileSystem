@@ -102,7 +102,6 @@ public class ServerListener extends Thread{
 				Call rc = (Call)SwitchObjectAndByte.switchByteToObject(r_buf.array());
 				rc.setInitiator(sc.socket().getRemoteSocketAddress().toString());
 				connector.putCallQueue(rc);
-//				System.out.println("Call received:"+rc.callType+" "+rc.getParamsString());
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
