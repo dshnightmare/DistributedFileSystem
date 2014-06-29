@@ -12,11 +12,14 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import junit.framework.Assert;
+
 import common.observe.call.Call;
 import common.observe.call.CallDispatcher;
 import common.observe.call.CallListener;
 import common.util.Configuration;
 import common.util.Constant;
+import common.util.Logger;
 
 /**
  * create an object and @TODO pass callback functions, then call start();
@@ -71,6 +74,7 @@ public class ServerConnector implements CallDispatcher, Connector{
 	@Override
 	public void sendCall(Call response){
 		try {
+			System.out.println("Server trying to send response to "+response.getInitiator());
 			responseQueue.put(response);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -114,11 +118,12 @@ public class ServerConnector implements CallDispatcher, Connector{
 		callListeners.remove(listener);
 	}
 	
-	public void setAddressChannel(String address, SocketChannel channel){
+	public synchronized void setAddressChannel(String address, SocketChannel channel){
 		channelMap.put(address, channel);
 	}
 	
-	public SocketChannel getChannel(String address){
+	public synchronized SocketChannel getChannel(String address){
+		assert(channelMap.containsKey(address));
 		return channelMap.get(address);
 	}
 }

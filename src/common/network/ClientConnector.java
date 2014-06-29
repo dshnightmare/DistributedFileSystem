@@ -78,6 +78,11 @@ public class ClientConnector implements Connector, CallDispatcher{
 		}
 		return ret;
 	}
+	
+	/**
+	 * receive response from server
+	 * @param resp
+	 */
 	public void addResponseCall(Call resp){
 		try {
 			responses.put(resp);
@@ -129,6 +134,7 @@ public class ClientConnector implements Connector, CallDispatcher{
 		try {
 			ClientSender cs = new ClientSender(this, socket.getOutputStream());
 			cs.start();
+			ClientReceiver cr = new ClientReceiver(this, socket.getInputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

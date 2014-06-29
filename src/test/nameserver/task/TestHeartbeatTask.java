@@ -12,7 +12,7 @@ import nameserver.meta.Storage;
 import nameserver.task.HeartbeatTask;
 import nameserver.task.RegisterStorageTask;
 import common.network.ServerConnector;
-import common.network.StorageConnector;
+import common.network.XConnector;
 import common.observe.call.Call;
 import common.observe.call.CallListener;
 import common.observe.call.FinishCall;
@@ -28,7 +28,7 @@ public class TestHeartbeatTask
 {
     private static ServerConnector NConnector;
 
-    private static StorageConnector SConnector;
+    private static XConnector SConnector;
 
     @Override
     protected void setUp()
@@ -42,7 +42,7 @@ public class TestHeartbeatTask
         {
             e.printStackTrace();
         }
-        SConnector = StorageConnector.getInstance();
+        SConnector = XConnector.getInstance();
         NConnector.addListener(new NCallListener());
         SConnector.addListener(new SCallListener());
     }

@@ -9,7 +9,7 @@ import nameserver.task.RegisterStorageTask;
 import nameserver.task.RemoveFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.network.StorageConnector;
+import common.network.XConnector;
 import common.observe.call.Call;
 import common.observe.call.CallListener;
 import common.observe.call.FinishCall;
@@ -24,7 +24,7 @@ public class TestRegistrationTask
 {
     private static ServerConnector NConnector;
 
-    private static StorageConnector SConnector;
+    private static XConnector SConnector;
 
     @Override
     protected void setUp()
@@ -38,7 +38,7 @@ public class TestRegistrationTask
         {
             e.printStackTrace();
         }
-        SConnector = StorageConnector.getInstance();
+        SConnector = XConnector.getInstance();
         SConnector.addListener(new SCallListener());
         NConnector.addListener(new NCallListener());
     }
