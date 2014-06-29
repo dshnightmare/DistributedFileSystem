@@ -12,7 +12,7 @@ import nameserver.meta.Storage;
 import nameserver.task.RegisterStorageTask;
 import nameserver.task.SyncTask;
 import common.network.ServerConnector;
-import common.network.StorageConnector;
+import common.network.XConnector;
 import common.observe.call.Call;
 import common.observe.call.CallListener;
 import common.observe.call.RegistrationCallS2N;
@@ -27,7 +27,7 @@ public class TestSyncTask
 {
     private static ServerConnector NConnector;
 
-    private static StorageConnector SConnector;
+    private static XConnector SConnector;
 
     @Override
     protected void setUp()
@@ -41,7 +41,7 @@ public class TestSyncTask
         {
             e.printStackTrace();
         }
-        SConnector = StorageConnector.getInstance();
+        SConnector = XConnector.getInstance();
         SConnector.addListener(new SCallListener());
         NConnector.addListener(new NCallListener());
     }

@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import junit.framework.Assert;
+
 import common.observe.call.Call;
 import common.observe.call.CallDispatcher;
 import common.observe.call.CallListener;
@@ -114,11 +116,12 @@ public class ServerConnector implements CallDispatcher, Connector{
 		callListeners.remove(listener);
 	}
 	
-	public void setAddressChannel(String address, SocketChannel channel){
+	public synchronized void setAddressChannel(String address, SocketChannel channel){
 		channelMap.put(address, channel);
 	}
 	
-	public SocketChannel getChannel(String address){
+	public synchronized SocketChannel getChannel(String address){
+		assert(channelMap.containsKey(address));
 		return channelMap.get(address);
 	}
 }

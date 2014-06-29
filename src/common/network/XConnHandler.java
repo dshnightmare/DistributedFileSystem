@@ -18,12 +18,12 @@ import common.util.Constant;
  * @author geng yufeng
  *
  */
-public class StorageConnHandler extends Thread{
+public class XConnHandler extends Thread{
 
 	private Socket clientSocket;
 	private DataInputStream inputStream;
 	
-	public StorageConnHandler(Socket _client){
+	public XConnHandler(Socket _client){
 		clientSocket = _client;
 	}
 	

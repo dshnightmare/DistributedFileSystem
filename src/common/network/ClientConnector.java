@@ -78,6 +78,11 @@ public class ClientConnector implements Connector, CallDispatcher{
 		}
 		return ret;
 	}
+	
+	/**
+	 * receive response from server
+	 * @param resp
+	 */
 	public void addResponseCall(Call resp){
 		try {
 			responses.put(resp);
