@@ -34,7 +34,7 @@ public class ClientConnector implements Connector, CallDispatcher{
 	private BlockingQueue<Call> commands;
 	private BlockingQueue<Call> responses;
 	
-	private List<CallListener> callListeners = new ArrayList<CallListener>();
+	private List<CallListener> responseListeners = new ArrayList<CallListener>();
 	
 	public ClientConnector(){
 		cf = Configuration.getInstance();
@@ -86,6 +86,9 @@ public class ClientConnector implements Connector, CallDispatcher{
 	public void addResponseCall(Call resp){
 		try {
 			responses.put(resp);
+			for(CallListener listener : responseListeners){
+				listener.handleCall(resp);
+			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -95,13 +98,13 @@ public class ClientConnector implements Connector, CallDispatcher{
 	@Override
 	public synchronized void addListener(CallListener listener) {
 		// TODO Auto-generated method stub
-		callListeners.add(listener);
+		responseListeners.add(listener);
 	}
 
 	@Override
 	public synchronized void removeListener(CallListener listener) {
 		// TODO Auto-generated method stub
-		callListeners.remove(listener);
+		responseListeners.remove(listener);
 	}
 	
 	/**
