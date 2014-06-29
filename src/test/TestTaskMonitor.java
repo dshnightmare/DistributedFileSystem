@@ -1,5 +1,7 @@
 package test;
 
+import java.util.concurrent.TimeUnit;
+
 import common.observe.call.Call;
 import common.observe.event.TaskEvent;
 import common.observe.event.TaskEventListener;
@@ -46,7 +48,7 @@ public class TestTaskMonitor
                     System.out.println(this.getTaskId());
                     try
                     {
-                        Thread.sleep(1000);
+                        TimeUnit.SECONDS.sleep(1);
                     }
                     catch (InterruptedException e)
                     {
@@ -82,7 +84,7 @@ public class TestTaskMonitor
                     System.out.println(this.getTaskId());
                     try
                     {
-                        Thread.sleep(1000);
+                        TimeUnit.SECONDS.sleep(1);
                     }
                     catch (InterruptedException e)
                     {
@@ -109,7 +111,7 @@ public class TestTaskMonitor
         
         try
         {
-            Thread.sleep(15000);
+            TimeUnit.SECONDS.sleep(15);
         }
         catch (InterruptedException e)
         {

@@ -1,5 +1,7 @@
 package test.nameserver.task;
 
+import java.util.concurrent.TimeUnit;
+
 import nameserver.meta.Directory;
 import nameserver.meta.Meta;
 import nameserver.meta.Status;
@@ -15,6 +17,7 @@ import common.observe.call.FinishCall;
 import common.observe.event.TaskEvent;
 import common.observe.event.TaskEventListener;
 import common.thread.TaskThread;
+import common.util.Configuration;
 import junit.framework.TestCase;
 
 public class TestAddFileTask
@@ -31,7 +34,7 @@ public class TestAddFileTask
         NConnector = ServerConnector.getInstance();
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -52,7 +55,7 @@ public class TestAddFileTask
 
         try
         {
-            Thread.sleep(100000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -75,7 +78,9 @@ public class TestAddFileTask
         public void handleCall(Call call)
         {
             System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new AddFileTask(1, call, NConnector);
+            TaskThread task =
+                new AddFileTask(1, call, NConnector,
+                    Configuration.getInstance().getInteger(Configuration.DUPLICATE_KEY));
             task.addListener(new TaskListener());
             new Thread(task).start();
         }

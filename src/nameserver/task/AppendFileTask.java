@@ -2,6 +2,7 @@ package nameserver.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import nameserver.meta.File;
 import nameserver.meta.Meta;
@@ -54,17 +55,22 @@ public class AppendFileTask
         }
         else
         {
-            file = Meta.getInstance().getDirectory(dirName).getFile(fileName);
-            file.setValid(false);
-
-            sendResponseCall();
-
-            unlock();
-            waitUntilTaskFinish();
-            lock();
-
-            file.setValid(true);
-            sendFinishCall();
+            file = Meta.getInstance().getFile(dirName, fileName);
+            if (file.tryLockWrite(1, TimeUnit.SECONDS))
+            {
+                sendResponseCall();
+                unlock();
+                
+                waitUntilTaskFinish();
+                
+                lock();
+                file.unlockWrite();
+                sendFinishCall();
+            }
+            else
+            {
+                sendAbortCall("Task aborted, someone is using the file.");
+            }
         }
 
         unlock();
@@ -74,7 +80,7 @@ public class AppendFileTask
     public void release()
     {
         lock();
-        file.setValid(true);
+        file.unlockWrite();
         unlock();
     }
 
@@ -84,7 +90,7 @@ public class AppendFileTask
         if (call.getTaskId() != getTaskId())
             return;
 
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
+        if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
         }
@@ -101,13 +107,7 @@ public class AppendFileTask
 
     private boolean fileExists()
     {
-        if (Meta.getInstance().contains(dirName))
-        {
-            if (Meta.getInstance().getDirectory(dirName).contains(fileName))
-                return true;
-        }
-
-        return false;
+        return Meta.getInstance().containFile(dirName, fileName);
     }
 
     private void sendAbortCall(String reason)

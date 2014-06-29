@@ -35,9 +35,9 @@ public class Directory
         files.put(file.getName(), file);
     }
 
-    public synchronized void removeFile(String fileName)
+    public synchronized File removeFile(String fileName)
     {
-        files.remove(fileName);
+        return files.remove(fileName);
     }
 
     public synchronized boolean contains(String fileName)
@@ -53,5 +53,10 @@ public class Directory
     public synchronized boolean isValid()
     {
         return valid;
+    }
+
+    public synchronized void setName(String name)
+    {
+        this.name = name;
     }
 }

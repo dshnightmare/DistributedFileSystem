@@ -5,12 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import nameserver.meta.File;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
 import common.observe.call.Call;
+import common.observe.call.FinishCall;
 import common.observe.call.HeartbeatCallS2N;
 import common.observe.call.MigrateFileCallN2S;
 import common.observe.call.RegistrationCallS2N;
@@ -21,12 +23,17 @@ import common.util.IdGenerator;
 public class HeartbeatTask
     extends TaskThread
 {
-    private final Storage storage;
+    private Storage storage;
+
+    private final String address;
 
     private final Connector connector;
 
     private final String initiator;
 
+    /**
+     * How many seconds between two adjacent heartbeat check.
+     */
     private final long period;
 
     public HeartbeatTask(long tid, Call call, Connector connector, long period)
@@ -35,7 +42,7 @@ public class HeartbeatTask
         // Notice that the type is RegistrationCall.
         RegistrationCallS2N c = (RegistrationCallS2N) call;
         this.initiator = c.getInitiator();
-        this.storage = Status.getInstance().getStorage(c.getAddress());
+        this.address = c.getAddress();
         this.connector = connector;
         this.period = period;
     }
@@ -43,11 +50,16 @@ public class HeartbeatTask
     @Override
     public void run()
     {
+        this.storage =
+            new Storage(IdGenerator.getInstance().getLongId(), address);
+        Status.getInstance().addStorage(storage);
+        sendFinishCall();
+
         while (true)
         {
             try
             {
-                Thread.sleep(period);
+                TimeUnit.SECONDS.sleep(period);
 
                 if (longTimeNoSee())
                 {
@@ -118,7 +130,8 @@ public class HeartbeatTask
         // migration call, it will realize he is dead and should register
         // again.
         Map<Storage, List<File>> migrateFiles = storage.getMigrateFiles();
-        Map<String, List<Long>> rawMigrateFiles = new HashMap<String, List<Long>>();
+        Map<String, List<Long>> rawMigrateFiles =
+            new HashMap<String, List<Long>>();
 
         for (Entry<Storage, List<File>> e : migrateFiles.entrySet())
         {
@@ -131,9 +144,16 @@ public class HeartbeatTask
             rawMigrateFiles.put(e.getKey().getAddress(), fileList);
         }
 
-        Call back =
-            new MigrateFileCallN2S(getTaskId(), rawMigrateFiles);
+        Call back = new MigrateFileCallN2S(getTaskId(), rawMigrateFiles);
         back.setInitiator(initiator);
+        connector.sendCall(back);
+    }
+
+    private void sendFinishCall()
+    {
+        Call back = new FinishCall(getTaskId());
+        back.setInitiator(initiator);
+        ;
         connector.sendCall(back);
     }
 }

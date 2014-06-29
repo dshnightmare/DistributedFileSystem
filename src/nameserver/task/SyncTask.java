@@ -1,10 +1,11 @@
 package nameserver.task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import nameserver.meta.File;
+import nameserver.meta.Meta;
 import nameserver.meta.Status;
-import nameserver.meta.Storage;
 import common.network.Connector;
 import common.observe.call.AbortCall;
 import common.observe.call.Call;
@@ -23,7 +24,11 @@ public class SyncTask
 
     private List<Long> files;
 
-    public SyncTask(long sid, Call call, Connector connector)
+    private boolean hasLock = false;
+
+    private int duplicate;
+
+    public SyncTask(long sid, Call call, Connector connector, int duplicate)
     {
         super(sid);
         SyncCallS2N c = (SyncCallS2N) call;
@@ -31,44 +36,45 @@ public class SyncTask
         this.initiator = c.getInitiator();
         this.files = c.getFiles();
         this.connector = connector;
+        this.duplicate = duplicate;
     }
 
     @Override
     public void run()
     {
-        Call back = null;
+        lock();
 
-        if (!Status.getInstance().contains(address))
+        if (!storageExists())
         {
-            back =
-                new AbortCall(getTaskId(),
-                    "Task aborted, unidentified storage server.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
+            sendAbortCall("Task aborted, unidentified storage server.");
+        }
+        else
+        {
+            List<Long> removeList = new ArrayList<Long>();
+            for (Long l : files)
+            {
+                File file = Meta.getInstance().getFile(l);
+                if (null == file)
+                    removeList.add(l);
+                else
+                {
+                    if (file.getLocationsCount() > duplicate)
+                        removeList.add(l);
+                    else
+                        file.addLocation(Status.getInstance().getStorage(
+                            address));
+                }
+            }
+            
+            sendResponseCall(removeList);
         }
 
-        Storage storage = Status.getInstance().getStorage(address);
-        for (File f : storage.getFiles())
-        {
-            if (files.contains(f.getId()))
-                files.remove(f.getId());
-        }
-
-        back = new SyncCallN2S(files);
-        back.setInitiator(initiator);;
-        back.setTaskId(getTaskId());
-        connector.sendCall(back);
-
-        setFinish();
+        unlock();
     }
 
     @Override
     public void release()
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -81,5 +87,46 @@ public class SyncTask
         {
             renewLease();
         }
+    }
+
+    private void sendAbortCall(String reason)
+    {
+        Call back = new AbortCall(getTaskId(), reason);
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
+    }
+
+    private void lock()
+    {
+        if (hasLock)
+            return;
+        Meta.getInstance().lock("useless");
+        hasLock = true;
+    }
+
+    private void unlock()
+    {
+        if (!hasLock)
+            return;
+        Meta.getInstance().unlock();
+        hasLock = false;
+    }
+    
+    private boolean storageExists()
+    {
+        return Status.getInstance().contains(address);
+    }
+    
+    private void sendResponseCall(List<Long> removeList)
+    {
+        
+        Call back = new SyncCallN2S(removeList);
+        back.setInitiator(initiator);
+        back.setTaskId(getTaskId());
+        connector.sendCall(back);
+
+        setFinish();
     }
 }

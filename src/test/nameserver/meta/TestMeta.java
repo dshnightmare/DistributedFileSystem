@@ -12,11 +12,11 @@ public class TestMeta
         Meta m = Meta.getInstance();
 
         assertNull(m.getDirectory("/"));
-        assertFalse(m.contains("/"));
+        assertFalse(m.containDirectory("/"));
 
         m.addDirectory(new Directory("/"));
 
         assertNotNull(m.getDirectory("/"));
-        assertTrue(m.contains("/"));
+        assertTrue(m.containDirectory("/"));
     }
 }

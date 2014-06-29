@@ -1,9 +1,6 @@
 package nameserver.task;
 
-import nameserver.meta.Directory;
-import nameserver.meta.File;
 import nameserver.meta.Meta;
-import nameserver.meta.Storage;
 import common.network.Connector;
 import common.observe.call.AbortCall;
 import common.observe.call.Call;
@@ -21,6 +18,8 @@ public class RemoveFileTask
     private Connector connector;
 
     private String initiator;
+    
+    private boolean hasLock = false;
 
     public RemoveFileTask(long sid, Call call, Connector connector)
     {
@@ -35,48 +34,24 @@ public class RemoveFileTask
     @Override
     public void run()
     {
-        Call back = null;
-
-        if (!Meta.getInstance().contains(dirName))
+        lock();
+        
+        if (!fileExists())
         {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
+            sendAbortCall("Task aborted, file does not exist.");
         }
-
-        Directory dir = Meta.getInstance().getDirectory(dirName);
-        if (!dir.contains(fileName))
+        else
         {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
+            Meta.getInstance().removeFile(dirName, fileName);
+            sendFinishCall();
         }
-
-        File file = dir.getFile(fileName);
-        for (Storage s : file.getLocations())
-            s.removeFile(file);
-        dir.removeFile(file.getName());
-
-        // TODO: Finished! Release locks.
-
-        back = new FinishCall(getTaskId());
-        back.setInitiator(initiator);;
-        connector.sendCall(back);
-
-        setFinish();
+        
+        unlock();
     }
 
     @Override
     public void release()
     {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -85,9 +60,48 @@ public class RemoveFileTask
         if (call.getTaskId() != getTaskId())
             return;
 
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
+        if (call.getType() == Call.Type.LEASE)
         {
             renewLease();
         }
+    }
+    
+    private void lock()
+    {
+        if (hasLock)
+            return;
+        Meta.getInstance().lock(dirName);
+        hasLock = true;
+    }
+
+    private void unlock()
+    {
+        if (!hasLock)
+            return;
+        Meta.getInstance().unlock();
+        hasLock = false;
+    }
+    
+    private boolean fileExists()
+    {
+        return Meta.getInstance().containFile(dirName, fileName);
+    }
+    
+    private void sendAbortCall(String reason)
+    {
+        Call back = new AbortCall(getTaskId(), reason);
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
+    }
+    
+    private void sendFinishCall()
+    {
+        Call back = new FinishCall(getTaskId());
+        back.setInitiator(initiator);
+        connector.sendCall(back);
+        release();
+        setFinish();
     }
 }
