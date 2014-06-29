@@ -5,22 +5,15 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
-import nameserver.meta.Directory;
 import nameserver.meta.File;
-import nameserver.meta.Meta;
-import nameserver.meta.Status;
 import nameserver.meta.Storage;
-import nameserver.task.RegisterStorageTask;
 import nameserver.task.SyncTask;
 import common.network.ServerConnector;
 import common.network.XConnector;
 import common.observe.call.Call;
 import common.observe.call.CallListener;
-import common.observe.call.RegistrationCallS2N;
 import common.observe.call.SyncCallN2S;
 import common.observe.call.SyncCallS2N;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
 import common.thread.TaskThread;
 import common.util.Configuration;
 
