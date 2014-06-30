@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import org.json.JSONArray;
@@ -22,6 +25,8 @@ public class SolidTask
 
     private long period;
 
+    private DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     public SolidTask(long tid, String outputDirName, String fileName,
         long period)
     {
@@ -32,7 +37,7 @@ public class SolidTask
     }
 
     @Override
-    public void handleCall(Call call)
+    public void run()
     {
         File dir = new File(outputDirName);
         if (!dir.exists())
@@ -43,7 +48,7 @@ public class SolidTask
             synchronized (Meta.getInstance())
             {
                 String finalName =
-                    fileName + "-" + Timestamp.getInstance().getTimestamp();
+                    fileName + "-" + timeFormat.format(new Date());
                 Writer writer = null;
                 try
                 {
@@ -78,19 +83,14 @@ public class SolidTask
             }
             catch (InterruptedException e)
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
     }
 
     @Override
-    public void run()
+    public void handleCall(Call call)
     {
-        synchronized (Meta.getInstance())
-        {
-
-        }
     }
 
     @Override
