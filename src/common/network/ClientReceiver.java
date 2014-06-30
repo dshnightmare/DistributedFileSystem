@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 
 import common.observe.call.Call;
 import common.util.Configuration;
+import common.util.Log;
 import common.util.SwitchObjectAndByte;
 
 public class ClientReceiver extends Thread{
@@ -29,7 +30,7 @@ public class ClientReceiver extends Thread{
 				System.out.println("Received response: "+received);
 				Call response = (Call)SwitchObjectAndByte.switchByteToObject(buffer);
 				connector.addResponseCall(response);
-				System.out.println("Client received response: "+response.getType());
+				Log.debug("Client received response: "+response.getType());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

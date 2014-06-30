@@ -16,6 +16,7 @@ import common.observe.call.CallDispatcher;
 import common.observe.call.CallListener;
 import common.util.Configuration;
 import common.util.Constant;
+import common.util.Log;
 import common.util.SwitchObjectAndByte;
 
 /**
@@ -133,7 +134,7 @@ public class ClientConnector implements Connector, CallDispatcher{
 			}
 			break;
 		}
-		System.out.println("Connection established with server.");
+		Log.info("Connection established with server.");
 		try {
 			ClientSender cs = new ClientSender(this, socket.getOutputStream());
 			cs.start();

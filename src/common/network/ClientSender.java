@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import common.observe.call.Call;
+import common.util.Log;
 import common.util.SwitchObjectAndByte;
 
 /**
@@ -28,6 +29,7 @@ public class ClientSender extends Thread{
 		while(true){
 			try {
 				Call cmd = connector.getCommandCall();
+				Log.debug("Client sending command: "+cmd.getType());
 				out.write(SwitchObjectAndByte.switchObjectToByte(cmd));
 				System.out.println("Command sent: "+cmd.getType()+", size="+SwitchObjectAndByte.switchObjectToByte(cmd).length);
 			} catch (IOException e) {
