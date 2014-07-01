@@ -2,14 +2,10 @@ package nameserver.meta;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class Meta
 {
-    private static Meta instance = new Meta();;
+    private static Meta instance = new Meta();
 
     private Map<String, Directory> directories =
         new HashMap<String, Directory>();
@@ -21,10 +17,16 @@ public class Meta
     private Meta()
     {
     }
-
+    
     public static Meta getInstance()
     {
         return instance;
+    }
+    
+    public synchronized void clear()
+    {
+        directories.clear();
+        files.clear();
     }
 
     public Directory getDirectory(String dirName)
@@ -158,15 +160,14 @@ public class Meta
         addFile(newDirName, file);
     }
     
-    public JSONArray getJsonData()
+    public Map<String, Map<String, Long>> getDirectoryList()
     {
-        JSONArray json = new JSONArray();
+        Map<String, Map<String, Long>> dirList = new HashMap<String, Map<String, Long>>();
         
         for (Directory dir : directories.values())
         {
-            json.put(dir.getJsonData());
+            dirList.put(dir.getName(), dir.getFileList());
         }
-        
-        return json;
+        return dirList;
     }
 }

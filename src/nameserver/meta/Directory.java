@@ -3,8 +3,6 @@ package nameserver.meta;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONObject;
-
 public class Directory
 {
     private String name;
@@ -61,17 +59,14 @@ public class Directory
     {
         this.name = name;
     }
-
-    public synchronized JSONObject getJsonData()
+    
+    public synchronized Map<String, Long> getFileList()
     {
-        JSONObject json = new JSONObject();
         Map<String, Long> fileList = new HashMap<String, Long>();
         for (File f : files.values())
         {
             fileList.put(f.getName(), f.getId());
         }
-        json.put(name, fileList);
-        
-        return json;
+        return fileList;
     }
 }

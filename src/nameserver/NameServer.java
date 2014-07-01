@@ -53,22 +53,23 @@ public class NameServer
      * The task thread monitor, it will check lease validation of task threads
      * regularly, notify the listeners if someone is dead.
      */
-    private TaskThreadMonitor taskMonitor;
+    private TaskThreadMonitor taskMonitor = TaskThreadMonitor.getInstance();
 
-    private ServerConnector connector = new ServerConnector();
+    private ServerConnector connector = ServerConnector.getInstance();
 
     private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
-
+    
     public void init()
     {
-        taskMonitor = TaskThreadMonitor.getInstance();
+        connector.addListener(this);
+        BackupUtil.getInstance().restore();
         taskMonitor.addListener(this);
-        connector.start();
     }
 
     @Override
     public void handleCall(Call call)
     {
+        System.out.println("<---" + call.getType());
         TaskThread task = null;
         long tid = call.getTaskId();
         Configuration conf = Configuration.getInstance();
@@ -130,6 +131,9 @@ public class NameServer
             {
                 tasks.put(tid, task);
             }
+            
+//            taskMonitor.addThread(task);
+            new Thread(task).start();
         }
     }
 

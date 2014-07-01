@@ -79,10 +79,13 @@ public class TestRemoveTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new RemoveFileTask(1, call, NConnector);
-            task.addListener(new TaskListener());
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.REMOVE_FILE_C2N == call.getType())
+            {
+                TaskThread task = new RemoveFileTask(1, call, NConnector);
+                task.addListener(new TaskListener());
+                new Thread(task).start();
+            }
         }
     }
 

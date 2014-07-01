@@ -18,7 +18,7 @@ public class MoveFileCallC2N
     {
         super(Call.Type.MOVE_FILE_C2N);
         this.oldDirName = oldDirName;
-        this.oldFileName = newFileName;
+        this.oldFileName = oldFileName;
         this.newDirName = newDirName;
         this.newFileName = newFileName;
     }

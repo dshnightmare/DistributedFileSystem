@@ -75,11 +75,14 @@ public class TestSyncTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task =
-                new SyncTask(1, call, NConnector, Configuration.getInstance()
-                    .getInteger(Configuration.DUPLICATE_KEY));
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.SYNC_S2N == call.getType())
+            {
+                TaskThread task =
+                    new SyncTask(1, call, NConnector, Configuration
+                        .getInstance().getInteger(Configuration.DUPLICATE_KEY));
+                new Thread(task).start();
+            }
         }
     }
 
@@ -90,10 +93,11 @@ public class TestSyncTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server sent a call: " + call.getType());
+            System.out.println("--->: " + call.getType());
             if (Call.Type.SYNC_N2S == call.getType())
             {
                 SyncCallN2S c = (SyncCallN2S) call;
+                System.out.println("Sync file list:");
                 for (Long l : c.getFiles())
                     System.out.println(l);
             }

@@ -62,8 +62,7 @@ public class TestAddFileTask
             e.printStackTrace();
         }
 
-        dir = Meta.getInstance().getDirectory("/a/");
-        assertNotNull(dir);
+        assertNotNull(Meta.getInstance().getFile("/a/", "b"));
     }
 
     @Override

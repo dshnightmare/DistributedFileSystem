@@ -40,13 +40,12 @@ public class TestMoveFileTask
 
     public void testTaskRemove()
     {
-
-        Directory dir = new Directory("/a/");
-        Meta.getInstance().addDirectory(dir);
+        Meta meta = Meta.getInstance();
         File file = new File("b", 1);
-        dir.addFile(file);
+        meta.addFile("/a/", file);
 
-        assertNotNull(Meta.getInstance().getDirectory("/a/").getFile("b"));
+        assertNotNull(meta.getFile("/a/", "b"));
+        assertNull(meta.getFile("/c/", "d"));
 
         MoveFileCallC2N call = new MoveFileCallC2N("/a/", "b", "/c/", "d");
         CConnector.sendCall(call);
@@ -60,14 +59,9 @@ public class TestMoveFileTask
             e.printStackTrace();
         }
 
-        dir = Meta.getInstance().getDirectory("/a/");
-        assertNotNull(dir);
-        file = dir.getFile("b");
-        assertNull(file);
-        dir = Meta.getInstance().getDirectory("/c/");
-        assertNotNull(dir);
-        file = dir.getFile("d");
-        assertNotNull(file);
+        assertNotNull(meta.getDirectory("/a/"));
+        assertNull(meta.getFile("/a/", "b"));
+        assertNotNull(meta.getFile("/c/", "d"));
     }
 
     @Override
@@ -81,9 +75,12 @@ public class TestMoveFileTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new MoveFileTask(1, call, NConnector);
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.MOVE_FILE_C2N == call.getType())
+            {
+                TaskThread task = new MoveFileTask(1, call, NConnector);
+                new Thread(task).start();
+            }
         }
     }
 
