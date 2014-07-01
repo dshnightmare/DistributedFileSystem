@@ -26,6 +26,8 @@ public class MoveFileTask
     private Connector connector;
 
     private String initiator;
+    
+    private long clientTaskId;
 
     public MoveFileTask(long sid, Call call, Connector connector)
     {
@@ -37,6 +39,7 @@ public class MoveFileTask
         this.newFileName = c.getNewFileName();
         this.connector = connector;
         this.initiator = c.getInitiator();
+        this.clientTaskId = call.getClientTaskId();
     }
 
     @Override
@@ -108,6 +111,7 @@ public class MoveFileTask
     private void sendAbortCall(String reason)
     {
         Call back = new AbortCall(getTaskId(), reason);
+        back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
         release();
@@ -117,6 +121,7 @@ public class MoveFileTask
     private void sendFinishCall()
     {
         Call back = new FinishCall(getTaskId());
+        back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
         setFinish();

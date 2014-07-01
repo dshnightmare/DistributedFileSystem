@@ -36,6 +36,8 @@ public class AddFileTask
     private Connector connector;
 
     private String initiator;
+    
+    private long clientTaskId;
 
     /**
      * Indicates whether the directory is already existed before adding this
@@ -55,6 +57,7 @@ public class AddFileTask
         this.connector = connector;
         this.initiator = c.getInitiator();
         this.duplicate = duplicate;
+        this.clientTaskId = call.getClientTaskId();
     }
 
     @Override
@@ -187,6 +190,7 @@ public class AddFileTask
     private void sendAbortCall(String reason)
     {
         Call back = new AbortCall(getTaskId(), reason);
+        back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
         release();
@@ -201,6 +205,7 @@ public class AddFileTask
             locations.add(s.getAddress());
 
         Call back = new AddFileCallN2C(file.getId(), locations);
+        back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         back.setTaskId(getTaskId());
         connector.sendCall(back);
@@ -209,6 +214,7 @@ public class AddFileTask
     private void sendFinishCall()
     {
         Call back = new FinishCall(getTaskId());
+        back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
         setFinish();

@@ -35,6 +35,8 @@ public class AppendFileTask
     private String initiator;
 
     private File file = null;
+    
+    private long clientTaskId;
 
     public AppendFileTask(long sid, Call call, Connector connector)
     {
@@ -44,6 +46,7 @@ public class AppendFileTask
         this.fileName = c.getFileName();
         this.connector = connector;
         this.initiator = c.getInitiator();
+        this.clientTaskId = call.getClientTaskId();
     }
 
     @Override
@@ -127,6 +130,7 @@ public class AppendFileTask
     private void sendAbortCall(String reason)
     {
         Call back = new AbortCall(getTaskId(), reason);
+        back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
         release();
@@ -139,6 +143,7 @@ public class AppendFileTask
         for (Storage s : file.getLocations())
             locations.add(s.getAddress());
         Call back = new AppendFileCallN2C(file.getId(), locations);
+        back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         back.setTaskId(getTaskId());
         connector.sendCall(back);
@@ -147,6 +152,7 @@ public class AppendFileTask
     private void sendFinishCall()
     {
         Call back = new FinishCall(getTaskId());
+        back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
         setFinish();

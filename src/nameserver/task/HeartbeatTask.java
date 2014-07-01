@@ -30,7 +30,7 @@ public class HeartbeatTask
     private final Connector connector;
 
     private final String initiator;
-
+    
     /**
      * How many seconds between two adjacent heartbeat check.
      */
