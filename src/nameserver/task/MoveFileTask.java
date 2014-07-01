@@ -1,5 +1,6 @@
 package nameserver.task;
 
+import nameserver.LogUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
 import common.observe.call.AbortCall;
@@ -7,10 +8,13 @@ import common.observe.call.Call;
 import common.observe.call.FinishCall;
 import common.observe.call.MoveFileCallC2N;
 import common.thread.TaskThread;
+import common.util.Logger;
 
 public class MoveFileTask
     extends TaskThread
 {
+    private final static Logger logger = Logger.getLogger(MoveFileTask.class);
+
     private String oldDirName;
 
     private String oldFileName;
@@ -50,6 +54,16 @@ public class MoveFileTask
             }
             else
             {
+                logger.info("MoveFileTask " + getTaskId() + " started.");
+                LogUtil.getInstance().writeIssue(
+                    getTaskId(),
+                    Call.Type.MOVE_FILE_C2N,
+                    oldDirName + " " + oldFileName + " " + newDirName + " "
+                        + newFileName);
+
+                logger.info("MoveFileTask " + getTaskId() + " commit.");
+                LogUtil.getInstance().writeCommit(getTaskId());
+
                 Meta.getInstance().renameFile(oldDirName, oldFileName,
                     newDirName, newFileName);
                 sendFinishCall();

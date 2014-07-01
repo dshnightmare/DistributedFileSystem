@@ -1,5 +1,6 @@
 package nameserver.task;
 
+import nameserver.LogUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
 import common.observe.call.AbortCall;
@@ -7,10 +8,13 @@ import common.observe.call.Call;
 import common.observe.call.FinishCall;
 import common.observe.call.RemoveFileCallC2N;
 import common.thread.TaskThread;
+import common.util.Logger;
 
 public class RemoveFileTask
     extends TaskThread
 {
+    private final static Logger logger = Logger.getLogger(RemoveFileTask.class);
+
     private String dirName;
 
     private String fileName;
@@ -40,6 +44,13 @@ public class RemoveFileTask
             }
             else
             {
+                logger.info("RemoveFileTask " + getTaskId() + " started.");
+                LogUtil.getInstance().writeIssue(getTaskId(),
+                    Call.Type.REMOVE_FILE_C2N, dirName + " " + fileName);
+
+                logger.info("RemoveFileTask " + getTaskId() + " commit.");
+                LogUtil.getInstance().writeCommit(getTaskId());
+
                 Meta.getInstance().removeFile(dirName, fileName);
                 sendFinishCall();
             }
@@ -83,7 +94,6 @@ public class RemoveFileTask
         Call back = new FinishCall(getTaskId());
         back.setInitiator(initiator);
         connector.sendCall(back);
-        release();
         setFinish();
     }
 }

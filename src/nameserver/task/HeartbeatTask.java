@@ -154,7 +154,6 @@ public class HeartbeatTask
     {
         Call back = new FinishCall(getTaskId());
         back.setInitiator(initiator);
-        ;
         connector.sendCall(back);
     }
 }

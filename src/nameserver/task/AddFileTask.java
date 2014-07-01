@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import nameserver.LogUtil;
 import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
@@ -17,10 +18,13 @@ import common.observe.call.Call;
 import common.observe.call.FinishCall;
 import common.thread.TaskThread;
 import common.util.IdGenerator;
+import common.util.Logger;
 
 public class AddFileTask
     extends TaskThread
 {
+    private final static Logger logger = Logger.getLogger(AddFileTask.class);
+
     private int duplicate;
 
     private String dirName;
@@ -56,9 +60,9 @@ public class AddFileTask
     @Override
     public void run()
     {
-        synchronized (Meta.getInstance())
+        final Meta meta = Meta.getInstance();
+        synchronized (meta)
         {
-
             if (fileExists())
             {
                 sendAbortCall("Task aborted, there has been a directory/file with the same name.");
@@ -66,6 +70,10 @@ public class AddFileTask
             }
             else
             {
+                logger.info("AddFileTask " + getTaskId() + " started."); 
+                LogUtil.getInstance().writeIssue(getTaskId(),
+                    Call.Type.ADD_FILE_C2N, dirName + " " + fileName);
+
                 file =
                     new File(fileName, IdGenerator.getInstance().getLongId());
                 // This must success, because we create this file.
@@ -78,9 +86,11 @@ public class AddFileTask
         }
 
         waitUntilTaskFinish();
-
-        synchronized (Meta.getInstance())
+        
+        synchronized (meta)
         {
+            logger.info("AddFileTask " + getTaskId() + " commit."); 
+            LogUtil.getInstance().writeCommit(getTaskId());
             commit();
             file.unlockWrite();
             sendFinishCall();
@@ -200,7 +210,6 @@ public class AddFileTask
         Call back = new FinishCall(getTaskId());
         back.setInitiator(initiator);
         connector.sendCall(back);
-        release();
         setFinish();
     }
 

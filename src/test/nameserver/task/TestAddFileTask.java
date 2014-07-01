@@ -27,6 +27,8 @@ public class TestAddFileTask
 
     private static ClientConnector CConnector;
 
+    private static TaskThread task;
+
     @Override
     protected void setUp()
     {
@@ -47,7 +49,9 @@ public class TestAddFileTask
 
     public void testTask()
     {
-        Directory dir = Meta.getInstance().getDirectory("/a/");
+        Meta meta = Meta.getInstance();
+
+        Directory dir = meta.getDirectory("/a/");
         assertNull(dir);
 
         AddFileCallC2N call = new AddFileCallC2N("/a/", "b");
@@ -62,7 +66,11 @@ public class TestAddFileTask
             e.printStackTrace();
         }
 
-        assertNotNull(Meta.getInstance().getFile("/a/", "b"));
+        synchronized (meta)
+        {
+            assertNotNull(meta.getDirectory("/a/"));
+            assertNotNull(meta.getFile("/a/", "b"));
+        }
     }
 
     @Override
@@ -79,11 +87,15 @@ public class TestAddFileTask
             System.out.println("<---: " + call.getType());
             if (Call.Type.ADD_FILE_C2N == call.getType())
             {
-                TaskThread task =
+                task =
                     new AddFileTask(1, call, NConnector, Configuration
                         .getInstance().getInteger(Configuration.DUPLICATE_KEY));
                 task.addListener(new TaskListener());
                 new Thread(task).start();
+            }
+            else if (Call.Type.FINISH == call.getType())
+            {
+                task.handleCall(call);
             }
         }
     }

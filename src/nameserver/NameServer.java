@@ -79,6 +79,8 @@ public class NameServer
     @Override
     public void handleCall(Call call)
     {
+        logger.info("NameServer received a call: " + call.getType());
+        
         TaskThread task = null;
         Configuration conf = Configuration.getInstance();
 

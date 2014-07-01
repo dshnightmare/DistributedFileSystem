@@ -23,6 +23,8 @@ import common.thread.TaskThread;
 public class TestAppendFileTask
     extends TestCase
 {
+    private static TaskThread task;
+    
     private static ServerConnector NConnector;
 
     private static ClientConnector CConnector;
@@ -89,9 +91,13 @@ public class TestAppendFileTask
             System.out.println("<---: " + call.getType());
             if (Call.Type.APPEND_FILE_C2N == call.getType())
             {
-                TaskThread task = new AppendFileTask(1, call, NConnector);
+                task = new AppendFileTask(1, call, NConnector);
                 task.addListener(new TaskListener());
                 new Thread(task).start();
+            }
+            else if (Call.Type.FINISH == call.getType())
+            {
+                task.handleCall(call);
             }
         }
     }

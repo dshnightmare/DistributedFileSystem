@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import nameserver.LogUtil;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Storage;
@@ -14,12 +15,15 @@ import common.observe.call.AppendFileCallN2C;
 import common.observe.call.Call;
 import common.observe.call.FinishCall;
 import common.thread.TaskThread;
+import common.util.Logger;
 
 // TODO: If append file task failed, what can we do? The files could be
 // inconsistent.
 public class AppendFileTask
     extends TaskThread
 {
+    private final static Logger logger = Logger.getLogger(AppendFileTask.class);
+
     private String dirName;
 
     private String fileName;
@@ -45,8 +49,11 @@ public class AppendFileTask
     @Override
     public void run()
     {
-        synchronized (Meta.getInstance())
+        final Meta meta = Meta.getInstance();
+
+        synchronized (meta)
         {
+
             if (!fileExists())
             {
                 sendAbortCall("Task aborted, file does not exist.");
@@ -54,6 +61,10 @@ public class AppendFileTask
             }
             else
             {
+                logger.info("AppendFileTask " + getTaskId() + " started.");
+                LogUtil.getInstance().writeIssue(getTaskId(),
+                    Call.Type.APPEND_FILE_C2N, dirName + " " + fileName);
+
                 file = Meta.getInstance().getFile(dirName, fileName);
                 if (file.tryLockWrite(1, TimeUnit.SECONDS))
                 {
@@ -66,11 +77,14 @@ public class AppendFileTask
                 }
             }
         }
-        
+
         waitUntilTaskFinish();
-        
-        synchronized (Meta.getInstance())
+
+        synchronized (meta)
         {
+            logger.info("AppendFileTask " + getTaskId() + " commit.");
+            LogUtil.getInstance().writeCommit(getTaskId());
+
             file.unlockWrite();
             sendFinishCall();
         }
@@ -135,7 +149,6 @@ public class AppendFileTask
         Call back = new FinishCall(getTaskId());
         back.setInitiator(initiator);
         connector.sendCall(back);
-        release();
         setFinish();
     }
 
