@@ -54,7 +54,7 @@ public class TestAddFileTask
         Directory dir = meta.getDirectory("/a/");
         assertNull(dir);
 
-        AddFileCallC2N call = new AddFileCallC2N("/a/", "b");
+        AddFileCallC2N call = new AddFileCallC2N(1000, "/a/", "b");
         CConnector.sendCall(call);
 
         try

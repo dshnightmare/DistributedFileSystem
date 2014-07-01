@@ -12,6 +12,7 @@ public abstract class Call
     private String initiator;
 
     private long taskId = -1;
+    private long clientTaskId = -1;
 
     public Call(Type type)
     {
@@ -43,7 +44,15 @@ public abstract class Call
         this.initiator = initiator;
     }
 
-    public static enum Type
+    public long getClientTaskId() {
+		return clientTaskId;
+	}
+
+	public void setClientTaskId(long clientTaskId) {
+		this.clientTaskId = clientTaskId;
+	}
+
+	public static enum Type
     {
         /**
          * It's the default value when you create a Call

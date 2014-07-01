@@ -44,7 +44,7 @@ public class main
                 String[] params = param.split(" ");
                 Call rc = null;
                 if (cmd.equalsIgnoreCase("add"))
-                    rc = new AddFileCallC2N(params[0], params[1]);
+                    rc = new AddFileCallC2N(10, params[0], params[1]);
                 else if (cmd.equalsIgnoreCase("mv"))
                     rc =
                         new MoveFileCallC2N(params[0], params[1], params[2],

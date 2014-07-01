@@ -28,7 +28,7 @@ public class XConnector extends Thread implements Connector, CallDispatcher{
 
 	public XConnector() {
 		cf = Configuration.getInstance();
-		port = cf.getInteger("nameserver_port");
+		port = cf.getInteger("xconnector_port");
 	}
 
 	public static XConnector getInstance(){
@@ -45,7 +45,7 @@ public class XConnector extends Thread implements Connector, CallDispatcher{
 	public void run() {
 		try {
 			ss = new ServerSocket(port);
-			System.out.println("Server started listing on port:" + port);
+			System.out.println("XConnector started listening on port:" + port);
 
 			while (true) {
 				Socket client = ss.accept();

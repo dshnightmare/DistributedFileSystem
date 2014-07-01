@@ -38,7 +38,7 @@ public class TestNameServer
     {
         Call call = null;
 
-        call = new AddFileCallC2N("/a/", "b");
+        call = new AddFileCallC2N(100001, "/a/", "b");
         CConnector.sendCall(call);
         
         try

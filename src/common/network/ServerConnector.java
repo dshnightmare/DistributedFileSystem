@@ -19,6 +19,7 @@ import common.observe.call.CallDispatcher;
 import common.observe.call.CallListener;
 import common.util.Configuration;
 import common.util.Constant;
+import common.util.Log;
 import common.util.Logger;
 
 /**
@@ -62,6 +63,7 @@ public class ServerConnector implements CallDispatcher, Connector{
 		 *  @TODO use callQueue and multithread Handler, or call 
 		 *  listeners here?
 		 */
+		Log.debug("NameServer call looking for listener.");
 		for (CallListener listener : callListeners) {
 			listener.handleCall(call);
 		}
