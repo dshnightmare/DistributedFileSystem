@@ -86,10 +86,13 @@ public class TestAppendFileTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new AppendFileTask(1, call, NConnector);
-            task.addListener(new TaskListener());
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.APPEND_FILE_C2N == call.getType())
+            {
+                TaskThread task = new AppendFileTask(1, call, NConnector);
+                task.addListener(new TaskListener());
+                new Thread(task).start();
+            }
         }
     }
 
@@ -100,15 +103,17 @@ public class TestAppendFileTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server sent a call: " + call.getType());
+            System.out.println("--->: " + call.getType());
             if (Call.Type.APPEND_FILE_N2C == call.getType())
             {
                 AppendFileCallN2C c = (AppendFileCallN2C) call;
-                System.out.println(c.getTaskId());
-                System.out.println(c.getType());
-                System.out.println(c.getInitiator());
+                System.out.println("task id: " + c.getTaskId());
+                System.out.println("call type: " + c.getType());
+                System.out.println("initiator: " + c.getInitiator());
+                System.out.print("location: ");
                 for (String l : c.getLocations())
-                    System.out.println(l);
+                    System.out.print(l + " ");
+                System.out.println();
 
                 FinishCall ack = new FinishCall(call.getTaskId());
                 CConnector.sendCall(ack);

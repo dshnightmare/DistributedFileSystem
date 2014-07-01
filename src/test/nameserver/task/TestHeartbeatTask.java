@@ -78,10 +78,13 @@ public class TestHeartbeatTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new HeartbeatTask(1, call, NConnector, 2000);
-            task.addListener(new TaskListener());
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.HEARTBEAT_S2N == call.getType())
+            {
+                TaskThread task = new HeartbeatTask(1, call, NConnector, 2000);
+                task.addListener(new TaskListener());
+                new Thread(task).start();
+            }
         }
     }
 

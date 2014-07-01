@@ -152,6 +152,8 @@ public class AddFileTask
         if (!hasDir && !Meta.getInstance().isDirectoryValid(dirName))
             Meta.getInstance().removeDirectory(dirName);
 
+        if (null == file)
+            return;
         for (Storage s : file.getLocations())
             s.removeFile(file);
     }

@@ -28,6 +28,11 @@ public class Configuration
 
     public static final String DUPLICATE_KEY = "duplicate_number";
 
+    public static final String META_BACKUP_DIR_KEY = "meta_backup_dir";
+
+    public static final String META_BACKUP_INTERVAL_KEY =
+        "meta_backup_interval";
+
     private Configuration()
         throws IOException
     {

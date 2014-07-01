@@ -1,7 +1,5 @@
 package test.nameserver.meta;
 
-import org.json.JSONArray;
-
 import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
@@ -12,27 +10,33 @@ public class TestMeta
 {
     public void testMeta()
     {
-        Meta m = Meta.getInstance();
+        Meta meta = Meta.getInstance();
 
-        assertNull(m.getDirectory("/"));
-        assertFalse(m.containDirectory("/"));
+        assertNull(meta.getDirectory("/"));
+        assertFalse(meta.containDirectory("/"));
 
-        m.addDirectory(new Directory("/"));
+        meta.addDirectory(new Directory("/"));
 
-        assertNotNull(m.getDirectory("/"));
-        assertTrue(m.containDirectory("/"));
+        assertNotNull(meta.getDirectory("/"));
+        assertTrue(meta.containDirectory("/"));
     }
     
-    public void testJson()
+    public void testRename()
     {
-        Meta m = Meta.getInstance();
+        Meta meta = Meta.getInstance();
         
-        m.addFile("/a/b/c/", new File("f1", 1));
-        m.addFile("/a/b/c/", new File("f2", 2));
-        m.addFile("/a/b/c/d/", new File("f3", 3));
-        m.addFile("/e/g/", new File("f4", 4));
+        assertNull(meta.getFile("/a/", "b"));
         
-        JSONArray json = m.getJsonData();
-        System.out.println(json.toString());
+        File file = new File("b", 1);
+        meta.addFile("/a/", file);
+        
+        assertNotNull(meta.getFile("/a/", "b"));
+        assertNull(meta.getFile("/c/", "d"));
+        
+        meta.renameFile("/a/", "b", "/c/", "d");
+        
+        assertNotNull(meta.getDirectory("/a/"));
+        assertNull(meta.getFile("/a/", "b"));
+        assertNotNull(meta.getFile("/c/", "d"));
     }
 }
