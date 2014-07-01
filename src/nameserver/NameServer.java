@@ -45,6 +45,7 @@ public class NameServer
     implements TaskEventListener, CallListener
 {
     private static NameServer instance = null;
+
     /**
      * Logger.
      */
@@ -59,39 +60,42 @@ public class NameServer
     private ServerConnector connector = new ServerConnector();
 
     private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
-    
+
     private NameServer()
     {
         taskMonitor = TaskThreadMonitor.getInstance();
         taskMonitor.addListener(this);
         connector.start();
     }
-    
+
     public synchronized static NameServer getInstance()
     {
         if (null == instance)
             instance = new NameServer();
-        
+
         return instance;
     }
-    
+
     @Override
     public void handleCall(Call call)
     {
         TaskThread task = null;
-        long tid = call.getTaskId();
         Configuration conf = Configuration.getInstance();
 
-        if (tid >= 0)
+        if (isNewCall(call))
         {
-            // Should we send an abort call? Maybe not.
-            if (tasks.containsKey(tid))
-                tasks.get(tid).handleCall(call);
+            if (taskExisted(call.getTaskId()))
+            {
+                tasks.get(call.getTaskId()).handleCall(call);
+            }
+            else
+            {
+                // Should we send an abort call? Maybe not.
+            }
         }
         else
         {
-
-            tid = IdGenerator.getInstance().getLongId();
+            long tid = IdGenerator.getInstance().getLongId();
 
             if (Call.Type.ADD_FILE_C2N == call.getType())
             {
@@ -139,7 +143,7 @@ public class NameServer
             {
                 tasks.put(tid, task);
             }
-            
+
             taskMonitor.addThread(task);
             new Thread(task).start();
         }
@@ -198,6 +202,16 @@ public class NameServer
             Storage active = iter.next();
             active.addMigrateFile(f.getLocations().get(0), f);
         }
+    }
+
+    private boolean isNewCall(Call call)
+    {
+        return call.getTaskId() >= 0;
+    }
+
+    private boolean taskExisted(long tid)
+    {
+        return tasks.containsKey(tid);
     }
 
 }
