@@ -44,6 +44,7 @@ import common.util.Logger;
 public class NameServer
     implements TaskEventListener, CallListener
 {
+    private static NameServer instance = null;
     /**
      * Logger.
      */
@@ -58,14 +59,22 @@ public class NameServer
     private ServerConnector connector = new ServerConnector();
 
     private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
-
-    public void init()
+    
+    private NameServer()
     {
         taskMonitor = TaskThreadMonitor.getInstance();
         taskMonitor.addListener(this);
         connector.start();
     }
-
+    
+    public synchronized static NameServer getInstance()
+    {
+        if (null == instance)
+            instance = new NameServer();
+        
+        return instance;
+    }
+    
     @Override
     public void handleCall(Call call)
     {
@@ -75,7 +84,7 @@ public class NameServer
 
         if (tid >= 0)
         {
-            // Should we send a abort call? Maybe not.
+            // Should we send an abort call? Maybe not.
             if (tasks.containsKey(tid))
                 tasks.get(tid).handleCall(call);
         }

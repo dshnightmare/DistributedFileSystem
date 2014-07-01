@@ -15,15 +15,13 @@ import junit.framework.TestCase;
 public class TestNameServer
     extends TestCase
 {
-    private static NameServer ns;
-    
     private static ClientConnector CConnector;
 
     @Override
     protected void setUp()
     {
-        ns = new NameServer();
-        ns.init();
+        NameServer.getInstance();
+        
         try
         {
             TimeUnit.SECONDS.sleep(1);
@@ -38,8 +36,6 @@ public class TestNameServer
 
     public void testHandleCall()
     {
-        ns.init();
-
         Call call = null;
 
         call = new AddFileCallC2N("/a/", "b");

@@ -166,7 +166,8 @@ public class Meta
         
         for (Directory dir : directories.values())
         {
-            dirList.put(dir.getName(), dir.getFileList());
+            if (dir.isValid())
+                dirList.put(dir.getName(), dir.getFileList());
         }
         return dirList;
     }

@@ -65,7 +65,8 @@ public class Directory
         Map<String, Long> fileList = new HashMap<String, Long>();
         for (File f : files.values())
         {
-            fileList.put(f.getName(), f.getId());
+            if (f.isValid())
+                fileList.put(f.getName(), f.getId());
         }
         return fileList;
     }
