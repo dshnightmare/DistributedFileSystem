@@ -70,14 +70,15 @@ public class AddFileTask
             }
             else
             {
-                logger.info("AddFileTask " + getTaskId() + " started."); 
-                LogUtil.getInstance().writeIssue(getTaskId(),
-                    Call.Type.ADD_FILE_C2N, dirName + " " + fileName);
-
                 file =
                     new File(fileName, IdGenerator.getInstance().getLongId());
                 // This must success, because we create this file.
                 file.tryLockWrite(1, TimeUnit.SECONDS);
+                
+                logger.info("AddFileTask " + getTaskId() + " started."); 
+                LogUtil.getInstance().writeIssue(getTaskId(),
+                    Call.Type.ADD_FILE_C2N, dirName + " " + fileName + " " + file.getId());
+                
                 // This should be a problem: if here comes an exception, then it
                 // will never release the lock.
                 addFileToMeta();
