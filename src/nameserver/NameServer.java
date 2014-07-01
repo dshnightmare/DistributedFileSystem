@@ -52,7 +52,7 @@ public class NameServer
 
     private TaskThreadMonitor taskMonitor;
 
-    private ServerConnector connector = new ServerConnector();
+    private ServerConnector connector = ServerConnector.getInstance();
 
     private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
 
@@ -62,7 +62,7 @@ public class NameServer
     {
         taskMonitor = TaskThreadMonitor.getInstance();
         taskMonitor.addListener(this);
-        connector.start();
+        connector.addListener(this);
     }
 
     public synchronized static NameServer getInstance()
