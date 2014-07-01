@@ -141,7 +141,7 @@ public class NameServer
                 tasks.put(tid, task);
             }
             
-//            taskMonitor.addThread(task);
+            taskMonitor.addThread(task);
             new Thread(task).start();
         }
     }
@@ -150,6 +150,7 @@ public class NameServer
     public void handle(TaskEvent event)
     {
         TaskThread task = event.getTaskThread();
+        tasks.remove(task);
 
         if (event.getType() == TaskEvent.Type.TASK_ABORTED)
         {
@@ -158,7 +159,6 @@ public class NameServer
         }
         else if (event.getType() == TaskEvent.Type.TASK_FINISHED)
         {
-            task.release();
             logger.info("Task: " + task.getTaskId() + " " + event.getType());
         }
         else if (event.getType() == TaskEvent.Type.HEARTBEAT_FATAL)

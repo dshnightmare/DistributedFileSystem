@@ -124,7 +124,7 @@ public class AppendFileTask
         List<String> locations = new ArrayList<String>();
         for (Storage s : file.getLocations())
             locations.add(s.getAddress());
-        Call back = new AppendFileCallN2C(locations);
+        Call back = new AppendFileCallN2C(file.getId(), locations);
         back.setInitiator(initiator);
         back.setTaskId(getTaskId());
         connector.sendCall(back);
