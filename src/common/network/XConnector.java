@@ -8,6 +8,8 @@ import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 
+import org.omg.CORBA.PUBLIC_MEMBER;
+
 import common.observe.call.Call;
 import common.observe.call.CallDispatcher;
 import common.observe.call.CallListener;
@@ -72,12 +74,14 @@ public class XConnector extends Thread implements Connector, CallDispatcher{
 		if(socketMap.containsKey(id))
 			socket = socketMap.get(id);
 		else {
-			id = id.substring(1);
+			if (id.substring(0, 1).equals("/")) {
+				id = id.substring(1);
+			}
 			String host = id.split(":")[0];
 			int port = Integer.parseInt(id.split(":")[1]);
 			try {
-				System.out.println("XConnector trying to connect to"+id);
 				socket = new Socket(host, port);
+				System.out.println("XConnector connected to"+id);
 				//@TODO dead lock?
 				putSocket(id, socket);
 			} catch (UnknownHostException e) {
@@ -110,5 +114,23 @@ public class XConnector extends Thread implements Connector, CallDispatcher{
 	public void sendCall(Call command) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	/*
+	 * defines operation code for xconnection
+	 */
+	public static class Type{
+		/*
+		 * 
+		 */
+		public static final byte OP_READ_BLOCK = 0;
+		/*
+		 * 
+		 */
+		public static final byte OP_WRITE_BLOCK = 1;
+		/*
+		 * load balance
+		 */
+		public static final byte OP_REPLACE_BLOCK = 0;
 	}
 }
