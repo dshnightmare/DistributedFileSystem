@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import nameserver.meta.File;
 import nameserver.meta.Status;
@@ -15,6 +16,7 @@ import nameserver.task.MoveFileTask;
 import nameserver.task.RemoveFileTask;
 import nameserver.task.SyncTask;
 import common.network.ServerConnector;
+import common.observe.call.AbortCall;
 import common.observe.call.Call;
 import common.observe.call.CallListener;
 import common.observe.event.TaskEvent;
@@ -46,20 +48,15 @@ public class NameServer
 {
     private static NameServer instance = null;
 
-    /**
-     * Logger.
-     */
     private static final Logger logger = Logger.getLogger(NameServer.class);
 
-    /**
-     * The task thread monitor, it will check lease validation of task threads
-     * regularly, notify the listeners if someone is dead.
-     */
     private TaskThreadMonitor taskMonitor;
 
     private ServerConnector connector = new ServerConnector();
 
     private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
+
+    private boolean pause = false;
 
     private NameServer()
     {
@@ -77,14 +74,14 @@ public class NameServer
     }
 
     @Override
-    public void handleCall(Call call)
+    public synchronized void handleCall(Call call)
     {
         logger.info("NameServer received a call: " + call.getType());
-        
+
         TaskThread task = null;
         Configuration conf = Configuration.getInstance();
 
-        if (isNewCall(call))
+        if (!isNewCall(call))
         {
             if (taskExisted(call.getTaskId()))
             {
@@ -97,6 +94,15 @@ public class NameServer
         }
         else
         {
+            if (pause)
+            {
+                Call back =
+                    new AbortCall(-1,
+                        "Nameserver is maintaining, please try later.");
+                connector.sendCall(back);
+                return;
+            }
+
             long tid = IdGenerator.getInstance().getLongId();
 
             if (Call.Type.ADD_FILE_C2N == call.getType())
@@ -119,13 +125,6 @@ public class NameServer
                 task.setLease(new TaskLease(conf
                     .getLong(Configuration.LEASE_PERIOD_KEY)));
             }
-            else if (Call.Type.REGISTRATION_S2N == call.getType())
-            {
-                // Heartbeat task doesn't need lease.
-                task =
-                    new HeartbeatTask(tid, call, connector,
-                        conf.getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
-            }
             else if (Call.Type.REMOVE_FILE_C2N == call.getType())
             {
                 task = new RemoveFileTask(tid, call, connector);
@@ -137,17 +136,31 @@ public class NameServer
                 task =
                     new SyncTask(tid, call, connector,
                         conf.getInteger(Configuration.DUPLICATE_KEY));
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
+                new Thread(task).start();
+                task = null;
             }
-
-            synchronized (tasks)
+            else if (Call.Type.REGISTRATION_S2N == call.getType())
             {
-                tasks.put(tid, task);
+                // Heartbeat task doesn't need lease.
+                task =
+                    new HeartbeatTask(tid, call, connector,
+                        conf.getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
+                new Thread(task).start();
+                task = null;
             }
 
-            taskMonitor.addThread(task);
-            new Thread(task).start();
+            // Heartbeat task and Sync task won't be put into tasks. They don't
+            // need to be monitored.
+            if (null != task)
+            {
+                synchronized (tasks)
+                {
+                    tasks.put(tid, task);
+                }
+
+                taskMonitor.addThread(task);
+                new Thread(task).start();
+            }
         }
     }
 
@@ -208,7 +221,7 @@ public class NameServer
 
     private boolean isNewCall(Call call)
     {
-        return call.getTaskId() >= 0;
+        return call.getTaskId() < 0;
     }
 
     private boolean taskExisted(long tid)
@@ -216,4 +229,28 @@ public class NameServer
         return tasks.containsKey(tid);
     }
 
+    private synchronized void makeSnapshot()
+    {
+        pause = true;
+
+        boolean hasRunningTask = !tasks.isEmpty();
+
+        while (hasRunningTask)
+        {
+            try
+            {
+                TimeUnit.SECONDS.sleep(1);
+                hasRunningTask = !tasks.isEmpty();
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        BackupUtil.getInstance().backup();
+        LogUtil.getInstance().checkpoint();
+        
+        pause = false;
+    }
 }

@@ -13,9 +13,13 @@ public class LogUtil
     private static LogUtil instance;
 
     private final static String SEPERATOR = " ";
+    
+    private static String logFileName;
 
     private LogUtil()
     {
+        logFileName = Configuration.getInstance().getString(
+            Configuration.META_LOG_DIR_KEY) + "history";
     }
 
     public synchronized static LogUtil getInstance()
@@ -32,8 +36,7 @@ public class LogUtil
         try
         {
             writer =
-                new FileWriter(new File(Configuration.getInstance().getString(
-                    Configuration.META_LOG_DIR_KEY)), true);
+                new FileWriter(new File(logFileName), true);
             writer.write("<issue>" + SEPERATOR + tid + SEPERATOR + type + SEPERATOR
                 + description + SEPERATOR + "<issue>\n");
         }
@@ -63,8 +66,7 @@ public class LogUtil
         try
         {
             writer =
-                new FileWriter(new File(Configuration.getInstance().getString(
-                    Configuration.META_LOG_DIR_KEY)), true);
+                new FileWriter(new File(logFileName), true);
             writer.write("<commit>" + SEPERATOR + tid + SEPERATOR + "<commit>\n");
         }
         catch (IOException e)
@@ -85,5 +87,11 @@ public class LogUtil
                 }
             }
         }
+    }
+    
+    public synchronized void checkpoint()
+    {
+        File file = new File(logFileName);
+        file.delete();
     }
 }

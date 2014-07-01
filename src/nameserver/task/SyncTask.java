@@ -76,14 +76,6 @@ public class SyncTask
     @Override
     public void handleCall(Call call)
     {
-        if (call.getTaskId() != getTaskId())
-            return;
-
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
-        {
-            renewLease();
-            return;
-        }
     }
 
     private void sendAbortCall(String reason)
