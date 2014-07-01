@@ -10,6 +10,7 @@ public class TestClient extends TestCase{
 
 	protected void setUp(){
 		NameServer ns = new NameServer();
+		ns.init();
 	}
 	
 	public void testClient(){
