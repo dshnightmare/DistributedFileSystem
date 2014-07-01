@@ -1,5 +1,10 @@
 package common.util;
 
+/**
+ * Simplify use of System.out.println(), and distinguish it into 3 types
+ * @author gengyufeng
+ *
+ */
 public class Log {
 
 	/**
