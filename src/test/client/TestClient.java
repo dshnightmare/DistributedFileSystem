@@ -9,8 +9,7 @@ import junit.framework.TestCase;
 public class TestClient extends TestCase{
 
 	protected void setUp(){
-		NameServer ns = new NameServer();
-		ns.init();
+		NameServer ns = NameServer.getInstance();
 	}
 	
 	public void testClient(){
