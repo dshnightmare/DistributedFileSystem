@@ -3,10 +3,10 @@ package nameserver.task;
 import nameserver.BackupUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
-import common.observe.call.AbortCall;
-import common.observe.call.Call;
-import common.observe.call.FinishCall;
-import common.observe.call.RemoveFileCallC2N;
+import common.call.AbortCall;
+import common.call.Call;
+import common.call.FinishCall;
+import common.call.RemoveFileCallC2N;
 import common.thread.TaskThread;
 import common.util.Logger;
 

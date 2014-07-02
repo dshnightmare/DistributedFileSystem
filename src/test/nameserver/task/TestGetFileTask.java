@@ -11,13 +11,13 @@ import nameserver.meta.Storage;
 import nameserver.task.GetFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.FinishCall;
-import common.observe.call.GetFileCallC2N;
-import common.observe.call.GetFileCallN2C;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.FinishCall;
+import common.call.GetFileCallC2N;
+import common.call.GetFileCallN2C;
+import common.event.TaskEvent;
+import common.event.TaskEventListener;
 import common.thread.TaskThread;
 
 public class TestGetFileTask extends TestCase

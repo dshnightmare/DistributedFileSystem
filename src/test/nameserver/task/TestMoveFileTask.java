@@ -9,9 +9,9 @@ import nameserver.meta.Meta;
 import nameserver.task.MoveFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.MoveFileCallC2N;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.MoveFileCallC2N;
 import common.thread.TaskThread;
 
 public class TestMoveFileTask

@@ -11,12 +11,12 @@ import nameserver.meta.File;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
-import common.observe.call.Call;
-import common.observe.call.FinishCall;
-import common.observe.call.HeartbeatCallS2N;
-import common.observe.call.MigrateFileCallN2S;
-import common.observe.call.RegistrationCallS2N;
-import common.observe.event.TaskEvent;
+import common.call.Call;
+import common.call.FinishCall;
+import common.call.HeartbeatCallS2N;
+import common.call.MigrateFileCallN2S;
+import common.call.RegistrationCallS2N;
+import common.event.TaskEvent;
 import common.thread.TaskThread;
 import common.util.IdGenerator;
 

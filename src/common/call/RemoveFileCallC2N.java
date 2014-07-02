@@ -1,20 +1,20 @@
-package common.observe.call;
+package common.call;
 
-public class AddFileCallC2N
+public class RemoveFileCallC2N
     extends Call
 {
-    private static final long serialVersionUID = -805598603013291328L;
+
+    private static final long serialVersionUID = 7834245963090160026L;
 
     private String dirName;
 
     private String fileName;
 
-    public AddFileCallC2N(long clientTaskId, String dirName, String fileName)
+    public RemoveFileCallC2N(String dirName, String fileName)
     {
-        super(Call.Type.ADD_FILE_C2N);
+        super(Call.Type.REMOVE_FILE_C2N);
         this.dirName = dirName;
         this.fileName = fileName;
-        setClientTaskId(clientTaskId);
     }
 
     public String getDirName()

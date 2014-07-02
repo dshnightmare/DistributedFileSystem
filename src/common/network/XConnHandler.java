@@ -9,7 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import common.observe.call.Call;
+import common.call.Call;
 import common.util.Constant;
 
 /**

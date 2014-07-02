@@ -1,4 +1,4 @@
-package common.observe.call;
+package common.call;
 
 public class GetFile2SS extends Call {
 	private static final long serialVersionUID = -5193287859291676301L;

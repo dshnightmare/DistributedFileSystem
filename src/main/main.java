@@ -9,10 +9,10 @@ import client.ClientWindow;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.network.ServerListener;
-import common.observe.call.AddFileCallC2N;
-import common.observe.call.Call;
-import common.observe.call.MoveFileCallC2N;
-import common.observe.call.RemoveFileCallC2N;
+import common.call.AddFileCallC2N;
+import common.call.Call;
+import common.call.MoveFileCallC2N;
+import common.call.RemoveFileCallC2N;
 
 public class main
 {

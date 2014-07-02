@@ -8,10 +8,10 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEvent.Type;
-import common.observe.event.TaskEventDispatcher;
-import common.observe.event.TaskEventListener;
+import common.event.TaskEvent;
+import common.event.TaskEvent.Type;
+import common.event.TaskEventDispatcher;
+import common.event.TaskEventListener;
 import common.util.Configuration;
 import common.util.Logger;
 

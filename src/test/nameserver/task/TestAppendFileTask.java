@@ -11,13 +11,13 @@ import nameserver.meta.Storage;
 import nameserver.task.AppendFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.observe.call.AppendFileCallC2N;
-import common.observe.call.AppendFileCallN2C;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.FinishCall;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
+import common.call.AppendFileCallC2N;
+import common.call.AppendFileCallN2C;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.FinishCall;
+import common.event.TaskEvent;
+import common.event.TaskEventListener;
 import common.thread.TaskThread;
 
 public class TestAppendFileTask

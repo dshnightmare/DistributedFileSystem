@@ -1,4 +1,4 @@
-package common.observe.call;
+package common.call;
 
 public class RegistrationCallS2N
     extends Call

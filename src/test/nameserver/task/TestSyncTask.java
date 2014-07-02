@@ -10,10 +10,10 @@ import nameserver.meta.Storage;
 import nameserver.task.SyncTask;
 import common.network.ServerConnector;
 import common.network.XConnector;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.SyncCallN2S;
-import common.observe.call.SyncCallS2N;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.SyncCallN2S;
+import common.call.SyncCallS2N;
 import common.thread.TaskThread;
 import common.util.Configuration;
 

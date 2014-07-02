@@ -7,10 +7,10 @@ import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import common.network.Connector;
-import common.observe.call.AbortCall;
-import common.observe.call.Call;
-import common.observe.call.SyncCallN2S;
-import common.observe.call.SyncCallS2N;
+import common.call.AbortCall;
+import common.call.Call;
+import common.call.SyncCallN2S;
+import common.call.SyncCallS2N;
 import common.thread.TaskThread;
 
 public class SyncTask

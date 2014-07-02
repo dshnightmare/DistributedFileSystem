@@ -9,10 +9,10 @@ import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Storage;
 import common.network.Connector;
-import common.observe.call.AbortCall;
-import common.observe.call.Call;
-import common.observe.call.GetFileCallC2N;
-import common.observe.call.GetFileCallN2C;
+import common.call.AbortCall;
+import common.call.Call;
+import common.call.GetFileCallC2N;
+import common.call.GetFileCallN2C;
 import common.thread.TaskThread;
 import common.util.Logger;
 
