@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import client.task.CAddFileTask;
+import client.task.CGetFileTask;
 
 import common.network.ClientConnector;
 import common.call.AddFileCallC2N;
@@ -69,6 +70,8 @@ public class ClientCMD
 						continue;
 					}
 					else {
+						task = new CGetFileTask(IdGenerator.getInstance().getLongId()
+								, args[1], args[2]);
 					}
 				}
 				else if(cmdString.toLowerCase().equals("")){
