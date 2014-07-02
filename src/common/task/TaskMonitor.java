@@ -1,4 +1,4 @@
-package common.thread;
+package common.task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,12 +15,12 @@ import common.event.TaskEventListener;
 import common.util.Configuration;
 import common.util.Logger;
 
-public class TaskThreadMonitor
+public class TaskMonitor
     implements TaskEventDispatcher, TaskEventListener
 {
-    private static TaskThreadMonitor instance = null;
+    private static TaskMonitor instance = null;
 
-    private Map<Long, TaskThread> threads = new HashMap<Long, TaskThread>();
+    private Map<Long, Task> threads = new HashMap<Long, Task>();
 
     private List<TaskEventListener> listeners =
         new ArrayList<TaskEventListener>();
@@ -33,23 +33,23 @@ public class TaskThreadMonitor
 
     private boolean isMonitoring = false;
 
-    private static Logger logger = Logger.getLogger(TaskThreadMonitor.class);
+    private static Logger logger = Logger.getLogger(TaskMonitor.class);
 
-    private TaskThreadMonitor()
+    private TaskMonitor()
     {
         this.period =
             Configuration.getInstance().getLong(Configuration.LEASE_PERIOD_KEY) * 2;
     }
 
-    public static TaskThreadMonitor getInstance()
+    public static TaskMonitor getInstance()
     {
         if (null == instance)
         {
-            synchronized (TaskThreadMonitor.class)
+            synchronized (TaskMonitor.class)
             {
                 if (null == instance)
                 {
-                    instance = new TaskThreadMonitor();
+                    instance = new TaskMonitor();
                     instance.startMonitoring();
                 }
             }
@@ -58,7 +58,7 @@ public class TaskThreadMonitor
         return instance;
     }
 
-    public synchronized void addThread(TaskThread thread)
+    public synchronized void addThread(Task thread)
     {
         threads.put(thread.getTaskId(), thread);
         thread.addListener(this);
@@ -133,7 +133,7 @@ public class TaskThreadMonitor
             synchronized (threads)
             {
                 List<Long> abortedList = new ArrayList<Long>();
-                for (Entry<Long, TaskThread> e : threads.entrySet())
+                for (Entry<Long, Task> e : threads.entrySet())
                 {
                     if (!e.getValue().isLeaseValid())
                         abortedList.add(e.getKey());

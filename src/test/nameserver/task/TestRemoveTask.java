@@ -14,7 +14,7 @@ import common.call.CallListener;
 import common.call.RemoveFileCallC2N;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.task.Task;
 
 public class TestRemoveTask
     extends TestCase
@@ -82,7 +82,7 @@ public class TestRemoveTask
             System.out.println("<---: " + call.getType());
             if (Call.Type.REMOVE_FILE_C2N == call.getType())
             {
-                TaskThread task = new RemoveFileTask(1, call, NConnector);
+                Task task = new RemoveFileTask(1, call, NConnector);
                 task.addListener(new TaskListener());
                 new Thread(task).start();
             }

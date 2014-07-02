@@ -1,4 +1,4 @@
-package common.thread;
+package common.task;
 
 public interface Lease
 {

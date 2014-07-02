@@ -7,11 +7,11 @@ import common.call.AbortCall;
 import common.call.AddDirectoryCallC2N;
 import common.call.Call;
 import common.network.Connector;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.Logger;
 
 public class AddDirectoryTask
-    extends TaskThread
+    extends Task
 {
     private final static Logger logger = Logger
         .getLogger(AddDirectoryTask.class);

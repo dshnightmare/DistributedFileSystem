@@ -18,12 +18,12 @@ import common.call.CallListener;
 import common.call.FinishCall;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.task.Task;
 
 public class TestAppendFileTask
     extends TestCase
 {
-    private static TaskThread task;
+    private static Task task;
     
     private static ServerConnector NConnector;
 

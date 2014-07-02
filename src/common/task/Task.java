@@ -1,4 +1,4 @@
-package common.thread;
+package common.task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import common.event.TaskEvent;
 import common.event.TaskEventDispatcher;
 import common.event.TaskEventListener;
 
-public abstract class TaskThread
+public abstract class Task
     implements Runnable, TaskEventDispatcher, CallListener
 {
     private long tid;
@@ -20,7 +20,7 @@ public abstract class TaskThread
     private List<TaskEventListener> listeners =
         new ArrayList<TaskEventListener>();
 
-    public TaskThread(long tid)
+    public Task(long tid)
     {
         this.tid = tid;
     }

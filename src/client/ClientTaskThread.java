@@ -1,8 +1,8 @@
 package client;
 
-import common.thread.TaskThread;
+import common.task.Task;
 
-public abstract class ClientTaskThread extends TaskThread
+public abstract class ClientTaskThread extends Task
 {
 
 	public ClientTaskThread(long sid) {

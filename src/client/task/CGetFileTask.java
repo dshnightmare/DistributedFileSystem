@@ -12,12 +12,12 @@ import common.call.Call;
 import common.call.FinishCall;
 import common.call.GetFileCallC2N;
 import common.call.GetFileCallN2C;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.IdGenerator;
 import common.util.Log;
 
 public class CGetFileTask 
-	extends TaskThread{
+	extends Task{
 	
 	/*
 	 * get connection with storage server

@@ -8,8 +8,8 @@ import common.call.Call;
 import common.call.CallListener;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskThread;
-import common.thread.TaskThreadMonitor;
+import common.task.Task;
+import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.IdGenerator;
 import common.util.Log;
@@ -18,12 +18,12 @@ public class Client
 	implements TaskEventListener, CallListener{
 
 	private ClientConnector connector;
-	private TaskThreadMonitor taskMonitor;
-	private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
+	private TaskMonitor taskMonitor;
+	private Map<Long, Task> tasks = new HashMap<Long, Task>();
 	
 	public Client(){
 		connector = ClientConnector.getInstance();
-		taskMonitor = TaskThreadMonitor.getInstance();
+		taskMonitor = TaskMonitor.getInstance();
 		taskMonitor.addListener(this);
 	}
 
@@ -31,7 +31,7 @@ public class Client
 	public void handleCall(Call call) {
 		// TODO Auto-generated method stub
 
-        TaskThread task = null;
+        Task task = null;
         long remoteTaskId = call.getFromTaskId();
         long localTaskId = call.getToTaskId();
         Configuration conf = Configuration.getInstance();

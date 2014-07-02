@@ -1,9 +1,9 @@
 package storageserver;
 
 import common.call.Call;
-import common.thread.TaskThread;
+import common.task.Task;
 
-public class StorageTaskThread extends TaskThread
+public class StorageTaskThread extends Task
 {
 	private Call call;
 	private Storage storage;

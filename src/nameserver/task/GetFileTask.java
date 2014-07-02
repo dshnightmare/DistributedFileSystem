@@ -13,11 +13,11 @@ import common.call.AbortCall;
 import common.call.Call;
 import common.call.GetFileCallC2N;
 import common.call.GetFileCallN2C;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.Logger;
 
 public class GetFileTask
-    extends TaskThread
+    extends Task
 {
     private final static Logger logger = Logger.getLogger(GetFileTask.class);
 

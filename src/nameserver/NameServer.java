@@ -21,9 +21,9 @@ import common.call.Call;
 import common.call.CallListener;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskLease;
-import common.thread.TaskThread;
-import common.thread.TaskThreadMonitor;
+import common.task.TaskLease;
+import common.task.Task;
+import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.IdGenerator;
 import common.util.Logger;
@@ -50,11 +50,11 @@ public class NameServer
 
     private static final Logger logger = Logger.getLogger(NameServer.class);
 
-    private TaskThreadMonitor taskMonitor;
+    private TaskMonitor taskMonitor;
 
     private ServerConnector connector = ServerConnector.getInstance();
 
-    private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
+    private Map<Long, Task> tasks = new HashMap<Long, Task>();
 
     private boolean pause = false;
     
@@ -62,7 +62,7 @@ public class NameServer
 
     private NameServer()
     {
-        taskMonitor = TaskThreadMonitor.getInstance();
+        taskMonitor = TaskMonitor.getInstance();
         taskMonitor.addListener(this);
         connector.addListener(this);
     }
@@ -92,7 +92,7 @@ public class NameServer
     {
         logger.info("NameServer received a call: " + call.getType());
 
-        TaskThread task = null;
+        Task task = null;
         Configuration conf = Configuration.getInstance();
         long localTaskId = call.getToTaskId();
         long remoteTaskId = call.getFromTaskId();
@@ -184,7 +184,7 @@ public class NameServer
     @Override
     public void handle(TaskEvent event)
     {
-        TaskThread task = event.getTaskThread();
+        Task task = event.getTaskThread();
         tasks.remove(task);
 
         if (event.getType() == TaskEvent.Type.TASK_ABORTED)

@@ -10,12 +10,12 @@ import common.call.AddFileCallC2N;
 import common.call.AddFileCallN2C;
 import common.call.Call;
 import common.call.FinishCall;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.IdGenerator;
 import common.util.Log;
 
 public class CAddFileTask
-    extends TaskThread
+    extends Task
 {
 
     /*

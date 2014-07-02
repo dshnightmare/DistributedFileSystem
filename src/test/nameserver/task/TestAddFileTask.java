@@ -16,7 +16,7 @@ import common.call.CallListener;
 import common.call.FinishCall;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.Configuration;
 import junit.framework.TestCase;
 
@@ -27,7 +27,7 @@ public class TestAddFileTask
 
     private static ClientConnector CConnector;
 
-    private static TaskThread task;
+    private static Task task;
 
     @Override
     protected void setUp()

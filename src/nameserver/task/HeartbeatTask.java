@@ -17,11 +17,11 @@ import common.call.HeartbeatCallS2N;
 import common.call.MigrateFileCallN2S;
 import common.call.RegistrationCallS2N;
 import common.event.TaskEvent;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.IdGenerator;
 
 public class HeartbeatTask
-    extends TaskThread
+    extends Task
 {
     private Storage storage;
 

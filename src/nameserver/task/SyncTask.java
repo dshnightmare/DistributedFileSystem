@@ -11,10 +11,10 @@ import common.call.AbortCall;
 import common.call.Call;
 import common.call.SyncCallN2S;
 import common.call.SyncCallS2N;
-import common.thread.TaskThread;
+import common.task.Task;
 
 public class SyncTask
-    extends TaskThread
+    extends Task
 {
     private String address;
 

@@ -7,11 +7,11 @@ import common.call.AbortCall;
 import common.call.Call;
 import common.call.FinishCall;
 import common.call.RemoveFileCallC2N;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.Logger;
 
 public class RemoveFileTask
-    extends TaskThread
+    extends Task
 {
     private final static Logger logger = Logger.getLogger(RemoveFileTask.class);
 

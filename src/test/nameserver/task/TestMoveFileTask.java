@@ -12,7 +12,7 @@ import common.network.ServerConnector;
 import common.call.Call;
 import common.call.CallListener;
 import common.call.MoveFileCallC2N;
-import common.thread.TaskThread;
+import common.task.Task;
 
 public class TestMoveFileTask
     extends TestCase
@@ -78,7 +78,7 @@ public class TestMoveFileTask
             System.out.println("<---: " + call.getType());
             if (Call.Type.MOVE_FILE_C2N == call.getType())
             {
-                TaskThread task = new MoveFileTask(1, call, NConnector);
+                Task task = new MoveFileTask(1, call, NConnector);
                 new Thread(task).start();
             }
         }

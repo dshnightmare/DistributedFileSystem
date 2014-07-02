@@ -14,7 +14,7 @@ import common.call.Call;
 import common.call.CallListener;
 import common.call.SyncCallN2S;
 import common.call.SyncCallS2N;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.Configuration;
 
 public class TestSyncTask
@@ -78,7 +78,7 @@ public class TestSyncTask
             System.out.println("<---: " + call.getType());
             if (Call.Type.SYNC_S2N == call.getType())
             {
-                TaskThread task =
+                Task task =
                     new SyncTask(1, call, NConnector, Configuration
                         .getInstance().getInteger(Configuration.DUPLICATE_KEY));
                 new Thread(task).start();

@@ -16,12 +16,12 @@ import common.call.AddFileCallC2N;
 import common.call.AddFileCallN2C;
 import common.call.Call;
 import common.call.FinishCall;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.IdGenerator;
 import common.util.Logger;
 
 public class AddFileTask
-    extends TaskThread
+    extends Task
 {
     private final static Logger logger = Logger.getLogger(AddFileTask.class);
 

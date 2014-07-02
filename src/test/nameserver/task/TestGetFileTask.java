@@ -18,11 +18,11 @@ import common.call.GetFileCallC2N;
 import common.call.GetFileCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.task.Task;
 
 public class TestGetFileTask extends TestCase
 {
-private static TaskThread task;
+private static Task task;
     
     private static ServerConnector NConnector;
 

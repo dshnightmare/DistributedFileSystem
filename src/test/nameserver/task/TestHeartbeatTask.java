@@ -18,7 +18,7 @@ import common.call.HeartbeatCallS2N;
 import common.call.MigrateFileCallN2S;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.task.Task;
 
 public class TestHeartbeatTask
     extends TestCase
@@ -81,7 +81,7 @@ public class TestHeartbeatTask
             System.out.println("<---: " + call.getType());
             if (Call.Type.HEARTBEAT_S2N == call.getType())
             {
-                TaskThread task = new HeartbeatTask(1, call, NConnector, 2000);
+                Task task = new HeartbeatTask(1, call, NConnector, 2000);
                 task.addListener(new TaskListener());
                 new Thread(task).start();
             }

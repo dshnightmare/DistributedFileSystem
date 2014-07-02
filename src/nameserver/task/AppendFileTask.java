@@ -14,13 +14,13 @@ import common.call.AppendFileCallC2N;
 import common.call.AppendFileCallN2C;
 import common.call.Call;
 import common.call.FinishCall;
-import common.thread.TaskThread;
+import common.task.Task;
 import common.util.Logger;
 
 // TODO: If append file task failed, what can we do? The files could be
 // inconsistent.
 public class AppendFileTask
-    extends TaskThread
+    extends Task
 {
     private final static Logger logger = Logger.getLogger(AppendFileTask.class);
 
