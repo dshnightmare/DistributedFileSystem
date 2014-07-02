@@ -20,7 +20,7 @@ public class Log {
 	 * @param info
 	 */
 	public static void info(String info){
-		System.out.println(info);
+		System.out.println("Info-"+info);
 	}
 	
 	/**
@@ -28,6 +28,6 @@ public class Log {
 	 * @param debug
 	 */
 	public static void debug(String debug){
-		System.out.println(debug);
+		System.out.println("Debug-"+debug);
 	}
 }

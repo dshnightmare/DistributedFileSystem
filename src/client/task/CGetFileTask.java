@@ -64,7 +64,7 @@ public class CGetFileTask
 	public void run() {
 		// TODO Auto-generated method stub
 		
-		AddFileCallC2N callC2N = new AddFileCallC2N(taskId
+		GetFileCallC2N callC2N = new GetFileCallC2N(taskId
 				, filepath, filename);
 		ClientConnector.getInstance().sendCall(callC2N);
 		ClientConnector.getInstance().addListener(this);
