@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import nameserver.LogUtil;
+import nameserver.BackupUtil;
 import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
@@ -36,7 +36,7 @@ public class AddFileTask
     private Connector connector;
 
     private String initiator;
-    
+
     private long clientTaskId;
 
     /**
@@ -64,6 +64,8 @@ public class AddFileTask
     public void run()
     {
         final Meta meta = Meta.getInstance();
+        final BackupUtil backup = BackupUtil.getInstance();
+
         synchronized (meta)
         {
             if (fileExists())
@@ -77,11 +79,11 @@ public class AddFileTask
                     new File(fileName, IdGenerator.getInstance().getLongId());
                 // This must success, because we create this file.
                 file.tryLockWrite(1, TimeUnit.SECONDS);
-                
-                logger.info("AddFileTask " + getTaskId() + " started."); 
-                LogUtil.getInstance().writeIssue(getTaskId(),
-                    Call.Type.ADD_FILE_C2N, dirName + " " + fileName + " " + file.getId());
-                
+
+                logger.info("AddFileTask " + getTaskId() + " started.");
+                backup.writeLogIssue(getTaskId(), Call.Type.ADD_FILE_C2N,
+                    dirName + " " + fileName + " " + file.getId());
+
                 // This should be a problem: if here comes an exception, then it
                 // will never release the lock.
                 addFileToMeta();
@@ -90,11 +92,11 @@ public class AddFileTask
         }
 
         waitUntilTaskFinish();
-        
+
         synchronized (meta)
         {
-            logger.info("AddFileTask " + getTaskId() + " commit."); 
-            LogUtil.getInstance().writeCommit(getTaskId());
+            logger.info("AddFileTask " + getTaskId() + " commit.");
+            backup.writeLogCommit(getTaskId());
             commit();
             file.unlockWrite();
             sendFinishCall();

@@ -57,12 +57,26 @@ public class NameServer
     private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
 
     private boolean pause = false;
+    
+    private boolean initialized = false;
 
     private NameServer()
     {
         taskMonitor = TaskThreadMonitor.getInstance();
         taskMonitor.addListener(this);
         connector.addListener(this);
+    }
+    
+    public void initilize()
+    {
+        if (initialized)
+        {
+            logger.error("NameServer has been initialized before, you can't do it twice.");
+        }
+        else
+        {
+            // TODO
+        }
     }
 
     public synchronized static NameServer getInstance()
@@ -232,6 +246,7 @@ public class NameServer
     private synchronized void makeSnapshot()
     {
         pause = true;
+        final BackupUtil backup = BackupUtil.getInstance();
 
         boolean hasRunningTask = !tasks.isEmpty();
 
@@ -248,8 +263,8 @@ public class NameServer
             }
         }
 
-        BackupUtil.getInstance().backup();
-        LogUtil.getInstance().checkpoint();
+        backup.writeBackupImage();
+        backup.readBackupLog();
         
         pause = false;
     }

@@ -1,6 +1,6 @@
 package nameserver.task;
 
-import nameserver.LogUtil;
+import nameserver.BackupUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
 import common.observe.call.AbortCall;
@@ -45,6 +45,8 @@ public class MoveFileTask
     @Override
     public void run()
     {
+        final BackupUtil backup = BackupUtil.getInstance();
+        
         synchronized (Meta.getInstance())
         {
             if (!oldFileExists())
@@ -58,14 +60,14 @@ public class MoveFileTask
             else
             {
                 logger.info("MoveFileTask " + getTaskId() + " started.");
-                LogUtil.getInstance().writeIssue(
+                backup.writeLogIssue(
                     getTaskId(),
                     Call.Type.MOVE_FILE_C2N,
                     oldDirName + " " + oldFileName + " " + newDirName + " "
                         + newFileName);
 
                 logger.info("MoveFileTask " + getTaskId() + " commit.");
-                LogUtil.getInstance().writeCommit(getTaskId());
+                backup.writeLogCommit(getTaskId());
 
                 Meta.getInstance().renameFile(oldDirName, oldFileName,
                     newDirName, newFileName);

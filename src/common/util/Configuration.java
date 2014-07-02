@@ -28,7 +28,7 @@ public class Configuration
 
     public static final String DUPLICATE_KEY = "duplicate_number";
 
-    public static final String META_BACKUP_DIR_KEY = "meta_backup_dir";
+    public static final String META_BACKUP_DIR_KEY = "meta_image_dir";
 
     public static final String META_LOG_DIR_KEY = "meta_log_dir";
 

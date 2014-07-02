@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import nameserver.LogUtil;
+import nameserver.BackupUtil;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Storage;
@@ -53,6 +53,7 @@ public class AppendFileTask
     public void run()
     {
         final Meta meta = Meta.getInstance();
+        final BackupUtil backup = BackupUtil.getInstance();
 
         synchronized (meta)
         {
@@ -65,7 +66,7 @@ public class AppendFileTask
             else
             {
                 logger.info("AppendFileTask " + getTaskId() + " started.");
-                LogUtil.getInstance().writeIssue(getTaskId(),
+                backup.writeLogIssue(getTaskId(),
                     Call.Type.APPEND_FILE_C2N, dirName + " " + fileName);
 
                 file = Meta.getInstance().getFile(dirName, fileName);
@@ -86,7 +87,7 @@ public class AppendFileTask
         synchronized (meta)
         {
             logger.info("AppendFileTask " + getTaskId() + " commit.");
-            LogUtil.getInstance().writeCommit(getTaskId());
+            backup.writeLogCommit(getTaskId());
 
             file.unlockWrite();
             sendFinishCall();

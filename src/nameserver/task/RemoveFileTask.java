@@ -1,6 +1,6 @@
 package nameserver.task;
 
-import nameserver.LogUtil;
+import nameserver.BackupUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
 import common.observe.call.AbortCall;
@@ -39,6 +39,8 @@ public class RemoveFileTask
     @Override
     public void run()
     {
+        final BackupUtil backup = BackupUtil.getInstance();
+        
         synchronized (Meta.getInstance())
         {
             if (!fileExists())
@@ -48,11 +50,11 @@ public class RemoveFileTask
             else
             {
                 logger.info("RemoveFileTask " + getTaskId() + " started.");
-                LogUtil.getInstance().writeIssue(getTaskId(),
+                backup.writeLogIssue(getTaskId(),
                     Call.Type.REMOVE_FILE_C2N, dirName + " " + fileName);
 
                 logger.info("RemoveFileTask " + getTaskId() + " commit.");
-                LogUtil.getInstance().writeCommit(getTaskId());
+                backup.writeLogCommit(getTaskId());
 
                 Meta.getInstance().removeFile(dirName, fileName);
                 sendFinishCall();
