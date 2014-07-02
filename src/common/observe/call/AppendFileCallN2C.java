@@ -9,9 +9,9 @@ public class AppendFileCallN2C
 
     private final List<String> locations;
 
-    private long fid;
+    private String fid;
 
-    public AppendFileCallN2C(long fid, List<String> locations)
+    public AppendFileCallN2C(String fid, List<String> locations)
     {
         super(Call.Type.APPEND_FILE_N2C);
         this.fid = fid;
@@ -23,7 +23,7 @@ public class AppendFileCallN2C
         return locations;
     }
 
-    public long getFileId()
+    public String getFileId()
     {
         return fid;
     }
