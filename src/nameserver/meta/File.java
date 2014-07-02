@@ -28,6 +28,7 @@ public class File
     {
         this.name = name;
         this.id = id;
+        this.version = 0;
     }
 
     public void setName(String name)
@@ -81,9 +82,9 @@ public class File
         this.valid = valid;
     }
 
-    public void setVersion(long version)
+    public void updateVersion()
     {
-        this.version = version;
+        this.version++;
     }
 
     public long getVersion()

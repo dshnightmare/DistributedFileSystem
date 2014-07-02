@@ -171,4 +171,10 @@ public class Meta
         }
         return dirList;
     }
+    
+    private void updateFileVersion(String dirName, String fileName)
+    {
+        final File file = getFile(dirName, fileName);
+        file.updateVersion();
+    }
 }

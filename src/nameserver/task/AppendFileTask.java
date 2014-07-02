@@ -89,6 +89,7 @@ public class AppendFileTask
             logger.info("AppendFileTask " + getTaskId() + " commit.");
             backup.writeLogCommit(getTaskId());
 
+            file.updateVersion();
             file.unlockWrite();
             sendFinishCall();
         }
@@ -143,7 +144,11 @@ public class AppendFileTask
         List<String> locations = new ArrayList<String>();
         for (Storage s : file.getLocations())
             locations.add(s.getAddress());
-        Call back = new AppendFileCallN2C(file.getId(), locations);
+        
+        long newFileVersion = file.getVersion() + 1;
+        String fileId = file.getId() + "-" + newFileVersion;
+        
+        Call back = new AppendFileCallN2C(fileId, locations);
         back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         back.setTaskId(getTaskId());
