@@ -29,9 +29,9 @@ public class MoveFileTask
     
     private long clientTaskId;
 
-    public MoveFileTask(long sid, Call call, Connector connector)
+    public MoveFileTask(long tid, Call call, Connector connector)
     {
-        super(sid);
+        super(tid);
         MoveFileCallC2N c = (MoveFileCallC2N) call;
         this.oldDirName = c.getOldDirName();
         this.oldFileName = c.getOldFileName();
@@ -71,7 +71,8 @@ public class MoveFileTask
 
                 Meta.getInstance().renameFile(oldDirName, oldFileName,
                     newDirName, newFileName);
-                sendFinishCall();
+                setFinish();
+//                sendFinishCall();
             }
         }
     }
@@ -126,6 +127,5 @@ public class MoveFileTask
         back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
-        setFinish();
     }
 }

@@ -30,7 +30,7 @@ public class HeartbeatTask
     private final Connector connector;
 
     private final String initiator;
-    
+
     /**
      * How many seconds between two adjacent heartbeat check.
      */
@@ -53,6 +53,7 @@ public class HeartbeatTask
         this.storage =
             new Storage(IdGenerator.getInstance().getLongId(), address);
         Status.getInstance().addStorage(storage);
+        // As for registration, send a finish call to notify storage server.
         sendFinishCall();
 
         while (true)

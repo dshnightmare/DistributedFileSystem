@@ -48,9 +48,9 @@ public class AddFileTask
 
     private File file = null;
 
-    public AddFileTask(long sid, Call call, Connector connector, int duplicate)
+    public AddFileTask(long tid, Call call, Connector connector, int duplicate)
     {
-        super(sid);
+        super(tid);
         AddFileCallC2N c = (AddFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
@@ -99,7 +99,8 @@ public class AddFileTask
             backup.writeLogCommit(getTaskId());
             commit();
             file.unlockWrite();
-            sendFinishCall();
+            setFinish();
+//            sendFinishCall();
         }
     }
 
@@ -220,7 +221,6 @@ public class AddFileTask
         back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
-        setFinish();
     }
 
     private void commit()
