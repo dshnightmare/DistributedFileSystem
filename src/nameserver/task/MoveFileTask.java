@@ -72,7 +72,6 @@ public class MoveFileTask
                 Meta.getInstance().renameFile(oldDirName, oldFileName,
                     newDirName, newFileName);
                 setFinish();
-//                sendFinishCall();
             }
         }
     }
@@ -120,14 +119,5 @@ public class MoveFileTask
         connector.sendCall(back);
         release();
         setFinish();
-    }
-
-    private void sendFinishCall()
-    {
-        Call back = new FinishCall();
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
     }
 }

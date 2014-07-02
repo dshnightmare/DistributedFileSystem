@@ -87,6 +87,8 @@ public abstract class Call
          */
         ADD_FILE_N2C("ADD_FILE_N2C"),
 
+        ADD_DIRECTORY_C2N("ADD_DIRECTORY_C2N"),
+
         /**
          * Get file
          */
