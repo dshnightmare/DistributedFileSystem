@@ -1,6 +1,6 @@
 package storageserver;
 
-import common.observe.call.Call;
+import common.call.Call;
 import common.thread.TaskThread;
 
 public class StorageTaskThread extends TaskThread

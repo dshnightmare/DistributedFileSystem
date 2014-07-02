@@ -3,10 +3,10 @@ package nameserver.task;
 import nameserver.BackupUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
-import common.observe.call.AbortCall;
-import common.observe.call.Call;
-import common.observe.call.FinishCall;
-import common.observe.call.RemoveFileCallC2N;
+import common.call.AbortCall;
+import common.call.Call;
+import common.call.FinishCall;
+import common.call.RemoveFileCallC2N;
 import common.thread.TaskThread;
 import common.util.Logger;
 
@@ -22,12 +22,12 @@ public class RemoveFileTask
     private Connector connector;
 
     private String initiator;
-    
+
     private long clientTaskId;
 
-    public RemoveFileTask(long sid, Call call, Connector connector)
+    public RemoveFileTask(long tid, Call call, Connector connector)
     {
-        super(sid);
+        super(tid);
         RemoveFileCallC2N c = (RemoveFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
@@ -40,7 +40,7 @@ public class RemoveFileTask
     public void run()
     {
         final BackupUtil backup = BackupUtil.getInstance();
-        
+
         synchronized (Meta.getInstance())
         {
             if (!fileExists())
@@ -50,14 +50,15 @@ public class RemoveFileTask
             else
             {
                 logger.info("RemoveFileTask " + getTaskId() + " started.");
-                backup.writeLogIssue(getTaskId(),
-                    Call.Type.REMOVE_FILE_C2N, dirName + " " + fileName);
+                backup.writeLogIssue(getTaskId(), Call.Type.REMOVE_FILE_C2N,
+                    dirName + " " + fileName);
 
                 logger.info("RemoveFileTask " + getTaskId() + " commit.");
                 backup.writeLogCommit(getTaskId());
 
                 Meta.getInstance().removeFile(dirName, fileName);
-                sendFinishCall();
+                setFinish();
+                // sendFinishCall();
             }
         }
     }
@@ -101,6 +102,5 @@ public class RemoveFileTask
         back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
-        setFinish();
     }
 }

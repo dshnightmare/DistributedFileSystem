@@ -2,23 +2,28 @@ package test.nameserver.task;
 
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.TestCase;
 import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
-import nameserver.task.RemoveFileTask;
-import junit.framework.TestCase;
+import nameserver.meta.Status;
+import nameserver.meta.Storage;
+import nameserver.task.GetFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.RemoveFileCallC2N;
+import common.call.FinishCall;
+import common.call.GetFileCallC2N;
+import common.call.GetFileCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.thread.TaskThread;
 
-public class TestRemoveTask
-    extends TestCase
+public class TestGetFileTask extends TestCase
 {
+private static TaskThread task;
+    
     private static ServerConnector NConnector;
 
     private static ClientConnector CConnector;
@@ -40,17 +45,22 @@ public class TestRemoveTask
         NConnector.addListener(new NCallListener());
     }
 
-    public void testTaskRemove()
+    public void testTask()
     {
-
         Directory dir = new Directory("/a/");
-        Meta.getInstance().addDirectory(dir);
         File file = new File("b", 1);
+        Storage storage = new Storage(1, "localhost");
+
+        file.addLocation(storage);
+        storage.addFile(file);
         dir.addFile(file);
+        Meta.getInstance().addDirectory(dir);
+        Status.getInstance().addStorage(storage);
 
-        assertNotNull(Meta.getInstance().getDirectory("/a/").getFile("b"));
+        dir = Meta.getInstance().getDirectory("/a/");
+        assertNotNull(dir);
 
-        RemoveFileCallC2N call = new RemoveFileCallC2N("/a/", "b");
+        GetFileCallC2N call = new GetFileCallC2N(1, "/a/", "b");
         CConnector.sendCall(call);
 
         try
@@ -64,8 +74,6 @@ public class TestRemoveTask
 
         dir = Meta.getInstance().getDirectory("/a/");
         assertNotNull(dir);
-        file = dir.getFile("b");
-        assertNull(file);
     }
 
     @Override
@@ -80,11 +88,15 @@ public class TestRemoveTask
         public void handleCall(Call call)
         {
             System.out.println("<---: " + call.getType());
-            if (Call.Type.REMOVE_FILE_C2N == call.getType())
+            if (Call.Type.GET_FILE_C2N == call.getType())
             {
-                TaskThread task = new RemoveFileTask(1, call, NConnector);
+                task = new GetFileTask(1, call, NConnector);
                 task.addListener(new TaskListener());
                 new Thread(task).start();
+            }
+            else if (Call.Type.FINISH == call.getType())
+            {
+                task.handleCall(call);
             }
         }
     }
@@ -96,7 +108,21 @@ public class TestRemoveTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server sent a call: " + call.getType());
+            System.out.println("--->: " + call.getType());
+            if (Call.Type.GET_FILE_N2C == call.getType())
+            {
+                GetFileCallN2C c = (GetFileCallN2C) call;
+                System.out.println("task id: " + c.getTaskId());
+                System.out.println("call type: " + c.getType());
+                System.out.println("initiator: " + c.getInitiator());
+                System.out.print("location: ");
+                for (String l : c.getLocations())
+                    System.out.print(l + " ");
+                System.out.println();
+
+                FinishCall ack = new FinishCall(call.getTaskId());
+                CConnector.sendCall(ack);
+            }
         }
     }
 

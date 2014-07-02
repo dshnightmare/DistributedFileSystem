@@ -2,7 +2,7 @@ package test.nameserver.backup;
 
 import java.util.concurrent.TimeUnit;
 
-import common.observe.call.Call;
+import common.call.Call;
 
 import junit.framework.TestCase;
 import nameserver.BackupUtil;

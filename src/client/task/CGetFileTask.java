@@ -6,12 +6,12 @@ import java.net.Socket;
 
 import common.network.ClientConnector;
 import common.network.XConnector;
-import common.observe.call.AddFileCallC2N;
-import common.observe.call.AddFileCallN2C;
-import common.observe.call.Call;
-import common.observe.call.FinishCall;
-import common.observe.call.GetFileCallC2N;
-import common.observe.call.GetFileCallN2C;
+import common.call.AddFileCallC2N;
+import common.call.AddFileCallN2C;
+import common.call.Call;
+import common.call.FinishCall;
+import common.call.GetFileCallC2N;
+import common.call.GetFileCallN2C;
 import common.thread.TaskThread;
 import common.util.IdGenerator;
 import common.util.Log;

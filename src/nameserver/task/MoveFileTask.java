@@ -3,10 +3,10 @@ package nameserver.task;
 import nameserver.BackupUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
-import common.observe.call.AbortCall;
-import common.observe.call.Call;
-import common.observe.call.FinishCall;
-import common.observe.call.MoveFileCallC2N;
+import common.call.AbortCall;
+import common.call.Call;
+import common.call.FinishCall;
+import common.call.MoveFileCallC2N;
 import common.thread.TaskThread;
 import common.util.Logger;
 
@@ -29,9 +29,9 @@ public class MoveFileTask
     
     private long clientTaskId;
 
-    public MoveFileTask(long sid, Call call, Connector connector)
+    public MoveFileTask(long tid, Call call, Connector connector)
     {
-        super(sid);
+        super(tid);
         MoveFileCallC2N c = (MoveFileCallC2N) call;
         this.oldDirName = c.getOldDirName();
         this.oldFileName = c.getOldFileName();
@@ -71,7 +71,8 @@ public class MoveFileTask
 
                 Meta.getInstance().renameFile(oldDirName, oldFileName,
                     newDirName, newFileName);
-                sendFinishCall();
+                setFinish();
+//                sendFinishCall();
             }
         }
     }
@@ -126,6 +127,5 @@ public class MoveFileTask
         back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
-        setFinish();
     }
 }

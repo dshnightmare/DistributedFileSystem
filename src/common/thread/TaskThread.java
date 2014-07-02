@@ -3,10 +3,10 @@ package common.thread;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.observe.call.CallListener;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventDispatcher;
-import common.observe.event.TaskEventListener;
+import common.call.CallListener;
+import common.event.TaskEvent;
+import common.event.TaskEventDispatcher;
+import common.event.TaskEventListener;
 
 public abstract class TaskThread
     implements Runnable, TaskEventDispatcher, CallListener

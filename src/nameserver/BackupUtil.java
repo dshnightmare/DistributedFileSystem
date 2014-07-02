@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Map.Entry;
 
-import common.observe.call.Call;
+import common.call.Call;
 import common.util.Configuration;
 import common.util.Logger;
 import nameserver.meta.Meta;

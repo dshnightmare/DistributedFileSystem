@@ -10,9 +10,9 @@ import java.util.Map;
 
 import org.omg.CORBA.PUBLIC_MEMBER;
 
-import common.observe.call.Call;
-import common.observe.call.CallDispatcher;
-import common.observe.call.CallListener;
+import common.call.Call;
+import common.call.CallDispatcher;
+import common.call.CallListener;
 import common.util.Configuration;
 import common.util.Logger;
 

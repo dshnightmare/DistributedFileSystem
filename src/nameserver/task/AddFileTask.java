@@ -11,11 +11,11 @@ import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
-import common.observe.call.AbortCall;
-import common.observe.call.AddFileCallC2N;
-import common.observe.call.AddFileCallN2C;
-import common.observe.call.Call;
-import common.observe.call.FinishCall;
+import common.call.AbortCall;
+import common.call.AddFileCallC2N;
+import common.call.AddFileCallN2C;
+import common.call.Call;
+import common.call.FinishCall;
 import common.thread.TaskThread;
 import common.util.IdGenerator;
 import common.util.Logger;
@@ -48,9 +48,9 @@ public class AddFileTask
 
     private File file = null;
 
-    public AddFileTask(long sid, Call call, Connector connector, int duplicate)
+    public AddFileTask(long tid, Call call, Connector connector, int duplicate)
     {
-        super(sid);
+        super(tid);
         AddFileCallC2N c = (AddFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
@@ -99,7 +99,8 @@ public class AddFileTask
             backup.writeLogCommit(getTaskId());
             commit();
             file.unlockWrite();
-            sendFinishCall();
+            setFinish();
+//            sendFinishCall();
         }
     }
 
@@ -220,7 +221,6 @@ public class AddFileTask
         back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
-        setFinish();
     }
 
     private void commit()

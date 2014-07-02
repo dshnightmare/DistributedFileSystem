@@ -11,13 +11,13 @@ import nameserver.meta.Storage;
 import nameserver.task.HeartbeatTask;
 import common.network.ServerConnector;
 import common.network.XConnector;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.FinishCall;
-import common.observe.call.HeartbeatCallS2N;
-import common.observe.call.MigrateFileCallN2S;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.FinishCall;
+import common.call.HeartbeatCallS2N;
+import common.call.MigrateFileCallN2S;
+import common.event.TaskEvent;
+import common.event.TaskEventListener;
 import common.thread.TaskThread;
 
 public class TestHeartbeatTask

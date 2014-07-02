@@ -4,11 +4,11 @@ package test.nameserver;
 import java.util.concurrent.TimeUnit;
 
 import common.network.ClientConnector;
-import common.observe.call.AddFileCallC2N;
-import common.observe.call.AddFileCallN2C;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.FinishCall;
+import common.call.AddFileCallC2N;
+import common.call.AddFileCallN2C;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.FinishCall;
 import nameserver.NameServer;
 import junit.framework.TestCase;
 

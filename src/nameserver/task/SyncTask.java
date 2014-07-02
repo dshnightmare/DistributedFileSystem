@@ -7,10 +7,10 @@ import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import common.network.Connector;
-import common.observe.call.AbortCall;
-import common.observe.call.Call;
-import common.observe.call.SyncCallN2S;
-import common.observe.call.SyncCallS2N;
+import common.call.AbortCall;
+import common.call.Call;
+import common.call.SyncCallN2S;
+import common.call.SyncCallS2N;
 import common.thread.TaskThread;
 
 public class SyncTask
@@ -26,9 +26,9 @@ public class SyncTask
 
     private int duplicate;
 
-    public SyncTask(long sid, Call call, Connector connector, int duplicate)
+    public SyncTask(long tid, Call call, Connector connector, int duplicate)
     {
-        super(sid);
+        super(tid);
         SyncCallS2N c = (SyncCallS2N) call;
         this.address = c.getAddress();
         this.initiator = c.getInitiator();
@@ -64,6 +64,7 @@ public class SyncTask
                     }
                 }
                 sendResponseCall(removeList);
+                setFinish();
             }
         }
     }
@@ -99,7 +100,5 @@ public class SyncTask
         back.setInitiator(initiator);
         back.setTaskId(getTaskId());
         connector.sendCall(back);
-
-        setFinish();
     }
 }

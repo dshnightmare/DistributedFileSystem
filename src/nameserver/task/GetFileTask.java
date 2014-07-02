@@ -10,97 +10,40 @@ import nameserver.meta.Meta;
 import nameserver.meta.Storage;
 import common.network.Connector;
 import common.call.AbortCall;
-import common.call.AppendFileCallC2N;
-import common.call.AppendFileCallN2C;
 import common.call.Call;
-import common.call.FinishCall;
+import common.call.GetFileCallC2N;
+import common.call.GetFileCallN2C;
 import common.thread.TaskThread;
 import common.util.Logger;
 
-// TODO: If append file task failed, what can we do? The files could be
-// inconsistent.
-public class AppendFileTask
+public class GetFileTask
     extends TaskThread
 {
-    private final static Logger logger = Logger.getLogger(AppendFileTask.class);
+    private final static Logger logger = Logger.getLogger(GetFileTask.class);
 
     private String dirName;
 
     private String fileName;
 
-    private Object syncRoot = new Object();
-
     private Connector connector;
+
+    private Object syncRoot = new Object();
 
     private String initiator;
 
-    private File file = null;
-
     private long clientTaskId;
 
-    public AppendFileTask(long tid, Call call, Connector connector)
+    private File file = null;
+
+    public GetFileTask(long tid, Call call, Connector connector)
     {
         super(tid);
-        AppendFileCallC2N c = (AppendFileCallC2N) call;
+        GetFileCallC2N c = (GetFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
         this.connector = connector;
         this.initiator = c.getInitiator();
         this.clientTaskId = call.getClientTaskId();
-    }
-
-    @Override
-    public void run()
-    {
-        final Meta meta = Meta.getInstance();
-        final BackupUtil backup = BackupUtil.getInstance();
-
-        synchronized (meta)
-        {
-
-            if (!fileExists())
-            {
-                sendAbortCall("Task aborted, file does not exist.");
-                return;
-            }
-            else
-            {
-                logger.info("AppendFileTask " + getTaskId() + " started.");
-                backup.writeLogIssue(getTaskId(), Call.Type.APPEND_FILE_C2N,
-                    dirName + " " + fileName);
-
-                file = Meta.getInstance().getFile(dirName, fileName);
-                if (file.tryLockWrite(1, TimeUnit.SECONDS))
-                {
-                    sendResponseCall();
-                }
-                else
-                {
-                    sendAbortCall("Task aborted, someone is using the file.");
-                    return;
-                }
-            }
-        }
-
-        waitUntilTaskFinish();
-
-        synchronized (meta)
-        {
-            logger.info("AppendFileTask " + getTaskId() + " commit.");
-            backup.writeLogCommit(getTaskId());
-
-            file.updateVersion();
-            file.unlockWrite();
-            setFinish();
-            // sendFinishCall();
-        }
-
-    }
-
-    @Override
-    public void release()
-    {
-        file.unlockWrite();
     }
 
     @Override
@@ -123,6 +66,59 @@ public class AppendFileTask
             }
             return;
         }
+    }
+
+    @Override
+    public void run()
+    {
+        final Meta meta = Meta.getInstance();
+        final BackupUtil backup = BackupUtil.getInstance();
+
+        synchronized (meta)
+        {
+
+            if (!fileExists())
+            {
+                sendAbortCall("Task aborted, file does not exist.");
+                return;
+            }
+            else
+            {
+                logger.info("GetFileTask " + getTaskId() + " started.");
+                backup.writeLogIssue(getTaskId(), Call.Type.GET_FILE_C2N,
+                    dirName + " " + fileName);
+
+                file = Meta.getInstance().getFile(dirName, fileName);
+                if (file.tryLockRead(1, TimeUnit.SECONDS))
+                {
+                    sendResponseCall();
+                }
+                else
+                {
+                    sendAbortCall("Task aborted, someone is using the file.");
+                    return;
+                }
+            }
+        }
+
+        waitUntilTaskFinish();
+
+        synchronized (meta)
+        {
+            logger.info("AppendFileTask " + getTaskId() + " commit.");
+            backup.writeLogCommit(getTaskId());
+
+            file.updateVersion();
+            file.unlockRead();
+            setFinish();
+            // sendFinishCall();
+        }
+    }
+
+    @Override
+    public void release()
+    {
+        file.unlockRead();
     }
 
     private boolean fileExists()
@@ -149,18 +145,10 @@ public class AppendFileTask
         long newFileVersion = file.getVersion() + 1;
         String fileId = file.getId() + "-" + newFileVersion;
 
-        Call back = new AppendFileCallN2C(fileId, locations);
+        Call back = new GetFileCallN2C(fileId, locations);
         back.setClientTaskId(clientTaskId);
         back.setInitiator(initiator);
         back.setTaskId(getTaskId());
-        connector.sendCall(back);
-    }
-
-    private void sendFinishCall()
-    {
-        Call back = new FinishCall(getTaskId());
-        back.setClientTaskId(clientTaskId);
-        back.setInitiator(initiator);
         connector.sendCall(back);
     }
 
