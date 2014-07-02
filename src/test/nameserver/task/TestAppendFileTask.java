@@ -113,15 +113,13 @@ public class TestAppendFileTask
             if (Call.Type.APPEND_FILE_N2C == call.getType())
             {
                 AppendFileCallN2C c = (AppendFileCallN2C) call;
-                System.out.println("task id: " + c.getTaskId());
                 System.out.println("call type: " + c.getType());
-                System.out.println("initiator: " + c.getInitiator());
                 System.out.print("location: ");
                 for (String l : c.getLocations())
                     System.out.print(l + " ");
                 System.out.println();
 
-                FinishCall ack = new FinishCall(call.getTaskId());
+                FinishCall ack = new FinishCall();
                 CConnector.sendCall(ack);
             }
         }

@@ -11,8 +11,9 @@ public abstract class Call
 
     private String initiator;
 
-    private long taskId = -1;
-    private long clientTaskId = -1;
+    private long fromTaskId = -1;
+
+    private long toTaskId = -1;
 
     public Call(Type type)
     {
@@ -24,14 +25,24 @@ public abstract class Call
         return type;
     }
 
-    public void setTaskId(long taskId)
+    public void setFromTaskId(long fromTaskId)
     {
-        this.taskId = taskId;
+        this.fromTaskId = fromTaskId;
     }
 
-    public long getTaskId()
+    public long getFromTaskId()
     {
-        return taskId;
+        return fromTaskId;
+    }
+
+    public void setToTaskId(long toTaskId)
+    {
+        this.toTaskId = toTaskId;
+    }
+
+    public long getToTaskId()
+    {
+        return toTaskId;
     }
 
     public String getInitiator()
@@ -44,15 +55,7 @@ public abstract class Call
         this.initiator = initiator;
     }
 
-    public long getClientTaskId() {
-		return clientTaskId;
-	}
-
-	public void setClientTaskId(long clientTaskId) {
-		this.clientTaskId = clientTaskId;
-	}
-
-	public static enum Type
+    public static enum Type
     {
         /**
          * It's the default value when you create a Call
@@ -85,11 +88,10 @@ public abstract class Call
         ADD_FILE_N2C("ADD_FILE_N2C"),
 
         /**
-         * Get file 
+         * Get file
          */
-        GET_FILE_C2N("GET_FILE_C2N"),
-        GET_FILE_N2C("GET_FILE_N2C"),
-        
+        GET_FILE_C2N("GET_FILE_C2N"), GET_FILE_N2C("GET_FILE_N2C"),
+
         /**
          * Append file from client to name server.
          */

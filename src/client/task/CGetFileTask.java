@@ -28,28 +28,29 @@ public class CGetFileTask
 	
 	//wait for the ns to return the call
 	private GetFileCallN2C call;
-	private long taskId;
 	
 	private Object waitor = new Object();
 	
 	private String filepath;
 	private String filename;
+	
+	private long remoteTaskId;
 
 	public CGetFileTask(long tid, String _path, String _name) {
 		super(tid);
 		xConnector = XConnector.getInstance();
 		filepath = _path;
 		filename = _name;
-		taskId = IdGenerator.getInstance().getLongId().longValue();
 	}
 
 	@Override
 	public void handleCall(Call call) {
-		if(call.getClientTaskId() != taskId){
+		if(call.getToTaskId() != getTaskId()){
 			return;
 		}
 		if (call.getType() == Call.Type.ADD_FILE_N2C) {
 			this.call = (GetFileCallN2C) call;
+			this.remoteTaskId = call.getFromTaskId();
 			synchronized (waitor)
             {
 				waitor.notify();
@@ -64,8 +65,8 @@ public class CGetFileTask
 	public void run() {
 		// TODO Auto-generated method stub
 		
-		AddFileCallC2N callC2N = new AddFileCallC2N(taskId
-				, filepath, filename);
+		AddFileCallC2N callC2N = new AddFileCallC2N(filepath, filename);
+		callC2N.setFromTaskId(getTaskId());
 		ClientConnector.getInstance().sendCall(callC2N);
 		ClientConnector.getInstance().addListener(this);
 		
@@ -81,8 +82,10 @@ public class CGetFileTask
 		
 		if(call.getLocations().size() == 0){
 			Log.print("Fatal error! No storage server returned");
-			Log.debug(""+call.getTaskId()+" "+call.getClientTaskId());
-			FinishCall finishCall = new FinishCall(call.getTaskId());
+			Log.debug(""+call.getFromTaskId()+" "+call.getToTaskId());
+			FinishCall finishCall = new FinishCall();
+			call.setToTaskId(remoteTaskId);
+			call.setFromTaskId(getTaskId());
 			ClientConnector.getInstance().sendCall(finishCall);
 			return;
 		}

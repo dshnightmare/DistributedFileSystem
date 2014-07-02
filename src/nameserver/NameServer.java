@@ -94,12 +94,14 @@ public class NameServer
 
         TaskThread task = null;
         Configuration conf = Configuration.getInstance();
+        long localTaskId = call.getToTaskId();
+        long remoteTaskId = call.getFromTaskId();
 
         if (!isNewCall(call))
         {
-            if (taskExisted(call.getTaskId()))
+            if (taskExisted(call.getToTaskId()))
             {
-                tasks.get(call.getTaskId()).handleCall(call);
+                tasks.get(call.getToTaskId()).handleCall(call);
             }
             else
             {
@@ -111,8 +113,9 @@ public class NameServer
             if (pause)
             {
                 Call back =
-                    new AbortCall(-1,
-                        "Nameserver is maintaining, please try later.");
+                    new AbortCall("Nameserver is maintaining, please try later.");
+                back.setFromTaskId(localTaskId);
+                back.setToTaskId(remoteTaskId);
                 connector.sendCall(back);
                 return;
             }
@@ -235,7 +238,7 @@ public class NameServer
 
     private boolean isNewCall(Call call)
     {
-        return call.getTaskId() < 0;
+        return call.getToTaskId() < 0;
     }
 
     private boolean taskExisted(long tid)

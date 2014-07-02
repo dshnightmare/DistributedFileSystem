@@ -10,10 +10,9 @@ public class MigrateFileCallN2S
 
     private Map<String, List<Long>> files;
 
-    public MigrateFileCallN2S(long taskId, Map<String, List<Long>> files)
+    public MigrateFileCallN2S(Map<String, List<Long>> files)
     {
         super(Call.Type.MIGRATE_FILE_N2S);
-        super.setTaskId(taskId);
         this.files = files;
     }
 

@@ -32,20 +32,21 @@ public class Client
 		// TODO Auto-generated method stub
 
         TaskThread task = null;
-        long tid = call.getTaskId();
+        long remoteTaskId = call.getFromTaskId();
+        long localTaskId = call.getToTaskId();
         Configuration conf = Configuration.getInstance();
 
-        if (tid >= 0)
+        if (localTaskId >= 0)
         {
             // Should we send a abort call? Maybe not.
-            if (tasks.containsKey(tid))
-                tasks.get(tid).handleCall(call);
+            if (tasks.containsKey(localTaskId))
+                tasks.get(localTaskId).handleCall(call);
         }
         else
         {
-        	tid = IdGenerator.getInstance().getLongId();
+        	localTaskId = IdGenerator.getInstance().getLongId();
         	
-        	Log.debug("Client new task created "+tid+":"+call.getType());
+        	Log.debug("Client new task created "+localTaskId+":"+call.getType());
         	if(Call.Type.ADD_FILE_N2C == call.getType()){
         		//update file to master storage server listed
         	}

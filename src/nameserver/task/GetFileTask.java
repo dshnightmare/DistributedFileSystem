@@ -31,7 +31,7 @@ public class GetFileTask
 
     private String initiator;
 
-    private long clientTaskId;
+    private long remoteTaskId;
 
     private File file = null;
 
@@ -43,13 +43,13 @@ public class GetFileTask
         this.fileName = c.getFileName();
         this.connector = connector;
         this.initiator = c.getInitiator();
-        this.clientTaskId = call.getClientTaskId();
+        this.remoteTaskId = call.getFromTaskId();
     }
 
     @Override
     public void handleCall(Call call)
     {
-        if (call.getTaskId() != getTaskId())
+        if (call.getToTaskId() != getTaskId())
             return;
 
         if (call.getType() == Call.Type.LEASE)
@@ -128,8 +128,9 @@ public class GetFileTask
 
     private void sendAbortCall(String reason)
     {
-        Call back = new AbortCall(getTaskId(), reason);
-        back.setClientTaskId(clientTaskId);
+        Call back = new AbortCall(reason);
+        back.setFromTaskId(getTaskId());
+        back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
         release();
@@ -146,9 +147,9 @@ public class GetFileTask
         String fileId = file.getId() + "-" + newFileVersion;
 
         Call back = new GetFileCallN2C(fileId, locations);
-        back.setClientTaskId(clientTaskId);
+        back.setFromTaskId(getTaskId());
+        back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);
-        back.setTaskId(getTaskId());
         connector.sendCall(back);
     }
 

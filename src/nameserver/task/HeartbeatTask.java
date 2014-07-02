@@ -30,6 +30,8 @@ public class HeartbeatTask
     private final Connector connector;
 
     private final String initiator;
+    
+    private long remoteTaskId;
 
     /**
      * How many seconds between two adjacent heartbeat check.
@@ -45,6 +47,7 @@ public class HeartbeatTask
         this.address = c.getAddress();
         this.connector = connector;
         this.period = period;
+        this.remoteTaskId = call.getFromTaskId();
     }
 
     @Override
@@ -86,7 +89,7 @@ public class HeartbeatTask
     @Override
     public void handleCall(Call call)
     {
-        if (call.getTaskId() != getTaskId())
+        if (call.getToTaskId() != getTaskId())
             return;
 
         if (call.getType() == Call.Type.HEARTBEAT_S2N)
@@ -146,14 +149,18 @@ public class HeartbeatTask
             rawMigrateFiles.put(e.getKey().getAddress(), fileList);
         }
 
-        Call back = new MigrateFileCallN2S(getTaskId(), rawMigrateFiles);
+        Call back = new MigrateFileCallN2S(rawMigrateFiles);
+        back.setFromTaskId(getTaskId());
+        back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
     }
 
     private void sendFinishCall()
     {
-        Call back = new FinishCall(getTaskId());
+        Call back = new FinishCall();
+        back.setFromTaskId(getTaskId());
+        back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
     }

@@ -25,6 +25,8 @@ public class SyncTask
     private List<Long> files;
 
     private int duplicate;
+    
+    private long remoteTaskId;
 
     public SyncTask(long tid, Call call, Connector connector, int duplicate)
     {
@@ -35,6 +37,7 @@ public class SyncTask
         this.files = c.getFiles();
         this.connector = connector;
         this.duplicate = duplicate;
+        this.remoteTaskId = call.getFromTaskId();
     }
 
     @Override
@@ -81,7 +84,9 @@ public class SyncTask
 
     private void sendAbortCall(String reason)
     {
-        Call back = new AbortCall(getTaskId(), reason);
+        Call back = new AbortCall(reason);
+        back.setFromTaskId(getTaskId());
+        back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
         release();
@@ -97,8 +102,9 @@ public class SyncTask
     {
 
         Call back = new SyncCallN2S(removeList);
+        back.setFromTaskId(getTaskId());
+        back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);
-        back.setTaskId(getTaskId());
         connector.sendCall(back);
     }
 }

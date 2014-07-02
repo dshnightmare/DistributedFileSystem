@@ -104,7 +104,7 @@ public class TestHeartbeatTask
                     for (Long l : s.getValue())
                         System.out.println("\t" + l);
                 }
-                Call back = new FinishCall(call.getTaskId());
+                Call back = new FinishCall();
                 SConnector.sendCall(back);
             }
         }

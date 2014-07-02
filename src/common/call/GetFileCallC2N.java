@@ -9,12 +9,11 @@ public class GetFileCallC2N
 
     private String fileName;
 
-    public GetFileCallC2N(long clientTaskId, String dirName, String fileName)
+    public GetFileCallC2N(String dirName, String fileName)
     {
         super(Call.Type.GET_FILE_C2N);
         this.dirName = dirName;
         this.fileName = fileName;
-        setClientTaskId(clientTaskId);
     }
 
     public String getDirName()

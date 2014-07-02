@@ -60,7 +60,7 @@ private static TaskThread task;
         dir = Meta.getInstance().getDirectory("/a/");
         assertNotNull(dir);
 
-        GetFileCallC2N call = new GetFileCallC2N(1, "/a/", "b");
+        GetFileCallC2N call = new GetFileCallC2N("/a/", "b");
         CConnector.sendCall(call);
 
         try
@@ -112,15 +112,13 @@ private static TaskThread task;
             if (Call.Type.GET_FILE_N2C == call.getType())
             {
                 GetFileCallN2C c = (GetFileCallN2C) call;
-                System.out.println("task id: " + c.getTaskId());
                 System.out.println("call type: " + c.getType());
-                System.out.println("initiator: " + c.getInitiator());
                 System.out.print("location: ");
                 for (String l : c.getLocations())
                     System.out.print(l + " ");
                 System.out.println();
 
-                FinishCall ack = new FinishCall(call.getTaskId());
+                FinishCall ack = new FinishCall();
                 CConnector.sendCall(ack);
             }
         }

@@ -36,7 +36,7 @@ public class AppendFileTask
 
     private File file = null;
 
-    private long clientTaskId;
+    private long remoteTaskId;
 
     public AppendFileTask(long tid, Call call, Connector connector)
     {
@@ -46,7 +46,7 @@ public class AppendFileTask
         this.fileName = c.getFileName();
         this.connector = connector;
         this.initiator = c.getInitiator();
-        this.clientTaskId = call.getClientTaskId();
+        this.remoteTaskId = call.getFromTaskId();
     }
 
     @Override
@@ -106,7 +106,7 @@ public class AppendFileTask
     @Override
     public void handleCall(Call call)
     {
-        if (call.getTaskId() != getTaskId())
+        if (call.getToTaskId() != getTaskId())
             return;
 
         if (call.getType() == Call.Type.LEASE)
@@ -132,9 +132,9 @@ public class AppendFileTask
 
     private void sendAbortCall(String reason)
     {
-        Call back = new AbortCall(getTaskId(), reason);
-        back.setClientTaskId(clientTaskId);
-        back.setInitiator(initiator);
+        Call back = new AbortCall(reason);
+        back.setFromTaskId(getTaskId());
+        back.setToTaskId(remoteTaskId);
         connector.sendCall(back);
         release();
         setFinish();
@@ -150,16 +150,17 @@ public class AppendFileTask
         String fileId = file.getId() + "-" + newFileVersion;
 
         Call back = new AppendFileCallN2C(fileId, locations);
-        back.setClientTaskId(clientTaskId);
+        back.setFromTaskId(getTaskId());
+        back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);
-        back.setTaskId(getTaskId());
         connector.sendCall(back);
     }
 
     private void sendFinishCall()
     {
-        Call back = new FinishCall(getTaskId());
-        back.setClientTaskId(clientTaskId);
+        Call back = new FinishCall();
+        back.setFromTaskId(getTaskId());
+        back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);
         connector.sendCall(back);
     }
