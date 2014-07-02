@@ -53,7 +53,7 @@ public class ClientCMD
 				
 				TaskThread task = null;
 				
-				if(cmdString.equals("addFile")){
+				if(cmdString.toLowerCase().equals("addfile")){
 					if (args.length != 3) {
 						Log.print("Wrong argument number.");
 						continue;
@@ -63,10 +63,15 @@ public class ClientCMD
 								, args[1], args[2]);
 					}
 				}
-				else if(cmdString.equals("")){
-					
+				else if(cmdString.toLowerCase().equals("getfile")){
+					if (args.length != 3) {
+						Log.print("Wrong argument number.");
+						continue;
+					}
+					else {
+					}
 				}
-				else if(cmdString.equals("")){
+				else if(cmdString.toLowerCase().equals("")){
 					
 				}
 				else {

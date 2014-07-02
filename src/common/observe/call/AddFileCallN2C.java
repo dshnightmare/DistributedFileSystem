@@ -7,11 +7,11 @@ public class AddFileCallN2C
 {
     private static final long serialVersionUID = 32014432346467370L;
     
-    private long fid;
+    private String fid;
 
     private final List<String> locations;
 
-    public AddFileCallN2C(long fid, List<String> locations)
+    public AddFileCallN2C(String fid, List<String> locations)
     {
         super(Call.Type.ADD_FILE_N2C);
         this.fid = fid;
@@ -23,7 +23,7 @@ public class AddFileCallN2C
         return locations;
     }
     
-    public long getFileId()
+    public String getFileId()
     {
         return fid;
     }

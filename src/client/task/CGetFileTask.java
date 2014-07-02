@@ -10,11 +10,13 @@ import common.observe.call.AddFileCallC2N;
 import common.observe.call.AddFileCallN2C;
 import common.observe.call.Call;
 import common.observe.call.FinishCall;
+import common.observe.call.GetFileCallC2N;
+import common.observe.call.GetFileCallN2C;
 import common.thread.TaskThread;
 import common.util.IdGenerator;
 import common.util.Log;
 
-public class CAddFileTask 
+public class CGetFileTask 
 	extends TaskThread{
 	
 	/*
@@ -25,7 +27,7 @@ public class CAddFileTask
 	private DataOutputStream out;
 	
 	//wait for the ns to return the call
-	private AddFileCallN2C call;
+	private GetFileCallN2C call;
 	private long taskId;
 	
 	private Object waitor = new Object();
@@ -33,7 +35,7 @@ public class CAddFileTask
 	private String filepath;
 	private String filename;
 
-	public CAddFileTask(long tid, String _path, String _name) {
+	public CGetFileTask(long tid, String _path, String _name) {
 		super(tid);
 		xConnector = XConnector.getInstance();
 		filepath = _path;
@@ -47,7 +49,7 @@ public class CAddFileTask
 			return;
 		}
 		if (call.getType() == Call.Type.ADD_FILE_N2C) {
-			this.call = (AddFileCallN2C) call;
+			this.call = (GetFileCallN2C) call;
 			synchronized (waitor)
             {
 				waitor.notify();
