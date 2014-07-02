@@ -94,6 +94,10 @@ public abstract class Call
          */
         GET_FILE_C2N("GET_FILE_C2N"), GET_FILE_N2C("GET_FILE_N2C"),
 
+        GET_DIRECTORY_C2N("GET_DIRECTORY_C2N"),
+
+        GET_DIRECTORY_N2C("GET_DIRECTORY_N2C"),
+
         /**
          * Append file from client to name server.
          */

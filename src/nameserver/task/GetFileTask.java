@@ -72,7 +72,6 @@ public class GetFileTask
     public void run()
     {
         final Meta meta = Meta.getInstance();
-        final BackupUtil backup = BackupUtil.getInstance();
 
         synchronized (meta)
         {
@@ -85,8 +84,6 @@ public class GetFileTask
             else
             {
                 logger.info("GetFileTask " + getTaskId() + " started.");
-                backup.writeLogIssue(getTaskId(), Call.Type.GET_FILE_C2N,
-                    dirName + " " + fileName);
 
                 file = Meta.getInstance().getFile(dirName, fileName);
                 if (file.tryLockRead(1, TimeUnit.SECONDS))
@@ -105,8 +102,7 @@ public class GetFileTask
 
         synchronized (meta)
         {
-            logger.info("AppendFileTask " + getTaskId() + " commit.");
-            backup.writeLogCommit(getTaskId());
+            logger.info("GetFileTask " + getTaskId() + " commit.");
 
             file.updateVersion();
             file.unlockRead();
@@ -143,8 +139,7 @@ public class GetFileTask
         for (Storage s : file.getLocations())
             locations.add(s.getAddress());
 
-        long newFileVersion = file.getVersion() + 1;
-        String fileId = file.getId() + "-" + newFileVersion;
+        String fileId = file.getId() + "-" + file.getVersion();
 
         Call back = new GetFileCallN2C(fileId, locations);
         back.setFromTaskId(getTaskId());
