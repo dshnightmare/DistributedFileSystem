@@ -12,9 +12,10 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Scanner;
 
-import common.observe.call.Call;
+import common.call.Call;
 import common.util.Configuration;
 import common.util.Constant;
+import common.util.Log;
 import common.util.SwitchObjectAndByte;
 
 public class ServerListener extends Thread{
@@ -81,7 +82,7 @@ public class ServerListener extends Thread{
 			//注册读事件
 			sc.register(selector, SelectionKey.OP_READ);
 			connector.setAddressChannel(sc.socket().getRemoteSocketAddress().toString(), sc);
-			System.out.println("New connection accepted...("+sc.socket().getRemoteSocketAddress().toString()+")");
+			Log.info("New connection accepted...("+sc.socket().getRemoteSocketAddress().toString()+")");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -92,7 +93,6 @@ public class ServerListener extends Thread{
 		SocketChannel sc = null;
 		try {
 			sc = (SocketChannel)key.channel();
-			System.out.println("reading data...");
 			r_buf.clear();
 			//read into r_bBuf
 			sc.read(r_buf);
@@ -102,7 +102,7 @@ public class ServerListener extends Thread{
 				Call rc = (Call)SwitchObjectAndByte.switchByteToObject(r_buf.array());
 				rc.setInitiator(sc.socket().getRemoteSocketAddress().toString());
 				connector.putCallQueue(rc);
-//				System.out.println("Call received:"+rc.callType+" "+rc.getParamsString());
+				Log.debug("NameServer received call: "+rc.getType());
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

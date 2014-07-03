@@ -1,95 +1,117 @@
 package nameserver.meta;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import common.util.Timestamp;
 
-public class Status
-{
-    private static Status instance = null;
+/**
+ * Status of storage servers.
+ * 
+ * @author lishunyang
+ * @see Storage
+ * 
+ */
+public class Status {
+	/**
+	 * Single pattern instance.
+	 */
+	private static Status instance = new Status();
 
-    private Map<Storage, Long> status = new HashMap<Storage, Long>();
+	/**
+	 * Storage status.
+	 */
+	private List<Storage> status = new ArrayList<Storage>();
 
-    private Status()
-    {
-    }
+	/**
+	 * Construction method.
+	 */
+	private Status() {
+	}
 
-    public static Status getInstance()
-    {
-        if (null == instance)
-        {
-            synchronized (Status.class)
-            {
-                if (null == instance)
-                {
-                    instance = new Status();
-                }
-            }
-        }
+	/**
+	 * Get single instance.
+	 * 
+	 * @return
+	 */
+	public static Status getInstance() {
+		return instance;
+	}
 
-        return instance;
-    }
+	/**
+	 * Add new storage information. Allocate a new timestamp for it.
+	 * 
+	 * @param storage
+	 */
+	public synchronized void addStorage(Storage storage) {
+		status.add(storage);
+	}
 
-    public synchronized void addStorage(Storage storage)
-    {
-        status.put(storage, Timestamp.getInstance().getTimestamp());
-    }
+	/**
+	 * Allocate specified number of storage to something.
+	 * 
+	 * @param count
+	 * @return
+	 */
+	public synchronized List<Storage> allocateStorage(int count) {
+		List<Storage> result = new ArrayList<Storage>();
+		for (Storage s : status) {
+			if (count <= 0)
+				break;
+			count--;
+			result.add(s);
+		}
 
-    public synchronized List<Storage> allocateStorage(int count)
-    {
-        List<Storage> result = new ArrayList<Storage>();
-        for (Storage s : status.keySet())
-        {
-            if (count <= 0)
-                break;
-            count--;
-            result.add(s);
-        }
+		return result;
+	}
 
-        return result;
-    }
+	/**
+	 * Remove specified storage information.
+	 * 
+	 * @param storage
+	 */
+	public synchronized void removeStorage(Storage storage) {
+		status.remove(storage);
+	}
 
-    public synchronized void removeStorage(Storage storage)
-    {
-        status.remove(storage);
-    }
+	/**
+	 * Test whether we have knowledge about specified storage server.
+	 * 
+	 * @param address
+	 * @return
+	 */
+	public synchronized boolean contains(String address) {
+		for (Storage s : status) {
+			if (0 == address.compareTo(s.getAddress()))
+				return true;
+		}
+		return false;
+	}
 
-    public synchronized boolean contains(String address)
-    {
-        for (Storage s : status.keySet())
-        {
-            if (0 == address.compareTo(s.getAddress()))
-                return true;
-        }
-        return false;
-    }
+	/**
+	 * Get storage server with specified address.
+	 * 
+	 * @param address
+	 * @return
+	 */
+	public synchronized Storage getStorage(String address) {
+		for (Storage s : status) {
+			if (0 == address.compareTo(s.getAddress()))
+				return s;
+		}
+		return null;
+	}
 
-    public synchronized Storage getStorage(String address)
-    {
-        for (Storage s : status.keySet())
-        {
-            if (0 == address.compareTo(s.getAddress()))
-                return s;
-        }
-        return null;
-    }
+	/**
+	 * Get all storage servers.
+	 * 
+	 * @return
+	 */
+	public synchronized List<Storage> getStorages() {
+		List<Storage> result = new ArrayList<Storage>();
+		for (Storage s : status) {
+			result.add(s);
+		}
 
-    public synchronized List<Storage> getStorages()
-    {
-        List<Storage> result = new ArrayList<Storage>();
-        for (Storage s : status.keySet())
-        {
-            result.add(s);
-        }
-
-        return result;
-    }
-
-    public synchronized void updateTimestamp(Storage storage)
-    {
-        status.put(storage, Timestamp.getInstance().getTimestamp());
-    }
+		return result;
+	}
 }

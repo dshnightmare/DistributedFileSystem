@@ -2,11 +2,11 @@ package storageserver;
 
 import javax.security.auth.login.Configuration;
 
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
-import common.thread.TaskThreadMonitor;
+import common.call.Call;
+import common.call.CallListener;
+import common.event.TaskEvent;
+import common.event.TaskEventListener;
+import common.task.TaskMonitor;
 
 public class StorageNode implements TaskEventListener, CallListener {
 	private final static int maxTask = 20;
@@ -23,7 +23,7 @@ public class StorageNode implements TaskEventListener, CallListener {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		StorageNode node = new StorageNode(null, "");
-		TaskThreadMonitor monitor = TaskThreadMonitor.getInstance();
+		TaskMonitor monitor = new TaskMonitor();
 		monitor.addListener(node);
 	}
 

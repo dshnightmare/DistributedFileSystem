@@ -2,32 +2,27 @@ package test.nameserver.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
-import nameserver.meta.Directory;
 import nameserver.meta.File;
-import nameserver.meta.Meta;
-import nameserver.meta.Status;
 import nameserver.meta.Storage;
-import nameserver.task.RegisterStorageTask;
 import nameserver.task.SyncTask;
 import common.network.ServerConnector;
-import common.network.StorageConnector;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.RegistrationCallS2N;
-import common.observe.call.SyncCallN2S;
-import common.observe.call.SyncCallS2N;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.network.XConnector;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.n2s.SyncCallN2S;
+import common.call.s2n.SyncCallS2N;
+import common.task.Task;
+import common.util.Configuration;
 
 public class TestSyncTask
     extends TestCase
 {
     private static ServerConnector NConnector;
 
-    private static StorageConnector SConnector;
+    private static XConnector SConnector;
 
     @Override
     protected void setUp()
@@ -35,13 +30,13 @@ public class TestSyncTask
         NConnector = ServerConnector.getInstance();
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
             e.printStackTrace();
         }
-        SConnector = StorageConnector.getInstance();
+        SConnector = XConnector.getInstance();
         SConnector.addListener(new SCallListener());
         NConnector.addListener(new NCallListener());
     }
@@ -61,7 +56,7 @@ public class TestSyncTask
 
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -80,9 +75,14 @@ public class TestSyncTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new SyncTask(1, call, NConnector);
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.SYNC_S2N == call.getType())
+            {
+                Task task =
+                    new SyncTask(1, call, NConnector, Configuration
+                        .getInstance().getInteger(Configuration.DUPLICATE_KEY));
+                new Thread(task).start();
+            }
         }
     }
 
@@ -93,10 +93,11 @@ public class TestSyncTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server sent a call: " + call.getType());
+            System.out.println("--->: " + call.getType());
             if (Call.Type.SYNC_N2S == call.getType())
             {
                 SyncCallN2S c = (SyncCallN2S) call;
+                System.out.println("Sync file list:");
                 for (Long l : c.getFiles())
                     System.out.println(l);
             }

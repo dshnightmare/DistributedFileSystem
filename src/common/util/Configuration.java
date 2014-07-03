@@ -28,6 +28,13 @@ public class Configuration
 
     public static final String DUPLICATE_KEY = "duplicate_number";
 
+    public static final String META_BACKUP_DIR_KEY = "meta_image_dir";
+
+    public static final String META_LOG_DIR_KEY = "meta_log_dir";
+
+    public static final String META_BACKUP_INTERVAL_KEY =
+        "meta_backup_interval";
+
     private Configuration()
         throws IOException
     {
@@ -40,21 +47,18 @@ public class Configuration
 
     public static Configuration getInstance()
     {
-        if (null == instance)
+        synchronized (Configuration.class)
         {
-            synchronized (Configuration.class)
+            if (null == instance)
             {
-                if (null == instance)
+                try
                 {
-                    try
-                    {
-                        instance = new Configuration();
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                        instance = null;
-                    }
+                    instance = new Configuration();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                    instance = null;
                 }
             }
         }

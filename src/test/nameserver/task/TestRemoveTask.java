@@ -1,5 +1,7 @@
 package test.nameserver.task;
 
+import java.util.concurrent.TimeUnit;
+
 import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
@@ -7,12 +9,12 @@ import nameserver.task.RemoveFileTask;
 import junit.framework.TestCase;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.RemoveFileCallC2N;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.c2n.RemoveFileCallC2N;
+import common.event.TaskEvent;
+import common.event.TaskEventListener;
+import common.task.Task;
 
 public class TestRemoveTask
     extends TestCase
@@ -27,7 +29,7 @@ public class TestRemoveTask
         NConnector = ServerConnector.getInstance();
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -53,7 +55,7 @@ public class TestRemoveTask
 
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -77,10 +79,13 @@ public class TestRemoveTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new RemoveFileTask(1, call, NConnector);
-            task.addListener(new TaskListener());
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.REMOVE_FILE_C2N == call.getType())
+            {
+                Task task = new RemoveFileTask(1, call, NConnector);
+                task.addListener(new TaskListener());
+                new Thread(task).start();
+            }
         }
     }
 

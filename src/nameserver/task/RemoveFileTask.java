@@ -1,93 +1,65 @@
 package nameserver.task;
 
-import nameserver.meta.Directory;
-import nameserver.meta.File;
+import nameserver.BackupUtil;
 import nameserver.meta.Meta;
-import nameserver.meta.Storage;
 import common.network.Connector;
-import common.observe.call.AbortCall;
-import common.observe.call.Call;
-import common.observe.call.FinishCall;
-import common.observe.call.RemoveFileCallC2N;
-import common.thread.TaskThread;
+import common.call.Call;
+import common.call.c2n.RemoveFileCallC2N;
+import common.util.Logger;
 
-public class RemoveFileTask
-    extends TaskThread
-{
-    private String dirName;
+public class RemoveFileTask extends NameServerTask {
+	private final static Logger logger = Logger.getLogger(RemoveFileTask.class);
 
-    private String fileName;
+	private String dirName;
 
-    private Connector connector;
+	private String fileName;
 
-    private String initiator;
+	public RemoveFileTask(long tid, Call call, Connector connector) {
+		super(tid, call, connector);
+		RemoveFileCallC2N c = (RemoveFileCallC2N) call;
+		this.dirName = c.getDirName();
+		this.fileName = c.getFileName();
+	}
 
-    public RemoveFileTask(long sid, Call call, Connector connector)
-    {
-        super(sid);
-        RemoveFileCallC2N c = (RemoveFileCallC2N) call;
-        this.dirName = c.getDirName();
-        this.fileName = c.getFileName();
-        this.initiator = c.getInitiator();
-        this.connector = connector;
-    }
+	@Override
+	public void run() {
+		final BackupUtil backup = BackupUtil.getInstance();
 
-    @Override
-    public void run()
-    {
-        Call back = null;
+		synchronized (Meta.getInstance()) {
+			if (!fileExists()) {
+				sendAbortCall("Task aborted, file does not exist.");
+				setFinish();
+			} else {
+				logger.info("RemoveFileTask " + getTaskId() + " started.");
+				backup.writeLogIssue(getTaskId(), Call.Type.REMOVE_FILE_C2N,
+						dirName + " " + fileName);
 
-        if (!Meta.getInstance().contains(dirName))
-        {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
-        }
+				logger.info("RemoveFileTask " + getTaskId() + " commit.");
+				backup.writeLogCommit(getTaskId());
 
-        Directory dir = Meta.getInstance().getDirectory(dirName);
-        if (!dir.contains(fileName))
-        {
-            back =
-                new AbortCall(getTaskId(), "Task aborted, file does not exist.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
-        }
+				Meta.getInstance().removeFile(dirName, fileName);
+				setFinish();
+			}
+		}
+	}
 
-        File file = dir.getFile(fileName);
-        for (Storage s : file.getLocations())
-            s.removeFile(file);
-        dir.removeFile(file.getName());
+	@Override
+	public void release() {
+		setDead();
+	}
 
-        // TODO: Finished! Release locks.
+	@Override
+	public void handleCall(Call call) {
+		if (call.getToTaskId() != getTaskId())
+			return;
 
-        back = new FinishCall(getTaskId());
-        back.setInitiator(initiator);;
-        connector.sendCall(back);
+		if (call.getType() == Call.Type.LEASE_C2N) {
+			renewLease();
+			return;
+		}
+	}
 
-        setFinish();
-    }
-
-    @Override
-    public void release()
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void handleCall(Call call)
-    {
-        if (call.getTaskId() != getTaskId())
-            return;
-
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
-        {
-            renewLease();
-        }
-    }
+	private boolean fileExists() {
+		return Meta.getInstance().containFile(dirName, fileName);
+	}
 }

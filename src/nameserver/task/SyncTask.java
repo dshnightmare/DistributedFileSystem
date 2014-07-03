@@ -1,85 +1,77 @@
 package nameserver.task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import nameserver.meta.File;
+import nameserver.meta.Meta;
 import nameserver.meta.Status;
-import nameserver.meta.Storage;
 import common.network.Connector;
-import common.observe.call.AbortCall;
-import common.observe.call.Call;
-import common.observe.call.SyncCallN2S;
-import common.observe.call.SyncCallS2N;
-import common.thread.TaskThread;
+import common.call.Call;
+import common.call.n2s.SyncCallN2S;
+import common.call.s2n.SyncCallS2N;
+import common.util.Logger;
 
-public class SyncTask
-    extends TaskThread
-{
-    private String address;
+public class SyncTask extends NameServerTask {
+	private final static Logger logger = Logger.getLogger(SyncTask.class);
 
-    private String initiator;
+	private String address;
 
-    private Connector connector;
+	private List<Long> files;
 
-    private List<Long> files;
+	private int duplicate;
 
-    public SyncTask(long sid, Call call, Connector connector)
-    {
-        super(sid);
-        SyncCallS2N c = (SyncCallS2N) call;
-        this.address = c.getAddress();
-        this.initiator = c.getInitiator();
-        this.files = c.getFiles();
-        this.connector = connector;
-    }
+	public SyncTask(long tid, Call call, Connector connector, int duplicate) {
+		super(tid, call, connector);
+		SyncCallS2N c = (SyncCallS2N) call;
+		this.address = c.getAddress();
+		this.files = c.getFiles();
+		this.duplicate = duplicate;
+	}
 
-    @Override
-    public void run()
-    {
-        Call back = null;
+	@Override
+	public void run() {
+		logger.info("SyncTask started.");
 
-        if (!Status.getInstance().contains(address))
-        {
-            back =
-                new AbortCall(getTaskId(),
-                    "Task aborted, unidentified storage server.");
-            back.setInitiator(initiator);;
-            connector.sendCall(back);
-            setFinish();
-            return;
-        }
+		synchronized (Meta.getInstance()) {
+			if (!storageExists()) {
+				sendAbortCall("Task aborted, unidentified storage server.");
+				setFinish();
+			} else {
+				List<Long> removeList = new ArrayList<Long>();
+				for (Long l : files) {
+					File file = Meta.getInstance().getFile(l);
+					if (null == file)
+						removeList.add(l);
+					else {
+						if (file.getLocationsCount() > duplicate)
+							removeList.add(l);
+						else
+							file.addLocation(Status.getInstance().getStorage(
+									address));
+					}
+				}
+				sendResponseCall(removeList);
+				setFinish();
+			}
+		}
+	}
 
-        Storage storage = Status.getInstance().getStorage(address);
-        for (File f : storage.getFiles())
-        {
-            if (files.contains(f.getId()))
-                files.remove(f.getId());
-        }
+	@Override
+	public void release() {
+		setDead();
+	}
 
-        back = new SyncCallN2S(files);
-        back.setInitiator(initiator);;
-        back.setTaskId(getTaskId());
-        connector.sendCall(back);
+	@Override
+	public void handleCall(Call call) {
+	}
 
-        setFinish();
-    }
+	private boolean storageExists() {
+		return Status.getInstance().contains(address);
+	}
 
-    @Override
-    public void release()
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void handleCall(Call call)
-    {
-        if (call.getTaskId() != getTaskId())
-            return;
-
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
-        {
-            renewLease();
-        }
-    }
+	private void sendResponseCall(List<Long> removeList) {
+		Call back = new SyncCallN2S(removeList);
+		sendCall(back);
+	}
 }

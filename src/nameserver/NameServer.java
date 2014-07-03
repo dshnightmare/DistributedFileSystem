@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import nameserver.meta.File;
 import nameserver.meta.Status;
@@ -14,14 +15,17 @@ import nameserver.task.HeartbeatTask;
 import nameserver.task.MoveFileTask;
 import nameserver.task.RemoveFileTask;
 import nameserver.task.SyncTask;
+import nameserver.task.TaskFactory;
 import common.network.ServerConnector;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
-import common.thread.TaskLease;
-import common.thread.TaskThread;
-import common.thread.TaskThreadMonitor;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.n2c.AbortCallN2C;
+import common.event.TaskEvent;
+import common.event.TaskEventListener;
+import common.task.TaskExecutor;
+import common.task.TaskLease;
+import common.task.Task;
+import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.IdGenerator;
 import common.util.Logger;
@@ -41,147 +45,144 @@ import common.util.Logger;
  * @author lishunyang
  * 
  */
-public class NameServer
-    implements TaskEventListener, CallListener
-{
-    /**
-     * Logger.
-     */
-    private static final Logger logger = Logger.getLogger(NameServer.class);
+public class NameServer implements TaskEventListener, CallListener {
+	private static NameServer instance = null;
 
-    /**
-     * The task thread monitor, it will check lease validation of task threads
-     * regularly, notify the listeners if someone is dead.
-     */
-    private TaskThreadMonitor taskMonitor;
+	private static final Logger logger = Logger.getLogger(NameServer.class);
 
-    private ServerConnector connector = new ServerConnector();
+	private TaskMonitor monitor = new TaskMonitor();
 
-    private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
+	private ServerConnector connector = ServerConnector.getInstance();
 
-    public void init()
-    {
-        taskMonitor = TaskThreadMonitor.getInstance();
-        taskMonitor.addListener(this);
-        connector.start();
-    }
+	private Map<Long, Task> tasks = new HashMap<Long, Task>();
 
-    @Override
-    public void handleCall(Call call)
-    {
-        TaskThread task = null;
-        long tid = call.getTaskId();
-        Configuration conf = Configuration.getInstance();
+	private TaskExecutor executor = new TaskExecutor();
 
-        if (tid >= 0)
-        {
-            // Should we send a abort call? Maybe not.
-            if (tasks.containsKey(tid))
-                tasks.get(tid).handleCall(call);
-        }
-        else
-        {
+	private boolean pause = false;
 
-            tid = IdGenerator.getInstance().getLongId();
+	private boolean initialized = false;
 
-            if (Call.Type.ADD_FILE_C2N == call.getType())
-            {
-                task = new AddFileTask(tid, call, connector);
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
-            }
-            else if (Call.Type.APPEND_FILE_C2N == call.getType())
-            {
-                task = new AppendFileTask(tid, call, connector);
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
-            }
-            else if (Call.Type.MOVE_FILE_C2N == call.getType())
-            {
-                task = new MoveFileTask(tid, call, connector);
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
-            }
-            else if (Call.Type.REGISTRATION_S2N == call.getType())
-            {
-                // Heartbeat task doesn't need lease.
-                task =
-                    new HeartbeatTask(tid, call, connector,
-                        conf.getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
-            }
-            else if (Call.Type.REMOVE_FILE_C2N == call.getType())
-            {
-                task = new RemoveFileTask(tid, call, connector);
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
-            }
-            else if (Call.Type.SYNC_S2N == call.getType())
-            {
-                task = new SyncTask(tid, call, connector);
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
-            }
+	private NameServer() {
+		monitor.addListener(this);
+		connector.addListener(this);
+	}
 
-            synchronized (tasks)
-            {
-                tasks.put(tid, task);
-            }
-        }
-    }
+	public void initilize() {
+		if (initialized) {
+			logger.error("NameServer has been initialized before, you can't do it twice.");
+		} else {
+			// TODO
+		}
+	}
 
-    @Override
-    public void handle(TaskEvent event)
-    {
-        TaskThread task = event.getTaskThread();
+	public synchronized static NameServer getInstance() {
+		if (null == instance)
+			instance = new NameServer();
 
-        if (event.getType() == TaskEvent.Type.TASK_ABORTED)
-        {
-            task.release();
-            logger.fatal("Task: " + task.getTaskId() + " " + event.getType());
-        }
-        else if (event.getType() == TaskEvent.Type.TASK_FINISHED)
-        {
-            task.release();
-            logger.info("Task: " + task.getTaskId() + " " + event.getType());
-        }
-        else if (event.getType() == TaskEvent.Type.HEARTBEAT_FATAL)
-        {
-            handleHeartbeatFatal(event);
-        }
-    }
+		return instance;
+	}
 
-    private void handleHeartbeatFatal(TaskEvent event)
-    {
-        Storage storage =
-            ((HeartbeatTask) (event.getTaskThread())).getStorage();
-        Status.getInstance().removeStorage(storage);
+	@Override
+	public synchronized void handleCall(Call call) {
+		logger.info("NameServer received a call: " + call.getType());
 
-        // Remove files' location.
-        List<File> files = storage.getFiles();
-        for (File file : files)
-        {
-            file.removeLocations(storage);
-        }
+		Task task = null;
+		long localTaskId = call.getToTaskId();
+		long remoteTaskId = call.getFromTaskId();
 
-        List<Storage> storages = Status.getInstance().getStorages();
-        if (0 == storages.size())
-        {
-            logger
-                .fatal("Failed to migrate data, no active storage server was found.");
-            return;
-        }
+		if (!isNewCall(call)) {
+			if (taskExisted(call.getToTaskId())) {
+				tasks.get(call.getToTaskId()).handleCall(call);
+			} else {
+				// Should we send an abort call? Maybe not.
+			}
+		} else {
+			if (pause) {
+				Call back = new AbortCallN2C(
+						"Nameserver is maintaining, please try later.");
+				back.setFromTaskId(localTaskId);
+				back.setToTaskId(remoteTaskId);
+				connector.sendCall(back);
+				return;
+			}
 
-        // Allocate migration work.
-        Iterator<Storage> iter = storages.iterator();
-        for (File f : files)
-        {
-            // Refresh the iterator.
-            if (!iter.hasNext())
-                iter = storages.iterator();
+			task = TaskFactory.createTask(call);
+			tasks.put(task.getTaskId(), task);
+			executor.executeTask(task);
+			monitor.monitor(task);
+		}
+	}
 
-            Storage active = iter.next();
-            active.addMigrateFile(f.getLocations().get(0), f);
-        }
-    }
+	@Override
+	public void handle(TaskEvent event) {
+		Task task = event.getTaskThread();
+		tasks.remove(task);
 
+		if (event.getType() == TaskEvent.Type.TASK_ABORTED) {
+			task.release();
+			logger.fatal("Task: " + task.getTaskId() + " " + event.getType());
+		} else if (event.getType() == TaskEvent.Type.TASK_FINISHED) {
+			logger.info("Task: " + task.getTaskId() + " " + event.getType());
+		} else if (event.getType() == TaskEvent.Type.HEARTBEAT_FATAL) {
+			handleHeartbeatFatal(event);
+		}
+	}
+
+	private void handleHeartbeatFatal(TaskEvent event) {
+		Storage storage = ((HeartbeatTask) (event.getTaskThread()))
+				.getStorage();
+		Status.getInstance().removeStorage(storage);
+
+		// Remove files' location.
+		List<File> files = storage.getFiles();
+		for (File file : files) {
+			file.removeLocations(storage);
+		}
+
+		List<Storage> storages = Status.getInstance().getStorages();
+		if (0 == storages.size()) {
+			logger.fatal("Failed to migrate data, no active storage server was found.");
+			return;
+		}
+
+		// Allocate migration work.
+		Iterator<Storage> iter = storages.iterator();
+		for (File f : files) {
+			// Refresh the iterator.
+			if (!iter.hasNext())
+				iter = storages.iterator();
+
+			Storage active = iter.next();
+			active.addMigrateFile(f.getLocations().get(0), f);
+		}
+	}
+
+	private boolean isNewCall(Call call) {
+		return call.getToTaskId() < 0;
+	}
+
+	private boolean taskExisted(long tid) {
+		return tasks.containsKey(tid);
+	}
+
+	private synchronized void makeSnapshot() {
+		pause = true;
+		final BackupUtil backup = BackupUtil.getInstance();
+
+		boolean hasRunningTask = !tasks.isEmpty();
+
+		while (hasRunningTask) {
+			try {
+				TimeUnit.SECONDS.sleep(1);
+				hasRunningTask = !tasks.isEmpty();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		backup.writeBackupImage();
+		backup.readBackupLog();
+
+		pause = false;
+	}
 }

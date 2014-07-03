@@ -1,5 +1,7 @@
 package test.nameserver.task;
 
+import java.util.concurrent.TimeUnit;
+
 import nameserver.meta.Directory;
 import nameserver.meta.Meta;
 import nameserver.meta.Status;
@@ -7,14 +9,15 @@ import nameserver.meta.Storage;
 import nameserver.task.AddFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.observe.call.AddFileCallC2N;
-import common.observe.call.AddFileCallN2C;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.FinishCall;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.c2n.AddFileCallC2N;
+import common.call.c2n.FinishCallC2N;
+import common.call.n2c.AddFileCallN2C;
+import common.event.TaskEvent;
+import common.event.TaskEventListener;
+import common.task.Task;
+import common.util.Configuration;
 import junit.framework.TestCase;
 
 public class TestAddFileTask
@@ -24,6 +27,8 @@ public class TestAddFileTask
 
     private static ClientConnector CConnector;
 
+    private static Task task;
+
     @Override
     protected void setUp()
     {
@@ -31,7 +36,7 @@ public class TestAddFileTask
         NConnector = ServerConnector.getInstance();
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -44,7 +49,9 @@ public class TestAddFileTask
 
     public void testTask()
     {
-        Directory dir = Meta.getInstance().getDirectory("/a/");
+        Meta meta = Meta.getInstance();
+
+        Directory dir = meta.getDirectory("/a/");
         assertNull(dir);
 
         AddFileCallC2N call = new AddFileCallC2N("/a/", "b");
@@ -52,15 +59,18 @@ public class TestAddFileTask
 
         try
         {
-            Thread.sleep(100000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
             e.printStackTrace();
         }
 
-        dir = Meta.getInstance().getDirectory("/a/");
-        assertNotNull(dir);
+        synchronized (meta)
+        {
+            assertNotNull(meta.getDirectory("/a/"));
+            assertNotNull(meta.getFile("/a/", "b"));
+        }
     }
 
     @Override
@@ -74,31 +84,40 @@ public class TestAddFileTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new AddFileTask(1, call, NConnector);
-            task.addListener(new TaskListener());
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.ADD_FILE_C2N == call.getType())
+            {
+                task =
+                    new AddFileTask(1, call, NConnector, Configuration
+                        .getInstance().getInteger(Configuration.DUPLICATE_KEY));
+                task.addListener(new TaskListener());
+                new Thread(task).start();
+            }
+            else if (Call.Type.FINISH_C2N == call.getType())
+            {
+                task.handleCall(call);
+            }
         }
     }
 
     private class CCallListener
         implements CallListener
     {
-
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server sent a call: " + call.getType());
+            System.out.println("--->: " + call.getType());
             if (Call.Type.ADD_FILE_N2C == call.getType())
             {
                 AddFileCallN2C c = (AddFileCallN2C) call;
-                System.out.println(c.getTaskId());
-                System.out.println(c.getType());
-                System.out.println(c.getInitiator());
+                System.out.println("task type: " + c.getType());
+                System.out.print("location: ");
                 for (String l : c.getLocations())
-                    System.out.println(l);
+                    System.out.print(l + " ");
+                System.out.println();
 
-                FinishCall ack = new FinishCall(call.getTaskId());
+                FinishCallC2N ack = new FinishCallC2N();
+                ack.setToTaskId(1);
                 CConnector.sendCall(ack);
             }
         }

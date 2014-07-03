@@ -1,5 +1,7 @@
 package test.nameserver.task;
 
+import java.util.concurrent.TimeUnit;
+
 import junit.framework.TestCase;
 import nameserver.meta.Directory;
 import nameserver.meta.File;
@@ -9,18 +11,20 @@ import nameserver.meta.Storage;
 import nameserver.task.AppendFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.observe.call.AppendFileCallC2N;
-import common.observe.call.AppendFileCallN2C;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.FinishCall;
-import common.observe.event.TaskEvent;
-import common.observe.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.c2n.AppendFileCallC2N;
+import common.call.c2n.FinishCallC2N;
+import common.call.n2c.AppendFileCallN2C;
+import common.event.TaskEvent;
+import common.event.TaskEventListener;
+import common.task.Task;
 
 public class TestAppendFileTask
     extends TestCase
 {
+    private static Task task;
+    
     private static ServerConnector NConnector;
 
     private static ClientConnector CConnector;
@@ -31,7 +35,7 @@ public class TestAppendFileTask
         NConnector = ServerConnector.getInstance();
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -62,7 +66,7 @@ public class TestAppendFileTask
 
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -84,10 +88,17 @@ public class TestAppendFileTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new AppendFileTask(1, call, NConnector);
-            task.addListener(new TaskListener());
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.APPEND_FILE_C2N == call.getType())
+            {
+                task = new AppendFileTask(1, call, NConnector);
+                task.addListener(new TaskListener());
+                new Thread(task).start();
+            }
+            else if (Call.Type.FINISH_C2N == call.getType())
+            {
+                task.handleCall(call);
+            }
         }
     }
 
@@ -98,17 +109,18 @@ public class TestAppendFileTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server sent a call: " + call.getType());
+            System.out.println("--->: " + call.getType());
             if (Call.Type.APPEND_FILE_N2C == call.getType())
             {
                 AppendFileCallN2C c = (AppendFileCallN2C) call;
-                System.out.println(c.getTaskId());
-                System.out.println(c.getType());
-                System.out.println(c.getInitiator());
+                System.out.println("call type: " + c.getType());
+                System.out.print("location: ");
                 for (String l : c.getLocations())
-                    System.out.println(l);
+                    System.out.print(l + " ");
+                System.out.println();
 
-                FinishCall ack = new FinishCall(call.getTaskId());
+                FinishCallC2N ack = new FinishCallC2N();
+                ack.setToTaskId(1);
                 CConnector.sendCall(ack);
             }
         }

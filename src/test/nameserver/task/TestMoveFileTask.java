@@ -1,5 +1,7 @@
 package test.nameserver.task;
 
+import java.util.concurrent.TimeUnit;
+
 import junit.framework.TestCase;
 import nameserver.meta.Directory;
 import nameserver.meta.File;
@@ -7,10 +9,10 @@ import nameserver.meta.Meta;
 import nameserver.task.MoveFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.observe.call.Call;
-import common.observe.call.CallListener;
-import common.observe.call.MoveFileCallC2N;
-import common.thread.TaskThread;
+import common.call.Call;
+import common.call.CallListener;
+import common.call.c2n.MoveFileCallC2N;
+import common.task.Task;
 
 public class TestMoveFileTask
     extends TestCase
@@ -25,7 +27,7 @@ public class TestMoveFileTask
         NConnector = ServerConnector.getInstance();
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
@@ -38,34 +40,28 @@ public class TestMoveFileTask
 
     public void testTaskRemove()
     {
-
-        Directory dir = new Directory("/a/");
-        Meta.getInstance().addDirectory(dir);
+        Meta meta = Meta.getInstance();
         File file = new File("b", 1);
-        dir.addFile(file);
+        meta.addFile("/a/", file);
 
-        assertNotNull(Meta.getInstance().getDirectory("/a/").getFile("b"));
+        assertNotNull(meta.getFile("/a/", "b"));
+        assertNull(meta.getFile("/c/", "d"));
 
         MoveFileCallC2N call = new MoveFileCallC2N("/a/", "b", "/c/", "d");
         CConnector.sendCall(call);
 
         try
         {
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
         }
         catch (InterruptedException e)
         {
             e.printStackTrace();
         }
 
-        dir = Meta.getInstance().getDirectory("/a/");
-        assertNotNull(dir);
-        file = dir.getFile("b");
-        assertNull(file);
-        dir = Meta.getInstance().getDirectory("/c/");
-        assertNotNull(dir);
-        file = dir.getFile("d");
-        assertNotNull(file);
+        assertNotNull(meta.getDirectory("/a/"));
+        assertNull(meta.getFile("/a/", "b"));
+        assertNotNull(meta.getFile("/c/", "d"));
     }
 
     @Override
@@ -79,9 +75,12 @@ public class TestMoveFileTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server received a call: " + call.getType());
-            TaskThread task = new MoveFileTask(1, call, NConnector);
-            new Thread(task).start();
+            System.out.println("<---: " + call.getType());
+            if (Call.Type.MOVE_FILE_C2N == call.getType())
+            {
+                Task task = new MoveFileTask(1, call, NConnector);
+                new Thread(task).start();
+            }
         }
     }
 

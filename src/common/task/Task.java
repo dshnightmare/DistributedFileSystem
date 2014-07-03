@@ -1,0 +1,89 @@
+package common.task;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import common.call.CallListener;
+import common.event.TaskEvent;
+import common.event.TaskEventDispatcher;
+import common.event.TaskEventListener;
+
+public abstract class Task
+    implements Runnable, TaskEventDispatcher, CallListener
+{
+    private long tid;
+
+    private Lease lease = null;
+
+    private boolean hasLease = false;
+
+    private List<TaskEventListener> listeners =
+        new ArrayList<TaskEventListener>();
+
+    public Task(long tid)
+    {
+        this.tid = tid;
+    }
+
+    public long getTaskId()
+    {
+        return tid;
+    }
+
+    public void setLease(Lease lease)
+    {
+        this.lease = lease;
+        hasLease = true;
+    }
+
+    // Called by thread itself
+    public void renewLease()
+    {
+        if (hasLease)
+            lease.renew();
+    }
+
+    // Called by thread monitor
+    public boolean isLeaseValid()
+    {
+        if (hasLease)
+            return lease.isValid();
+        else
+            return true;
+    }
+
+    public void setFinish()
+    {
+        fireEvent(new TaskEvent(TaskEvent.Type.TASK_FINISHED, this));
+    }
+
+    @Override
+    public final void addListener(TaskEventListener listener)
+    {
+        listeners.add(listener);
+    }
+
+    @Override
+    public final void removeListener(TaskEventListener listener)
+    {
+        listeners.remove(listener);
+    }
+
+    @Override
+    public final void fireEvent(TaskEvent event)
+    {
+        for (TaskEventListener l : listeners)
+            l.handle(event);
+    }
+
+    @Override
+    public abstract void run();
+
+    /**
+     * Release the resources hold by this task.
+     * <p>
+     * <strong>Warning:</strong> This method should only be called when task is
+     * aborted.
+     */
+    public abstract void release();
+}

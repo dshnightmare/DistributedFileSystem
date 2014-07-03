@@ -11,11 +11,12 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import common.observe.call.Call;
-import common.observe.call.CallDispatcher;
-import common.observe.call.CallListener;
+import common.call.Call;
+import common.call.CallDispatcher;
+import common.call.CallListener;
 import common.util.Configuration;
 import common.util.Constant;
+import common.util.Log;
 import common.util.SwitchObjectAndByte;
 
 /**
@@ -34,7 +35,7 @@ public class ClientConnector implements Connector, CallDispatcher{
 	private BlockingQueue<Call> commands;
 	private BlockingQueue<Call> responses;
 	
-	private List<CallListener> callListeners = new ArrayList<CallListener>();
+	private List<CallListener> responseListeners = new ArrayList<CallListener>();
 	
 	public ClientConnector(){
 		cf = Configuration.getInstance();
@@ -78,9 +79,17 @@ public class ClientConnector implements Connector, CallDispatcher{
 		}
 		return ret;
 	}
+	
+	/**
+	 * receive response from server
+	 * @param resp
+	 */
 	public void addResponseCall(Call resp){
 		try {
 			responses.put(resp);
+			for(CallListener listener : responseListeners){
+				listener.handleCall(resp);
+			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -90,13 +99,13 @@ public class ClientConnector implements Connector, CallDispatcher{
 	@Override
 	public synchronized void addListener(CallListener listener) {
 		// TODO Auto-generated method stub
-		callListeners.add(listener);
+		responseListeners.add(listener);
 	}
 
 	@Override
 	public synchronized void removeListener(CallListener listener) {
 		// TODO Auto-generated method stub
-		callListeners.remove(listener);
+		responseListeners.remove(listener);
 	}
 	
 	/**
@@ -125,10 +134,12 @@ public class ClientConnector implements Connector, CallDispatcher{
 			}
 			break;
 		}
-		System.out.println("Connection established with server.");
+		Log.info("Connection established with server.");
 		try {
 			ClientSender cs = new ClientSender(this, socket.getOutputStream());
 			cs.start();
+			ClientReceiver cr = new ClientReceiver(this, socket.getInputStream());
+			cr.start();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
