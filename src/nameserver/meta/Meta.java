@@ -14,6 +14,8 @@ import java.util.Map.Entry;
  * 
  * @author lishunyang
  * @see NameServer
+ * @see Directory
+ * @see File
  */
 public class Meta {
 	/**
@@ -309,17 +311,10 @@ public class Meta {
 	}
 
 	/**
-	 * Update a specified file's version.
+	 * Get sub-directory name of a specified directory.
 	 * 
-	 * @param dirName
-	 * @param fileName
+	 * @param currentDirName
 	 */
-	private void updateFileVersion(String dirName, String fileName) {
-		final File file = getFile(dirName, fileName);
-
-		file.updateVersion();
-	}
-
 	public List<String> getSubDirectoryName(String currentDirName) {
 		List<Directory> subDirs = getDirectoriesByPrefix(currentDirName);
 		List<String> result = new ArrayList<String>();
