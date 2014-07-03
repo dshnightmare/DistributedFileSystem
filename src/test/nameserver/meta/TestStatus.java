@@ -28,5 +28,7 @@ public class TestStatus
         l = s.allocateStorage(3);
         System.out.println(l.size());
         assertEquals(l.size(), 2);
+        
+        assertTrue(st1.getHearbeatTime() > 0);
     }
 }

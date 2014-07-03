@@ -21,7 +21,7 @@ public class File {
 	 * <p>
 	 * bareId + SEPARATOR + version.
 	 */
-	private final static String SEPARATOR = "-";
+	private final static String SEPARATOR = "_";
 
 	/**
 	 * File name.

@@ -19,115 +19,140 @@ import common.event.TaskEvent;
 import common.util.IdGenerator;
 import common.util.Logger;
 
-public class HeartbeatTask extends NameServerTask {
+public class HeartbeatTask
+    extends NameServerTask
+{
 
-	private final static Logger logger = Logger.getLogger(HeartbeatTask.class);
+    private final static Logger logger = Logger.getLogger(HeartbeatTask.class);
 
-	private Storage storage;
+    private Storage storage;
 
-	private final String address;
+    private final String address;
 
-	/**
-	 * How many seconds between two adjacent heartbeat check.
-	 */
-	private final long period;
+    /**
+     * How many seconds between two adjacent heartbeat check.
+     */
+    private final long period;
 
-	public HeartbeatTask(long tid, Call call, Connector connector, long period) {
-		super(tid, call, connector);
-		// Notice that the type is RegistrationCall.
-		RegistrationCallS2N c = (RegistrationCallS2N) call;
-		this.address = c.getAddress();
-		this.period = period;
-	}
+    public HeartbeatTask(long tid, Call call, Connector connector, long period)
+    {
+        super(tid, call, connector);
+        // Notice that the type is RegistrationCall.
+        RegistrationCallS2N c = (RegistrationCallS2N) call;
+        this.address = c.getAddress();
+        this.period = period;
+    }
 
-	@Override
-	public void run() {
-		final Status status = Status.getInstance();
+    @Override
+    public void run()
+    {
+        final Status status = Status.getInstance();
 
-		synchronized (status) {
-			this.storage = new Storage(IdGenerator.getInstance().getLongId(),
-					address);
-			Status.getInstance().addStorage(storage);
-		}
-		// As for registration, send a migration call to notify storage server.
-		sendMigrationCall();
+        synchronized (status)
+        {
+            this.storage =
+                new Storage(IdGenerator.getInstance().getLongId(), address);
+            Status.getInstance().addStorage(storage);
+        }
 
-		while (true) {
-			try {
-				TimeUnit.SECONDS.sleep(period);
+        logger.info("New storage server registered.");
+        // As for registration, send a migration call to notify storage server.
+        sendMigrationCall();
 
-				if (longTimeNoSee()) {
-					fireEvent(new TaskEvent(TaskEvent.Type.HEARTBEAT_FATAL,
-							this));
-					break;
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-				break;
-			}
-		}
-	}
+        while (true)
+        {
+            try
+            {
+                TimeUnit.SECONDS.sleep(period);
 
-	@Override
-	public void release() {
-		// TODO Auto-generated method stub
-	}
+                if (longTimeNoSee())
+                {
+                    fireEvent(new TaskEvent(TaskEvent.Type.HEARTBEAT_FATAL,
+                        this));
+                    break;
+                }
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+                break;
+            }
+        }
+    }
 
-	@Override
-	public void handleCall(Call call) {
-		logger.info("Heartbeat Task receive a call: " + call.getType());
-		if (call.getToTaskId() != getTaskId())
-			return;
+    @Override
+    public void release()
+    {
+        // TODO Auto-generated method stub
+    }
 
-		if (call.getType() == Call.Type.HEARTBEAT_S2N) {
-			updateHeartbeatTimestamp();
+    @Override
+    public void handleCall(Call call)
+    {
+        logger.info("Heartbeat Task receive a call: " + call.getType());
+        if (call.getToTaskId() != getTaskId())
+            return;
 
-			removeMigratedFilesFromMigrateList(((HeartbeatCallS2N) call)
-					.getMigratedFiles());
+        if (call.getType() == Call.Type.HEARTBEAT_S2N)
+        {
+            updateHeartbeatTimestamp();
+            logger.info("Heartbeat update storage server " + storage.getId()
+                + " heartbeat timestamp: " + storage.getHearbeatTime());
 
-			sendMigrationCall();
-			return;
-		}
-	}
+            removeMigratedFilesFromMigrateList(((HeartbeatCallS2N) call)
+                .getMigratedFiles());
 
-	public Storage getStorage() {
-		return storage;
-	}
+            sendMigrationCall();
+            return;
+        }
+    }
 
-	private boolean longTimeNoSee() {
-		final long currentTime = System.currentTimeMillis();
-		if ((currentTime - storage.getHearbeatTime()) > (period * 2))
-			return true;
-		return false;
-	}
+    public Storage getStorage()
+    {
+        return storage;
+    }
 
-	private void updateHeartbeatTimestamp() {
-		storage.setHeartbeatTime(System.currentTimeMillis());
-	}
+    private boolean longTimeNoSee()
+    {
+        final long currentTime = System.currentTimeMillis();
+        if ((currentTime - storage.getHearbeatTime()) > (period * 2))
+            return true;
+        return false;
+    }
 
-	private void removeMigratedFilesFromMigrateList(
-			Map<String, List<String>> migratedFiles) {
-		storage.removeMigrateFiles(migratedFiles);
-	}
+    private void updateHeartbeatTimestamp()
+    {
+        storage.setHeartbeatTime(System.currentTimeMillis());
+    }
 
-	private void sendMigrationCall() {
-		// As to heartbeaet call, name server always send the migration call
-		// back to storage server. So, if storage server doesn't receive the
-		// migration call, it will realize he is dead and should register
-		// again.
-		Map<Storage, List<File>> migrateFiles = storage.getMigrateFiles();
-		Map<String, List<String>> rawMigrateFiles = new HashMap<String, List<String>>();
+    private void removeMigratedFilesFromMigrateList(
+        Map<String, List<String>> migratedFiles)
+    {
+        storage.removeMigrateFiles(migratedFiles);
+    }
 
-		for (Entry<Storage, List<File>> e : migrateFiles.entrySet()) {
-			List<String> fileList = new ArrayList<String>();
+    private void sendMigrationCall()
+    {
+        // As to heartbeaet call, name server always send the migration call
+        // back to storage server. So, if storage server doesn't receive the
+        // migration call, it will realize he is dead and should register
+        // again.
+        Map<Storage, List<File>> migrateFiles = storage.getMigrateFiles();
+        Map<String, List<String>> rawMigrateFiles =
+            new HashMap<String, List<String>>();
 
-			for (File f : e.getValue()) {
-				fileList.add(f.getId());
-			}
-			rawMigrateFiles.put(e.getKey().getAddress(), fileList);
-		}
+        for (Entry<Storage, List<File>> e : migrateFiles.entrySet())
+        {
+            List<String> fileList = new ArrayList<String>();
 
-		Call back = new MigrateFileCallN2S(rawMigrateFiles);
-		sendCall(back);
-	}
+            for (File f : e.getValue())
+            {
+                fileList.add(f.getId());
+            }
+            rawMigrateFiles.put(e.getKey().getAddress(), fileList);
+        }
+
+        Call back = new MigrateFileCallN2S(rawMigrateFiles);
+        sendCall(back);
+    }
 }

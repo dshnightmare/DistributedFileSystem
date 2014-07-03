@@ -12,66 +12,80 @@ import common.call.n2s.SyncCallN2S;
 import common.call.s2n.SyncCallS2N;
 import common.util.Logger;
 
-public class SyncTask extends NameServerTask {
-	private final static Logger logger = Logger.getLogger(SyncTask.class);
+public class SyncTask
+    extends NameServerTask
+{
+    private final static Logger logger = Logger.getLogger(SyncTask.class);
 
-	private String address;
+    private String address;
 
-	private List<Long> files;
+    private List<String> files;
 
-	private int duplicate;
+    private int duplicate;
 
-	public SyncTask(long tid, Call call, Connector connector, int duplicate) {
-		super(tid, call, connector);
-		SyncCallS2N c = (SyncCallS2N) call;
-		this.address = c.getAddress();
-		this.files = c.getFiles();
-		this.duplicate = duplicate;
-	}
+    public SyncTask(long tid, Call call, Connector connector, int duplicate)
+    {
+        super(tid, call, connector);
+        SyncCallS2N c = (SyncCallS2N) call;
+        this.address = c.getAddress();
+        this.files = c.getFiles();
+        this.duplicate = duplicate;
+    }
 
-	@Override
-	public void run() {
-		logger.info("SyncTask started.");
+    @Override
+    public void run()
+    {
+        logger.info("SyncTask started.");
 
-		synchronized (Meta.getInstance()) {
-			if (!storageExists()) {
-				sendAbortCall("Task aborted, unidentified storage server.");
-				setFinish();
-			} else {
-				List<Long> removeList = new ArrayList<Long>();
-				for (Long l : files) {
-					File file = Meta.getInstance().getFile(l);
-					if (null == file)
-						removeList.add(l);
-					else {
-						if (file.getLocationsCount() > duplicate)
-							removeList.add(l);
-						else
-							file.addLocation(Status.getInstance().getStorage(
-									address));
-					}
-				}
-				sendResponseCall(removeList);
-				setFinish();
-			}
-		}
-	}
+        synchronized (Meta.getInstance())
+        {
+            if (!storageExists())
+            {
+                sendAbortCall("Task aborted, unidentified storage server.");
+                setFinish();
+            }
+            else
+            {
+                List<String> removeList = new ArrayList<String>();
+                for (String id : files)
+                {
+                    File file = Meta.getInstance().getFile(id);
+                    if (null == file)
+                        removeList.add(id);
+                    else
+                    {
+                        if (file.getLocationsCount() > duplicate)
+                            removeList.add(id);
+                        else
+                            file.addLocation(Status.getInstance().getStorage(
+                                address));
+                    }
+                }
+                sendResponseCall(removeList);
+                setFinish();
+            }
+        }
+    }
 
-	@Override
-	public void release() {
-		setDead();
-	}
+    @Override
+    public void release()
+    {
+        setDead();
+    }
 
-	@Override
-	public void handleCall(Call call) {
-	}
+    @Override
+    public void handleCall(Call call)
+    {
+    }
 
-	private boolean storageExists() {
-		return Status.getInstance().contains(address);
-	}
+    private boolean storageExists()
+    {
+        return Status.getInstance().contains(address);
+    }
 
-	private void sendResponseCall(List<Long> removeList) {
-		Call back = new SyncCallN2S(removeList);
-		sendCall(back);
-	}
+    private void sendResponseCall(List<String> removeList)
+    {
+        Call back = new SyncCallN2S(removeList);
+        sendCall(back);
+    }
 }

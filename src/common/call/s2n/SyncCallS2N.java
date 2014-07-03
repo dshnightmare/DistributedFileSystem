@@ -12,9 +12,9 @@ public class SyncCallS2N
 
     private final String address;
 
-    private final List<Long> files;
+    private final List<String> files;
 
-    public SyncCallS2N(String address, List<Long> files)
+    public SyncCallS2N(String address, List<String> files)
     {
         super(Call.Type.SYNC_S2N);
         this.address = address;
@@ -26,7 +26,7 @@ public class SyncCallS2N
         return address;
     }
 
-    public List<Long> getFiles()
+    public List<String> getFiles()
     {
         return files;
     }

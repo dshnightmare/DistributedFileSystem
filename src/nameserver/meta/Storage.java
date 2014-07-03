@@ -56,6 +56,7 @@ public class Storage {
 	public Storage(long id, String address) {
 		this.id = id;
 		this.address = address;
+		this.heartbeatTime = System.currentTimeMillis();
 	}
 
 	/**

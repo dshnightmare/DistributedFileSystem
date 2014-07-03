@@ -182,7 +182,7 @@ public class Meta {
 		return dir.getFile(fileName);
 	}
 
-	public File getFile(Long fid) {
+	public File getFile(String fid) {
 		return files.get(fid);
 	}
 

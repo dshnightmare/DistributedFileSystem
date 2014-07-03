@@ -3,7 +3,6 @@ package test.nameserver.task;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
-import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.task.MoveFileTask;
