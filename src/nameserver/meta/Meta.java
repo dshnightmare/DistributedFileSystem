@@ -1,6 +1,8 @@
 package nameserver.meta;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Meta
@@ -17,12 +19,12 @@ public class Meta
     private Meta()
     {
     }
-    
+
     public static Meta getInstance()
     {
         return instance;
     }
-    
+
     public synchronized void clear()
     {
         directories.clear();
@@ -39,6 +41,13 @@ public class Meta
         directories.put(directory.getName(), directory);
     }
 
+    /**
+     * Remove specified directory, include all files or directories in
+     * it.
+     * 
+     * @param dirName
+     * @return
+     */
     public Directory removeDirectory(String dirName)
     {
         return directories.remove(dirName);
@@ -64,7 +73,7 @@ public class Meta
             return;
         dir.setValid(valid);
     }
-    
+
     public void renameDirectory(String oldDirName, String newDirName)
     {
         Directory dir = removeDirectory(oldDirName);
@@ -81,7 +90,7 @@ public class Meta
             return null;
         return dir.getFile(fileName);
     }
-    
+
     public File getFile(Long fid)
     {
         return files.get(fid);
@@ -147,8 +156,9 @@ public class Meta
             return;
         file.setValid(valid);
     }
-    
-    public void renameFile(String oldDirName, String oldFileName, String newDirName, String newFileName)
+
+    public void renameFile(String oldDirName, String oldFileName,
+        String newDirName, String newFileName)
     {
         Directory oldDir = getDirectory(oldDirName);
         if (null == oldDir)
@@ -159,11 +169,12 @@ public class Meta
         file.setName(newFileName);
         addFile(newDirName, file);
     }
-    
+
     public Map<String, Map<String, Long>> getDirectoryList()
     {
-        Map<String, Map<String, Long>> dirList = new HashMap<String, Map<String, Long>>();
-        
+        Map<String, Map<String, Long>> dirList =
+            new HashMap<String, Map<String, Long>>();
+
         for (Directory dir : directories.values())
         {
             if (dir.isValid())
@@ -171,10 +182,17 @@ public class Meta
         }
         return dirList;
     }
-    
+
     private void updateFileVersion(String dirName, String fileName)
     {
         final File file = getFile(dirName, fileName);
         file.updateVersion();
+    }
+    
+    private List<Directory> findDirectoriesByPrefix(String dirNamePrefix)
+    {
+        List<Directory> result = new ArrayList<Directory>();
+        
+        return result;
     }
 }
