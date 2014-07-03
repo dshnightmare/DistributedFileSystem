@@ -50,7 +50,7 @@ public class Directory {
 		this.name = name;
 	}
 
-	public synchronized Map<String, String> getFileList() {
+	public synchronized Map<String, String> getValidFileNameList() {
 		Map<String, String> fileList = new HashMap<String, String>();
 
 		for (File f : files.values()) {

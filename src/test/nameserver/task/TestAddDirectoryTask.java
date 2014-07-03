@@ -4,31 +4,29 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 import nameserver.meta.Directory;
-import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
-import nameserver.task.GetFileTask;
-import common.network.ClientConnector;
-import common.network.ServerConnector;
+import nameserver.task.AddDirectoryTask;
+import common.call.AddDirectoryCallC2N;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.FinishCall;
-import common.call.GetFileCallC2N;
-import common.call.GetFileCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
+import common.network.ClientConnector;
+import common.network.ServerConnector;
 import common.task.Task;
 
-public class TestGetFileTask extends TestCase {
-	private static Task task;
-
+public class TestAddDirectoryTask extends TestCase {
 	private static ServerConnector NConnector;
 
 	private static ClientConnector CConnector;
 
+	private static Task task;
+
 	@Override
 	protected void setUp() {
+		Status.getInstance().addStorage(new Storage(1, "localhost"));
 		NConnector = ServerConnector.getInstance();
 		try {
 			TimeUnit.SECONDS.sleep(1);
@@ -41,20 +39,12 @@ public class TestGetFileTask extends TestCase {
 	}
 
 	public void testTask() {
-		Directory dir = new Directory("/a/");
-		File file = new File("b", 1);
-		Storage storage = new Storage(1, "localhost");
+		Meta meta = Meta.getInstance();
 
-		file.addLocation(storage);
-		storage.addFile(file);
-		dir.addFile(file);
-		Meta.getInstance().addDirectory(dir);
-		Status.getInstance().addStorage(storage);
+		Directory dir = meta.getDirectory("/a/");
+		assertNull(dir);
 
-		dir = Meta.getInstance().getDirectory("/a/");
-		assertNotNull(dir);
-
-		GetFileCallC2N call = new GetFileCallC2N("/a/", "b");
+		AddDirectoryCallC2N call = new AddDirectoryCallC2N("/a/");
 		CConnector.sendCall(call);
 
 		try {
@@ -63,8 +53,9 @@ public class TestGetFileTask extends TestCase {
 			e.printStackTrace();
 		}
 
-		dir = Meta.getInstance().getDirectory("/a/");
-		assertNotNull(dir);
+		synchronized (meta) {
+			assertNotNull(meta.getDirectory("/a/"));
+		}
 	}
 
 	@Override
@@ -75,8 +66,8 @@ public class TestGetFileTask extends TestCase {
 		@Override
 		public void handleCall(Call call) {
 			System.out.println("<---: " + call.getType());
-			if (Call.Type.GET_FILE_C2N == call.getType()) {
-				task = new GetFileTask(1, call, NConnector);
+			if (Call.Type.ADD_DIRECTORY_C2N == call.getType()) {
+				task = new AddDirectoryTask(1, call, NConnector);
 				task.addListener(new TaskListener());
 				new Thread(task).start();
 			} else if (Call.Type.FINISH == call.getType()) {
@@ -86,22 +77,9 @@ public class TestGetFileTask extends TestCase {
 	}
 
 	private class CCallListener implements CallListener {
-
 		@Override
 		public void handleCall(Call call) {
 			System.out.println("--->: " + call.getType());
-			if (Call.Type.GET_FILE_N2C == call.getType()) {
-				GetFileCallN2C c = (GetFileCallN2C) call;
-				System.out.println("call type: " + c.getType());
-				System.out.print("location: ");
-				for (String l : c.getLocations())
-					System.out.print(l + " ");
-				System.out.println();
-
-				FinishCall ack = new FinishCall();
-				ack.setToTaskId(1);
-				CConnector.sendCall(ack);
-			}
 		}
 	}
 

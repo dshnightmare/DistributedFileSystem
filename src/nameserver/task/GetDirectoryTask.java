@@ -18,116 +18,102 @@ import common.network.Connector;
 import common.task.Task;
 import common.util.Logger;
 
-public class GetDirectoryTask
-    extends Task
-{
-    private final static Logger logger = Logger
-        .getLogger(GetDirectoryTask.class);
+public class GetDirectoryTask extends Task {
+	private final static Logger logger = Logger
+			.getLogger(GetDirectoryTask.class);
 
-    private String dirName;
+	private String dirName;
 
-    private Connector connector;
+	private Connector connector;
 
-    private String initiator;
+	private String initiator;
 
-    private long remoteTaskId;
+	private long remoteTaskId;
 
-    private List<String> fileList;
+	private List<String> fileList;
 
-    private List<String> dirList;
+	private List<String> dirList;
 
-    public GetDirectoryTask(long tid, Call call, Connector connector)
-    {
-        super(tid);
-        GetDirectoryCallC2N c = (GetDirectoryCallC2N) call;
-        this.dirName = c.getDirName();
-        this.connector = connector;
-        this.initiator = c.getInitiator();
-        this.remoteTaskId = call.getFromTaskId();
-    }
+	public GetDirectoryTask(long tid, Call call, Connector connector) {
+		super(tid);
+		GetDirectoryCallC2N c = (GetDirectoryCallC2N) call;
+		this.dirName = c.getDirName();
+		this.connector = connector;
+		this.initiator = c.getInitiator();
+		this.remoteTaskId = call.getFromTaskId();
+	}
 
-    @Override
-    public void handleCall(Call call)
-    {
-        if (call.getToTaskId() != getTaskId())
-            return;
+	@Override
+	public void handleCall(Call call) {
+		if (call.getToTaskId() != getTaskId())
+			return;
 
-        if (call.getType() == Call.Type.LEASE)
-        {
-            renewLease();
-            return;
-        }
+		if (call.getType() == Call.Type.LEASE) {
+			renewLease();
+			return;
+		}
 
-    }
+	}
 
-    @Override
-    public void run()
-    {
-        final Meta meta = Meta.getInstance();
+	@Override
+	public void run() {
+		final Meta meta = Meta.getInstance();
 
-        synchronized (meta)
-        {
+		synchronized (meta) {
 
-            if (!directoryExists())
-            {
-                sendAbortCall("Task aborted, directory does not exist.");
-                return;
-            }
-            else
-            {
-                logger.info("GetDirectoryTask " + getTaskId() + " started.");
+			if (!directoryExists()) {
+				sendAbortCall("Task aborted, directory does not exist.");
+				return;
+			} else {
+				logger.info("GetDirectoryTask " + getTaskId() + " started.");
 
-                Directory dir = Meta.getInstance().getDirectory(dirName);
+				Directory dir = meta.getDirectory(dirName);
 
-                fileList = new ArrayList<String>();
-                dirList = new ArrayList<String>();
+				fileList = new ArrayList<String>();
+				dirList = new ArrayList<String>();
 
-                for (String fname : dir.getFileList().keySet())
-                    fileList.add(fname);
+				for (String fname : dir.getValidFileNameList().keySet())
+					fileList.add(fname);
 
-                // TODO Add directory list, this should do prefix matching. Not
-                // finished yet.
+				for (String dname: meta.getSubDirectoryName(dirName))
+					dirList.add(dname);
 
-                logger.info("GetDirectoryTask " + getTaskId() + " commit.");
+				logger.info("GetDirectoryTask " + getTaskId() + " commit.");
 
-                sendResponseCall();
-                setFinish();
-            }
-        }
-    }
+				sendResponseCall();
+				setFinish();
+			}
+		}
+	}
 
-    @Override
-    public void release()
-    {
-        // TODO Auto-generated method stub
+	@Override
+	public void release() {
+		// TODO Auto-generated method stub
 
-    }
+	}
 
-    private boolean directoryExists()
-    {
-        if (Meta.getInstance().containDirectory(dirName))
-            return true;
-        else
-            return false;
-    }
+	private boolean directoryExists() {
+		if (Meta.getInstance().containDirectory(dirName))
+			return true;
+		else
+			return false;
+	}
 
-    private void sendAbortCall(String reason)
-    {
-        Call back = new AbortCall(reason);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-        release();
-        setFinish();
-    }
+	private void sendAbortCall(String reason) {
+		Call back = new AbortCall(reason);
+		back.setFromTaskId(getTaskId());
+		back.setToTaskId(remoteTaskId);
+		back.setInitiator(initiator);
+		connector.sendCall(back);
+		release();
+		setFinish();
+	}
 
-    private void sendResponseCall()
-    {
-        Call back = new GetDirectoryCallN2C(fileList, dirList);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-    }
+	private void sendResponseCall() {
+		Call back = new GetDirectoryCallN2C(fileList, dirList);
+		back.setFromTaskId(getTaskId());
+		back.setToTaskId(remoteTaskId);
+		back.setInitiator(initiator);
+		connector.sendCall(back);
+	}
 }

@@ -8,19 +8,22 @@ import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
+import nameserver.task.GetDirectoryTask;
 import nameserver.task.GetFileTask;
-import common.network.ClientConnector;
-import common.network.ServerConnector;
 import common.call.Call;
 import common.call.CallListener;
 import common.call.FinishCall;
+import common.call.GetDirectoryCallC2N;
+import common.call.GetDirectoryCallN2C;
 import common.call.GetFileCallC2N;
 import common.call.GetFileCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
+import common.network.ClientConnector;
+import common.network.ServerConnector;
 import common.task.Task;
 
-public class TestGetFileTask extends TestCase {
+public class TestGetDirectoryTask extends TestCase {
 	private static Task task;
 
 	private static ServerConnector NConnector;
@@ -41,20 +44,28 @@ public class TestGetFileTask extends TestCase {
 	}
 
 	public void testTask() {
-		Directory dir = new Directory("/a/");
-		File file = new File("b", 1);
-		Storage storage = new Storage(1, "localhost");
-
-		file.addLocation(storage);
-		storage.addFile(file);
-		dir.addFile(file);
-		Meta.getInstance().addDirectory(dir);
+		final Storage storage = new Storage(1, "localhost");
+		final Meta meta = Meta.getInstance();
+		File file = null;
+		
 		Status.getInstance().addStorage(storage);
+		file = new File("f1", 1);
+		file.setValid(true);
+		file.addLocation(storage);
+		meta.addFile("/a/b/c/", file);
+		file = new File("f2", 2);
+		file.setValid(true);
+		file.addLocation(storage);
+		meta.addFile("/a/b/d", file);
+		file = new File("f3", 3);
+		file.setValid(true);
+		file.addLocation(storage);
+		meta.addFile("/a/", file);
 
-		dir = Meta.getInstance().getDirectory("/a/");
-		assertNotNull(dir);
+		assertNotNull(meta.getDirectory("/a/"));
+		assertNotNull(meta.getDirectory("/a/b/"));
 
-		GetFileCallC2N call = new GetFileCallC2N("/a/", "b");
+		GetDirectoryCallC2N call = new GetDirectoryCallC2N("/a/");
 		CConnector.sendCall(call);
 
 		try {
@@ -62,9 +73,6 @@ public class TestGetFileTask extends TestCase {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-
-		dir = Meta.getInstance().getDirectory("/a/");
-		assertNotNull(dir);
 	}
 
 	@Override
@@ -75,8 +83,8 @@ public class TestGetFileTask extends TestCase {
 		@Override
 		public void handleCall(Call call) {
 			System.out.println("<---: " + call.getType());
-			if (Call.Type.GET_FILE_C2N == call.getType()) {
-				task = new GetFileTask(1, call, NConnector);
+			if (Call.Type.GET_DIRECTORY_C2N == call.getType()) {
+				task = new GetDirectoryTask(1, call, NConnector);
 				task.addListener(new TaskListener());
 				new Thread(task).start();
 			} else if (Call.Type.FINISH == call.getType()) {
@@ -90,17 +98,17 @@ public class TestGetFileTask extends TestCase {
 		@Override
 		public void handleCall(Call call) {
 			System.out.println("--->: " + call.getType());
-			if (Call.Type.GET_FILE_N2C == call.getType()) {
-				GetFileCallN2C c = (GetFileCallN2C) call;
+			if (Call.Type.GET_DIRECTORY_N2C == call.getType()) {
+				GetDirectoryCallN2C c = (GetDirectoryCallN2C) call;
 				System.out.println("call type: " + c.getType());
-				System.out.print("location: ");
-				for (String l : c.getLocations())
+				System.out.print("files: ");
+				for (String l : c.getFileList())
 					System.out.print(l + " ");
 				System.out.println();
-
-				FinishCall ack = new FinishCall();
-				ack.setToTaskId(1);
-				CConnector.sendCall(ack);
+				System.out.println("directories:");
+				for (String l : c.getDirectoryList())
+					System.out.print(l + " ");
+				System.out.println();
 			}
 		}
 	}

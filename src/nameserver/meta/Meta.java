@@ -303,7 +303,7 @@ public class Meta {
 
 		for (Directory dir : directories.values()) {
 			if (dir.isValid())
-				dirList.put(dir.getName(), dir.getFileList());
+				dirList.put(dir.getName(), dir.getValidFileNameList());
 		}
 		return dirList;
 	}
@@ -320,6 +320,19 @@ public class Meta {
 		file.updateVersion();
 	}
 
+	public List<String> getSubDirectoryName(String currentDirName) {
+		List<Directory> subDirs = getDirectoriesByPrefix(currentDirName);
+		List<String> result = new ArrayList<String>();
+
+		for (Directory dir : subDirs) {
+			if (dir.getName().matches(currentDirName + ".*/.+"))
+				continue;
+			result.add(dir.getName().substring(currentDirName.length()));
+		}
+
+		return result;
+	}
+
 	/**
 	 * Get all directories which have same name prefix.
 	 * 
@@ -330,7 +343,7 @@ public class Meta {
 		List<Directory> result = new ArrayList<Directory>();
 
 		for (Entry<String, Directory> e : directories.entrySet()) {
-			if (e.getKey().matches(dirNamePrefix + "*")) {
+			if (e.getKey().matches(dirNamePrefix + ".*")) {
 				result.add(e.getValue());
 			}
 		}

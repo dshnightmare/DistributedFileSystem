@@ -49,7 +49,7 @@ public class TestHeartbeatTask extends TestCase {
 		SConnector.sendCall(call);
 
 		try {
-			TimeUnit.SECONDS.sleep(1);
+			TimeUnit.SECONDS.sleep(5);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
