@@ -39,7 +39,7 @@ public class TestGetDirectoryTask extends TestCase {
 	}
 
 	public void testTask() {
-		final Storage storage = new Storage(1, "localhost");
+		final Storage storage = new Storage("localhost");
 		final Meta meta = Meta.getInstance();
 		File file = null;
 		

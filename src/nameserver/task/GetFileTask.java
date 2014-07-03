@@ -122,7 +122,7 @@ public class GetFileTask
     {
         List<String> locations = new ArrayList<String>();
         for (Storage s : file.getLocations())
-            locations.add(s.getAddress());
+            locations.add(s.getId());
 
         String fileId = file.getId() + "-" + file.getVersion();
 

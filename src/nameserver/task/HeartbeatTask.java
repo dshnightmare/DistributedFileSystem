@@ -14,9 +14,7 @@ import common.network.Connector;
 import common.call.Call;
 import common.call.n2s.MigrateFileCallN2S;
 import common.call.s2n.HeartbeatCallS2N;
-import common.call.s2n.RegistrationCallS2N;
 import common.event.TaskEvent;
-import common.util.IdGenerator;
 import common.util.Logger;
 
 public class HeartbeatTask
@@ -27,8 +25,6 @@ public class HeartbeatTask
 
     private Storage storage;
 
-    private final String address;
-
     /**
      * How many seconds between two adjacent heartbeat check.
      */
@@ -38,8 +34,6 @@ public class HeartbeatTask
     {
         super(tid, call, connector);
         // Notice that the type is RegistrationCall.
-        RegistrationCallS2N c = (RegistrationCallS2N) call;
-        this.address = c.getAddress();
         this.period = period;
     }
 
@@ -51,7 +45,7 @@ public class HeartbeatTask
         synchronized (status)
         {
             this.storage =
-                new Storage(IdGenerator.getInstance().getLongId(), address);
+                new Storage(getInitiator());
             Status.getInstance().addStorage(storage);
         }
 
@@ -149,7 +143,7 @@ public class HeartbeatTask
             {
                 fileList.add(f.getId());
             }
-            rawMigrateFiles.put(e.getKey().getAddress(), fileList);
+            rawMigrateFiles.put(e.getKey().getId(), fileList);
         }
 
         Call back = new MigrateFileCallN2S(rawMigrateFiles);

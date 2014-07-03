@@ -82,14 +82,14 @@ public class Status
     /**
      * Test whether we have knowledge about specified storage server.
      * 
-     * @param address
+     * @param id
      * @return
      */
-    public synchronized boolean contains(String address)
+    public synchronized boolean contains(String id)
     {
         for (Storage s : status)
         {
-            if (0 == address.compareTo(s.getAddress()))
+            if (0 == id.compareTo(s.getId()))
                 return true;
         }
         return false;
@@ -98,14 +98,14 @@ public class Status
     /**
      * Get storage server with specified address.
      * 
-     * @param address
+     * @param id
      * @return
      */
-    public synchronized Storage getStorage(String address)
+    public synchronized Storage getStorage(String id)
     {
         for (Storage s : status)
         {
-            if (0 == address.compareTo(s.getAddress()))
+            if (0 == id.compareTo(s.getId()))
                 return s;
         }
         return null;

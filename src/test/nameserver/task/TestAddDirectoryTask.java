@@ -26,7 +26,7 @@ public class TestAddDirectoryTask extends TestCase {
 
 	@Override
 	protected void setUp() {
-		Status.getInstance().addStorage(new Storage(1, "localhost"));
+		Status.getInstance().addStorage(new Storage("localhost"));
 		NConnector = ServerConnector.getInstance();
 		try {
 			TimeUnit.SECONDS.sleep(1);

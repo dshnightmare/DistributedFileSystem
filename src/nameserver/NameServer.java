@@ -9,12 +9,7 @@ import java.util.concurrent.TimeUnit;
 import nameserver.meta.File;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
-import nameserver.task.AddFileTask;
-import nameserver.task.AppendFileTask;
 import nameserver.task.HeartbeatTask;
-import nameserver.task.MoveFileTask;
-import nameserver.task.RemoveFileTask;
-import nameserver.task.SyncTask;
 import nameserver.task.TaskFactory;
 import common.network.ServerConnector;
 import common.call.Call;
@@ -23,11 +18,8 @@ import common.call.n2c.AbortCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.task.TaskExecutor;
-import common.task.TaskLease;
 import common.task.Task;
 import common.task.TaskMonitor;
-import common.util.Configuration;
-import common.util.IdGenerator;
 import common.util.Logger;
 
 /**

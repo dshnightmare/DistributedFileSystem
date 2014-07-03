@@ -14,18 +14,10 @@ import java.util.Map;
  */
 public class Storage
 {
-    // FIXME: It seems that we don't need this.
     /**
-     * storage server id.
+     * Storage server's id.
      */
-    private final long id;
-
-    /**
-     * Storage server's communication address.
-     * <p>
-     * ip address + port
-     */
-    private final String address;
+    private final String id;
 
     /**
      * Heatbeat timestamp.
@@ -53,12 +45,10 @@ public class Storage
      * Construction method.
      * 
      * @param id
-     * @param address
      */
-    public Storage(long id, String address)
+    public Storage(String id)
     {
         this.id = id;
-        this.address = address;
         this.heartbeatTime = System.currentTimeMillis();
     }
 
@@ -103,23 +93,13 @@ public class Storage
     }
 
     /**
-     * Get storage server id.
+     * Get storage id.
      * 
      * @return
      */
-    public long getId()
+    public String getId()
     {
         return id;
-    }
-
-    /**
-     * Get storage address.
-     * 
-     * @return
-     */
-    public String getAddress()
-    {
-        return address;
     }
 
     /**
@@ -191,7 +171,7 @@ public class Storage
         List<String> list = null;
         for (Storage storage : migrateFiles.keySet())
         {
-            list = files.get(storage.getAddress());
+            list = files.get(storage.getId());
             Iterator<File> iter = migrateFiles.get(storage).iterator();
             File file = null;
             while (iter.hasNext())

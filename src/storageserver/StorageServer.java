@@ -28,7 +28,7 @@ public class StorageServer implements TaskEventListener, CallListener {
 	
 	public void start()
 	{
-		RegistrationCallS2N call =  new RegistrationCallS2N("");
+		RegistrationCallS2N call =  new RegistrationCallS2N();
 		connector.sendCall(call);
  	}
 	@Override

@@ -194,7 +194,7 @@ public class AddFileTask
         List<Storage> storages = file.getLocations();
         List<String> locations = new ArrayList<String>();
         for (Storage s : storages)
-            locations.add(s.getAddress());
+            locations.add(s.getId());
 
         String fileId = file.getId() + "-" + file.getVersion();
         Call back = new AddFileCallN2C(fileId, locations);

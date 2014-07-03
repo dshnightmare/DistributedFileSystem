@@ -25,6 +25,11 @@ public abstract class NameServerTask
         this.remoteTaskId = call.getFromTaskId();
     }
 
+    protected String getInitiator()
+    {
+        return initiator;
+    }
+
     protected void sendAbortCall(String reason)
     {
         sendCall(new AbortCallN2C(reason));

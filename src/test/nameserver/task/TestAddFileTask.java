@@ -32,7 +32,7 @@ public class TestAddFileTask
     @Override
     protected void setUp()
     {
-        Status.getInstance().addStorage(new Storage(1, "localhost"));
+        Status.getInstance().addStorage(new Storage("localhost"));
         NConnector = ServerConnector.getInstance();
         try
         {

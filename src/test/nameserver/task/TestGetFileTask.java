@@ -43,7 +43,7 @@ public class TestGetFileTask extends TestCase {
 	public void testTask() {
 		Directory dir = new Directory("/a/");
 		File file = new File("b", 1);
-		Storage storage = new Storage(1, "localhost");
+		Storage storage = new Storage("localhost");
 
 		file.addLocation(storage);
 		storage.addFile(file);

@@ -25,7 +25,7 @@ public class HeartbeatTask extends StorageServerTask {
 		// TODO Auto-generated method stub
 		synchronized (syn) {
 			try {
-				RegistrationCallS2N call = new RegistrationCallS2N("");
+				RegistrationCallS2N call = new RegistrationCallS2N();
 				connector.sendCall(call);
 				syn.wait();
 			} catch (InterruptedException e) {

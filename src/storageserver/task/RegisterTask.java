@@ -21,7 +21,7 @@ public class RegisterTask extends StorageServerTask {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		RegistrationCallS2N call = new RegistrationCallS2N("");
+		RegistrationCallS2N call = new RegistrationCallS2N();
 		connector.sendCall(call);
 
 	}

@@ -46,7 +46,7 @@ public class TestSyncTask
     public void testTask()
     {
         File file = new File("b", 1);
-        Storage storage = new Storage(1, "localhost");
+        Storage storage = new Storage("localhost");
         Status.getInstance().addStorage(storage);
         Meta.getInstance().addFile("/a/", file);
 

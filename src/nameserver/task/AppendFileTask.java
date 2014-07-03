@@ -130,7 +130,7 @@ public class AppendFileTask
     {
         List<String> locations = new ArrayList<String>();
         for (Storage s : file.getLocations())
-            locations.add(s.getAddress());
+            locations.add(s.getId());
 
         long newFileVersion = file.getVersion() + 1;
         String fileId = file.getId() + "-" + newFileVersion;
