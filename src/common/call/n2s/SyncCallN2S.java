@@ -1,6 +1,9 @@
-package common.call;
+package common.call.n2s;
 
 import java.util.List;
+
+import common.call.Call;
+import common.call.Call.Type;
 
 public class SyncCallN2S
     extends Call

@@ -1,19 +1,19 @@
-package nameserver;
+package nameserver.meta;
 
-public class FileIdUtil
+public class MetaUtil
 {
-    private static FileIdUtil instance = null;
+    private static MetaUtil instance = null;
 
     private static Long idSeed = null;
 
-    private FileIdUtil()
+    private MetaUtil()
     {
     }
 
-    public synchronized static FileIdUtil getInstance()
+    public synchronized static MetaUtil getInstance()
     {
         if (null == instance)
-            instance = new FileIdUtil();
+            instance = new MetaUtil();
 
         return instance;
     }

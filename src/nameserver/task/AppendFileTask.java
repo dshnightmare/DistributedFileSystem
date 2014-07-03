@@ -9,11 +9,11 @@ import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Storage;
 import common.network.Connector;
-import common.call.AbortCall;
-import common.call.AppendFileCallC2N;
-import common.call.AppendFileCallN2C;
 import common.call.Call;
-import common.call.FinishCall;
+import common.call.c2n.AppendFileCallC2N;
+import common.call.c2n.FinishCallC2N;
+import common.call.n2c.AbortCallN2C;
+import common.call.n2c.AppendFileCallN2C;
 import common.task.Task;
 import common.util.Logger;
 
@@ -132,7 +132,7 @@ public class AppendFileTask
 
     private void sendAbortCall(String reason)
     {
-        Call back = new AbortCall(reason);
+        Call back = new AbortCallN2C(reason);
         back.setFromTaskId(getTaskId());
         back.setToTaskId(remoteTaskId);
         connector.sendCall(back);
@@ -158,7 +158,7 @@ public class AppendFileTask
 
     private void sendFinishCall()
     {
-        Call back = new FinishCall();
+        Call back = new FinishCallC2N();
         back.setFromTaskId(getTaskId());
         back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);

@@ -12,8 +12,8 @@ import common.network.ServerConnector;
 import common.network.XConnector;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.SyncCallN2S;
-import common.call.SyncCallS2N;
+import common.call.n2s.SyncCallN2S;
+import common.call.s2n.SyncCallS2N;
 import common.task.Task;
 import common.util.Configuration;
 

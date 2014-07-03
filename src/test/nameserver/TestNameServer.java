@@ -4,11 +4,11 @@ package test.nameserver;
 import java.util.concurrent.TimeUnit;
 
 import common.network.ClientConnector;
-import common.call.AddFileCallC2N;
-import common.call.AddFileCallN2C;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.FinishCall;
+import common.call.c2n.AddFileCallC2N;
+import common.call.c2n.FinishCallC2N;
+import common.call.n2c.AddFileCallN2C;
 import nameserver.NameServer;
 import junit.framework.TestCase;
 
@@ -72,7 +72,7 @@ public class TestNameServer
                 System.out.print(l + " ");
             System.out.println();
 
-            FinishCall ack = new FinishCall();
+            FinishCallC2N ack = new FinishCallC2N();
             CConnector.sendCall(ack);
         }
     }

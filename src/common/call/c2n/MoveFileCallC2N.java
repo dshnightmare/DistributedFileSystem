@@ -1,4 +1,7 @@
-package common.call;
+package common.call.c2n;
+
+import common.call.Call;
+import common.call.Call.Type;
 
 public class MoveFileCallC2N
     extends Call

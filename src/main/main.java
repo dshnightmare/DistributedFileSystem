@@ -5,14 +5,13 @@ import java.util.Scanner;
 import javax.swing.JFrame;
 
 import client.ClientWindow;
-
 import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.network.ServerListener;
-import common.call.AddFileCallC2N;
 import common.call.Call;
-import common.call.MoveFileCallC2N;
-import common.call.RemoveFileCallC2N;
+import common.call.c2n.AddFileCallC2N;
+import common.call.c2n.MoveFileCallC2N;
+import common.call.c2n.RemoveFileCallC2N;
 
 public class main
 {

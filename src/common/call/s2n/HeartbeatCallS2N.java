@@ -1,7 +1,10 @@
-package common.call;
+package common.call.s2n;
 
 import java.util.List;
 import java.util.Map;
+
+import common.call.Call;
+import common.call.Call.Type;
 
 public class HeartbeatCallS2N
     extends Call

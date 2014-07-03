@@ -7,10 +7,10 @@ import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import common.network.Connector;
-import common.call.AbortCall;
 import common.call.Call;
-import common.call.SyncCallN2S;
-import common.call.SyncCallS2N;
+import common.call.n2c.AbortCallN2C;
+import common.call.n2s.SyncCallN2S;
+import common.call.s2n.SyncCallS2N;
 import common.task.Task;
 import common.util.Logger;
 
@@ -76,7 +76,7 @@ public class SyncTask extends Task {
 	}
 
 	private void sendAbortCall(String reason) {
-		Call back = new AbortCall(reason);
+		Call back = new AbortCallN2C(reason);
 		back.setFromTaskId(getTaskId());
 		back.setToTaskId(remoteTaskId);
 		back.setInitiator(initiator);

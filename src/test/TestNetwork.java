@@ -4,11 +4,10 @@ import java.util.Scanner;
 
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.call.AddFileCallC2N;
 import common.call.Call;
-import common.call.MoveFileCallC2N;
-import common.call.RemoveFileCallC2N;
-
+import common.call.c2n.AddFileCallC2N;
+import common.call.c2n.MoveFileCallC2N;
+import common.call.c2n.RemoveFileCallC2N;
 import junit.framework.TestCase;
 
 public class TestNetwork extends TestCase{

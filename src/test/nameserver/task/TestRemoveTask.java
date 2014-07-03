@@ -11,7 +11,7 @@ import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.RemoveFileCallC2N;
+import common.call.c2n.RemoveFileCallC2N;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.task.Task;

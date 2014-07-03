@@ -9,11 +9,11 @@ import nameserver.meta.Storage;
 import nameserver.task.AddFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.call.AddFileCallC2N;
-import common.call.AddFileCallN2C;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.FinishCall;
+import common.call.c2n.AddFileCallC2N;
+import common.call.c2n.FinishCallC2N;
+import common.call.n2c.AddFileCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.task.Task;
@@ -116,7 +116,7 @@ public class TestAddFileTask
                     System.out.print(l + " ");
                 System.out.println();
 
-                FinishCall ack = new FinishCall();
+                FinishCallC2N ack = new FinishCallC2N();
                 ack.setToTaskId(1);
                 CConnector.sendCall(ack);
             }

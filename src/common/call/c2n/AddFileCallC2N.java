@@ -1,18 +1,20 @@
-package common.call;
+package common.call.c2n;
 
-public class RemoveFileCallC2N
+import common.call.Call;
+import common.call.Call.Type;
+
+public class AddFileCallC2N
     extends Call
 {
-
-    private static final long serialVersionUID = 7834245963090160026L;
+    private static final long serialVersionUID = -805598603013291328L;
 
     private String dirName;
 
     private String fileName;
 
-    public RemoveFileCallC2N(String dirName, String fileName)
+    public AddFileCallC2N(String dirName, String fileName)
     {
-        super(Call.Type.REMOVE_FILE_C2N);
+        super(Call.Type.ADD_FILE_C2N);
         this.dirName = dirName;
         this.fileName = fileName;
     }

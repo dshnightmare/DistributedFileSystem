@@ -1,7 +1,10 @@
-package common.call;
+package common.call.n2s;
 
 import java.util.List;
 import java.util.Map;
+
+import common.call.Call;
+import common.call.Call.Type;
 
 /**
  * File migration call sent from <tt>NameServer</tt> to <tt>StorageServer</tt>.

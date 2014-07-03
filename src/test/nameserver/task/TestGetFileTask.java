@@ -13,9 +13,9 @@ import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.FinishCall;
-import common.call.GetFileCallC2N;
-import common.call.GetFileCallN2C;
+import common.call.c2n.FinishCallC2N;
+import common.call.c2n.GetFileCallC2N;
+import common.call.n2c.GetFileCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.task.Task;
@@ -98,7 +98,7 @@ public class TestGetFileTask extends TestCase {
 					System.out.print(l + " ");
 				System.out.println();
 
-				FinishCall ack = new FinishCall();
+				FinishCallC2N ack = new FinishCallC2N();
 				ack.setToTaskId(1);
 				CConnector.sendCall(ack);
 			}

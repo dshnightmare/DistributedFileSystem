@@ -12,10 +12,10 @@ import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
 import common.call.Call;
-import common.call.FinishCall;
-import common.call.HeartbeatCallS2N;
-import common.call.MigrateFileCallN2S;
-import common.call.RegistrationCallS2N;
+import common.call.c2n.FinishCallC2N;
+import common.call.n2s.MigrateFileCallN2S;
+import common.call.s2n.HeartbeatCallS2N;
+import common.call.s2n.RegistrationCallS2N;
 import common.event.TaskEvent;
 import common.task.Task;
 import common.util.IdGenerator;
@@ -142,7 +142,7 @@ public class HeartbeatTask extends Task {
 	}
 
 	private void sendFinishCall() {
-		Call back = new FinishCall();
+		Call back = new FinishCallC2N();
 		back.setFromTaskId(getTaskId());
 		back.setToTaskId(remoteTaskId);
 		back.setInitiator(initiator);

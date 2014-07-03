@@ -1,7 +1,10 @@
-package common.call;
+package common.call.n2c;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import common.call.Call;
+import common.call.Call.Type;
 
 public class GetDirectoryCallN2C
     extends Call

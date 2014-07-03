@@ -16,9 +16,9 @@ import nameserver.task.MoveFileTask;
 import nameserver.task.RemoveFileTask;
 import nameserver.task.SyncTask;
 import common.network.ServerConnector;
-import common.call.AbortCall;
 import common.call.Call;
 import common.call.CallListener;
+import common.call.n2c.AbortCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.task.TaskLease;
@@ -113,7 +113,7 @@ public class NameServer
             if (pause)
             {
                 Call back =
-                    new AbortCall("Nameserver is maintaining, please try later.");
+                    new AbortCallN2C("Nameserver is maintaining, please try later.");
                 back.setFromTaskId(localTaskId);
                 back.setToTaskId(remoteTaskId);
                 connector.sendCall(back);

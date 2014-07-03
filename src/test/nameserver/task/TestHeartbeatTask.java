@@ -13,9 +13,9 @@ import common.network.ServerConnector;
 import common.network.XConnector;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.FinishCall;
-import common.call.HeartbeatCallS2N;
-import common.call.MigrateFileCallN2S;
+import common.call.c2n.FinishCallC2N;
+import common.call.n2s.MigrateFileCallN2S;
+import common.call.s2n.HeartbeatCallS2N;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.task.Task;
@@ -85,7 +85,7 @@ public class TestHeartbeatTask extends TestCase {
 					for (String id : s.getValue())
 						System.out.println("\t" + id);
 				}
-				Call back = new FinishCall();
+				Call back = new FinishCallC2N();
 				back.setToTaskId(1);
 				SConnector.sendCall(back);
 			}

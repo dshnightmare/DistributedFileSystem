@@ -8,12 +8,12 @@ import nameserver.BackupUtil;
 import nameserver.meta.Directory;
 import nameserver.meta.Meta;
 import nameserver.meta.Storage;
-import common.call.AbortCall;
 import common.call.Call;
-import common.call.GetDirectoryCallC2N;
-import common.call.GetDirectoryCallN2C;
-import common.call.GetFileCallC2N;
-import common.call.GetFileCallN2C;
+import common.call.c2n.GetDirectoryCallC2N;
+import common.call.c2n.GetFileCallC2N;
+import common.call.n2c.AbortCallN2C;
+import common.call.n2c.GetDirectoryCallN2C;
+import common.call.n2c.GetFileCallN2C;
 import common.network.Connector;
 import common.task.Task;
 import common.util.Logger;
@@ -100,7 +100,7 @@ public class GetDirectoryTask extends Task {
 	}
 
 	private void sendAbortCall(String reason) {
-		Call back = new AbortCall(reason);
+		Call back = new AbortCallN2C(reason);
 		back.setFromTaskId(getTaskId());
 		back.setToTaskId(remoteTaskId);
 		back.setInitiator(initiator);

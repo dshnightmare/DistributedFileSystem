@@ -3,10 +3,10 @@ package nameserver.task;
 import nameserver.BackupUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
-import common.call.AbortCall;
 import common.call.Call;
-import common.call.FinishCall;
-import common.call.MoveFileCallC2N;
+import common.call.c2n.FinishCallC2N;
+import common.call.c2n.MoveFileCallC2N;
+import common.call.n2c.AbortCallN2C;
 import common.task.Task;
 import common.util.Logger;
 
@@ -112,7 +112,7 @@ public class MoveFileTask
 
     private void sendAbortCall(String reason)
     {
-        Call back = new AbortCall(reason);
+        Call back = new AbortCallN2C(reason);
         back.setFromTaskId(getTaskId());
         back.setToTaskId(remoteTaskId);
         back.setInitiator(initiator);
