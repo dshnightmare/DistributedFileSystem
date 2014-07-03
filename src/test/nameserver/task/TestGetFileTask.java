@@ -79,7 +79,7 @@ public class TestGetFileTask extends TestCase {
 				task = new GetFileTask(1, call, NConnector);
 				task.addListener(new TaskListener());
 				new Thread(task).start();
-			} else if (Call.Type.FINISH == call.getType()) {
+			} else if (Call.Type.FINISH_C2N == call.getType()) {
 				task.handleCall(call);
 			}
 		}

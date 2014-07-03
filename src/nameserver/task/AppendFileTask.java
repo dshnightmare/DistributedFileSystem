@@ -11,172 +11,114 @@ import nameserver.meta.Storage;
 import common.network.Connector;
 import common.call.Call;
 import common.call.c2n.AppendFileCallC2N;
-import common.call.c2n.FinishCallC2N;
-import common.call.n2c.AbortCallN2C;
 import common.call.n2c.AppendFileCallN2C;
-import common.task.Task;
 import common.util.Logger;
 
 // TODO: If append file task failed, what can we do? The files could be
 // inconsistent.
-public class AppendFileTask
-    extends Task
-{
-    private final static Logger logger = Logger.getLogger(AppendFileTask.class);
+public class AppendFileTask extends NameServerTask {
+	private final static Logger logger = Logger.getLogger(AppendFileTask.class);
 
-    private String dirName;
+	private String dirName;
 
-    private String fileName;
+	private String fileName;
 
-    private Object syncRoot = new Object();
+	private Object syncRoot = new Object();
 
-    private Connector connector;
+	private File file = null;
 
-    private String initiator;
+	public AppendFileTask(long tid, Call call, Connector connector) {
+		super(tid, call, connector);
+		AppendFileCallC2N c = (AppendFileCallC2N) call;
+		this.dirName = c.getDirName();
+		this.fileName = c.getFileName();
+	}
 
-    private File file = null;
+	@Override
+	public void run() {
+		final Meta meta = Meta.getInstance();
+		final BackupUtil backup = BackupUtil.getInstance();
 
-    private long remoteTaskId;
+		synchronized (meta) {
 
-    public AppendFileTask(long tid, Call call, Connector connector)
-    {
-        super(tid);
-        AppendFileCallC2N c = (AppendFileCallC2N) call;
-        this.dirName = c.getDirName();
-        this.fileName = c.getFileName();
-        this.connector = connector;
-        this.initiator = c.getInitiator();
-        this.remoteTaskId = call.getFromTaskId();
-    }
+			if (!fileExists()) {
+				sendAbortCall("Task aborted, file does not exist.");
+				setFinish();
+				return;
+			} else {
+				logger.info("AppendFileTask " + getTaskId() + " started.");
+				backup.writeLogIssue(getTaskId(), Call.Type.APPEND_FILE_C2N,
+						dirName + " " + fileName);
 
-    @Override
-    public void run()
-    {
-        final Meta meta = Meta.getInstance();
-        final BackupUtil backup = BackupUtil.getInstance();
+				file = Meta.getInstance().getFile(dirName, fileName);
+				if (file.tryLockWrite(1, TimeUnit.SECONDS)) {
+					sendResponseCall();
+				} else {
+					sendAbortCall("Task aborted, someone is using the file.");
+					return;
+				}
+			}
+		}
 
-        synchronized (meta)
-        {
+		waitUntilTaskFinish();
 
-            if (!fileExists())
-            {
-                sendAbortCall("Task aborted, file does not exist.");
-                return;
-            }
-            else
-            {
-                logger.info("AppendFileTask " + getTaskId() + " started.");
-                backup.writeLogIssue(getTaskId(), Call.Type.APPEND_FILE_C2N,
-                    dirName + " " + fileName);
+		synchronized (meta) {
+			logger.info("AppendFileTask " + getTaskId() + " commit.");
+			backup.writeLogCommit(getTaskId());
 
-                file = Meta.getInstance().getFile(dirName, fileName);
-                if (file.tryLockWrite(1, TimeUnit.SECONDS))
-                {
-                    sendResponseCall();
-                }
-                else
-                {
-                    sendAbortCall("Task aborted, someone is using the file.");
-                    return;
-                }
-            }
-        }
+			file.updateVersion();
+			file.unlockWrite();
+			setFinish();
+		}
 
-        waitUntilTaskFinish();
+	}
 
-        synchronized (meta)
-        {
-            logger.info("AppendFileTask " + getTaskId() + " commit.");
-            backup.writeLogCommit(getTaskId());
+	@Override
+	public void release() {
+		file.unlockWrite();
+	}
 
-            file.updateVersion();
-            file.unlockWrite();
-            setFinish();
-            // sendFinishCall();
-        }
+	@Override
+	public void handleCall(Call call) {
+		if (call.getToTaskId() != getTaskId())
+			return;
 
-    }
+		if (call.getType() == Call.Type.LEASE_C2N) {
+			renewLease();
+			return;
+		}
 
-    @Override
-    public void release()
-    {
-        file.unlockWrite();
-    }
+		if (call.getType() == Call.Type.FINISH_C2N) {
+			synchronized (syncRoot) {
+				syncRoot.notify();
+			}
+			return;
+		}
+	}
 
-    @Override
-    public void handleCall(Call call)
-    {
-        if (call.getToTaskId() != getTaskId())
-            return;
+	private boolean fileExists() {
+		return Meta.getInstance().containFile(dirName, fileName);
+	}
 
-        if (call.getType() == Call.Type.LEASE)
-        {
-            renewLease();
-            return;
-        }
+	private void sendResponseCall() {
+		List<String> locations = new ArrayList<String>();
+		for (Storage s : file.getLocations())
+			locations.add(s.getAddress());
 
-        if (call.getType() == Call.Type.FINISH)
-        {
-            synchronized (syncRoot)
-            {
-                syncRoot.notify();
-            }
-            return;
-        }
-    }
+		long newFileVersion = file.getVersion() + 1;
+		String fileId = file.getId() + "-" + newFileVersion;
 
-    private boolean fileExists()
-    {
-        return Meta.getInstance().containFile(dirName, fileName);
-    }
+		Call back = new AppendFileCallN2C(fileId, locations);
+		sendCall(back);
+	}
 
-    private void sendAbortCall(String reason)
-    {
-        Call back = new AbortCallN2C(reason);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        connector.sendCall(back);
-        release();
-        setFinish();
-    }
-
-    private void sendResponseCall()
-    {
-        List<String> locations = new ArrayList<String>();
-        for (Storage s : file.getLocations())
-            locations.add(s.getAddress());
-
-        long newFileVersion = file.getVersion() + 1;
-        String fileId = file.getId() + "-" + newFileVersion;
-
-        Call back = new AppendFileCallN2C(fileId, locations);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-    }
-
-    private void sendFinishCall()
-    {
-        Call back = new FinishCallC2N();
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-    }
-
-    private void waitUntilTaskFinish()
-    {
-        try
-        {
-            synchronized (syncRoot)
-            {
-                syncRoot.wait();
-            }
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-    }
+	private void waitUntilTaskFinish() {
+		try {
+			synchronized (syncRoot) {
+				syncRoot.wait();
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

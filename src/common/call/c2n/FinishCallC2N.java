@@ -10,7 +10,7 @@ public class FinishCallC2N
 
     public FinishCallC2N()
     {
-        super(Call.Type.FINISH);
+        super(Call.Type.FINISH_C2N);
     }
 
 }

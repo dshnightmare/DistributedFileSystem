@@ -4,162 +4,113 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import nameserver.BackupUtil;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Storage;
 import common.network.Connector;
 import common.call.Call;
 import common.call.c2n.GetFileCallC2N;
-import common.call.n2c.AbortCallN2C;
 import common.call.n2c.GetFileCallN2C;
-import common.task.Task;
 import common.util.Logger;
 
-public class GetFileTask
-    extends Task
-{
-    private final static Logger logger = Logger.getLogger(GetFileTask.class);
+public class GetFileTask extends NameServerTask {
+	private final static Logger logger = Logger.getLogger(GetFileTask.class);
 
-    private String dirName;
+	private String dirName;
 
-    private String fileName;
+	private String fileName;
 
-    private Connector connector;
+	private Object syncRoot = new Object();
 
-    private Object syncRoot = new Object();
+	private File file = null;
 
-    private String initiator;
+	public GetFileTask(long tid, Call call, Connector connector) {
+		super(tid, call, connector);
+		GetFileCallC2N c = (GetFileCallC2N) call;
+		this.dirName = c.getDirName();
+		this.fileName = c.getFileName();
+	}
 
-    private long remoteTaskId;
+	@Override
+	public void handleCall(Call call) {
+		if (call.getToTaskId() != getTaskId())
+			return;
 
-    private File file = null;
+		if (call.getType() == Call.Type.LEASE_C2N) {
+			renewLease();
+			return;
+		}
 
-    public GetFileTask(long tid, Call call, Connector connector)
-    {
-        super(tid);
-        GetFileCallC2N c = (GetFileCallC2N) call;
-        this.dirName = c.getDirName();
-        this.fileName = c.getFileName();
-        this.connector = connector;
-        this.initiator = c.getInitiator();
-        this.remoteTaskId = call.getFromTaskId();
-    }
+		if (call.getType() == Call.Type.FINISH_C2N) {
+			synchronized (syncRoot) {
+				syncRoot.notify();
+			}
+			return;
+		}
+	}
 
-    @Override
-    public void handleCall(Call call)
-    {
-        if (call.getToTaskId() != getTaskId())
-            return;
+	@Override
+	public void run() {
+		final Meta meta = Meta.getInstance();
 
-        if (call.getType() == Call.Type.LEASE)
-        {
-            renewLease();
-            return;
-        }
+		synchronized (meta) {
 
-        if (call.getType() == Call.Type.FINISH)
-        {
-            synchronized (syncRoot)
-            {
-                syncRoot.notify();
-            }
-            return;
-        }
-    }
+			if (!fileExists()) {
+				sendAbortCall("Task aborted, file does not exist.");
+				setFinish();
+				return;
+			} else {
+				logger.info("GetFileTask " + getTaskId() + " started.");
 
-    @Override
-    public void run()
-    {
-        final Meta meta = Meta.getInstance();
+				file = Meta.getInstance().getFile(dirName, fileName);
+				if (file.tryLockRead(1, TimeUnit.SECONDS)) {
+					sendResponseCall();
+				} else {
+					sendAbortCall("Task aborted, someone is using the file.");
+					return;
+				}
+			}
+		}
 
-        synchronized (meta)
-        {
+		waitUntilTaskFinish();
 
-            if (!fileExists())
-            {
-                sendAbortCall("Task aborted, file does not exist.");
-                return;
-            }
-            else
-            {
-                logger.info("GetFileTask " + getTaskId() + " started.");
+		synchronized (meta) {
+			logger.info("GetFileTask " + getTaskId() + " commit.");
 
-                file = Meta.getInstance().getFile(dirName, fileName);
-                if (file.tryLockRead(1, TimeUnit.SECONDS))
-                {
-                    sendResponseCall();
-                }
-                else
-                {
-                    sendAbortCall("Task aborted, someone is using the file.");
-                    return;
-                }
-            }
-        }
+			file.updateVersion();
+			file.unlockRead();
+			setFinish();
+			// sendFinishCall();
+		}
+	}
 
-        waitUntilTaskFinish();
+	@Override
+	public void release() {
+		file.unlockRead();
+	}
 
-        synchronized (meta)
-        {
-            logger.info("GetFileTask " + getTaskId() + " commit.");
+	private boolean fileExists() {
+		return Meta.getInstance().containFile(dirName, fileName);
+	}
 
-            file.updateVersion();
-            file.unlockRead();
-            setFinish();
-            // sendFinishCall();
-        }
-    }
+	private void sendResponseCall() {
+		List<String> locations = new ArrayList<String>();
+		for (Storage s : file.getLocations())
+			locations.add(s.getAddress());
 
-    @Override
-    public void release()
-    {
-        file.unlockRead();
-    }
+		String fileId = file.getId() + "-" + file.getVersion();
 
-    private boolean fileExists()
-    {
-        return Meta.getInstance().containFile(dirName, fileName);
-    }
+		Call back = new GetFileCallN2C(fileId, locations);
+		sendCall(back);
+	}
 
-    private void sendAbortCall(String reason)
-    {
-        Call back = new AbortCallN2C(reason);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-        release();
-        setFinish();
-    }
-
-    private void sendResponseCall()
-    {
-        List<String> locations = new ArrayList<String>();
-        for (Storage s : file.getLocations())
-            locations.add(s.getAddress());
-
-        String fileId = file.getId() + "-" + file.getVersion();
-
-        Call back = new GetFileCallN2C(fileId, locations);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-    }
-
-    private void waitUntilTaskFinish()
-    {
-        try
-        {
-            synchronized (syncRoot)
-            {
-                syncRoot.wait();
-            }
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-    }
+	private void waitUntilTaskFinish() {
+		try {
+			synchronized (syncRoot) {
+				syncRoot.wait();
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

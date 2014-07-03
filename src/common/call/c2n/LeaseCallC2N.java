@@ -9,6 +9,6 @@ public class LeaseCallC2N extends Call
 
     public LeaseCallC2N()
     {
-        super(Call.Type.LEASE);
+        super(Call.Type.LEASE_C2N);
     }
 }

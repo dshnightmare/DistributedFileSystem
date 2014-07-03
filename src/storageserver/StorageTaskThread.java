@@ -12,14 +12,14 @@ public class StorageTaskThread extends Task
     	if(call == null || storage == null)
     		return;
     	switch (call.getType()) {
-		case ADD_FILE_SS:
-			// TODO 
-			DataReciever reciever = new DataReciever();
-			break;
-		case GET_FILE_SS:
-			//TODO
-			DataSender sender = new DataSender();
-			break;
+//		case ADD_FILE_SS:
+//			// TODO 
+//			DataReciever reciever = new DataReciever();
+//			break;
+//		case GET_FILE_SS:
+//			//TODO
+//			DataSender sender = new DataSender();
+//			break;
 		default:
 			break;
 		}

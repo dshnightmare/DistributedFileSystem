@@ -12,7 +12,7 @@ public class AbortCallN2C
 
     public AbortCallN2C(String reason)
     {
-        super(Call.Type.ABORT);
+        super(Call.Type.ABORT_N2C);
         this.reason = reason;
     }
     

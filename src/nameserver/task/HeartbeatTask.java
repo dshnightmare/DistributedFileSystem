@@ -12,16 +12,14 @@ import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
 import common.call.Call;
-import common.call.c2n.FinishCallC2N;
 import common.call.n2s.MigrateFileCallN2S;
 import common.call.s2n.HeartbeatCallS2N;
 import common.call.s2n.RegistrationCallS2N;
 import common.event.TaskEvent;
-import common.task.Task;
 import common.util.IdGenerator;
 import common.util.Logger;
 
-public class HeartbeatTask extends Task {
+public class HeartbeatTask extends NameServerTask {
 
 	private final static Logger logger = Logger.getLogger(HeartbeatTask.class);
 
@@ -29,35 +27,30 @@ public class HeartbeatTask extends Task {
 
 	private final String address;
 
-	private final Connector connector;
-
-	private final String initiator;
-
-	private long remoteTaskId;
-
 	/**
 	 * How many seconds between two adjacent heartbeat check.
 	 */
 	private final long period;
 
 	public HeartbeatTask(long tid, Call call, Connector connector, long period) {
-		super(tid);
+		super(tid, call, connector);
 		// Notice that the type is RegistrationCall.
 		RegistrationCallS2N c = (RegistrationCallS2N) call;
-		this.initiator = c.getInitiator();
 		this.address = c.getAddress();
-		this.connector = connector;
 		this.period = period;
-		this.remoteTaskId = call.getFromTaskId();
 	}
 
 	@Override
 	public void run() {
-		this.storage = new Storage(IdGenerator.getInstance().getLongId(),
-				address);
-		Status.getInstance().addStorage(storage);
-		// As for registration, send a finish call to notify storage server.
-		sendFinishCall();
+		final Status status = Status.getInstance();
+
+		synchronized (status) {
+			this.storage = new Storage(IdGenerator.getInstance().getLongId(),
+					address);
+			Status.getInstance().addStorage(storage);
+		}
+		// As for registration, send a migration call to notify storage server.
+		sendMigrationCall();
 
 		while (true) {
 			try {
@@ -135,17 +128,6 @@ public class HeartbeatTask extends Task {
 		}
 
 		Call back = new MigrateFileCallN2S(rawMigrateFiles);
-		back.setFromTaskId(getTaskId());
-		back.setToTaskId(remoteTaskId);
-		back.setInitiator(initiator);
-		connector.sendCall(back);
-	}
-
-	private void sendFinishCall() {
-		Call back = new FinishCallC2N();
-		back.setFromTaskId(getTaskId());
-		back.setToTaskId(remoteTaskId);
-		back.setInitiator(initiator);
-		connector.sendCall(back);
+		sendCall(back);
 	}
 }

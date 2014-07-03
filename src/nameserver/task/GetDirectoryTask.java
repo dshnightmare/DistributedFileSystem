@@ -2,45 +2,29 @@ package nameserver.task;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import nameserver.BackupUtil;
 import nameserver.meta.Directory;
 import nameserver.meta.Meta;
-import nameserver.meta.Storage;
 import common.call.Call;
 import common.call.c2n.GetDirectoryCallC2N;
-import common.call.c2n.GetFileCallC2N;
-import common.call.n2c.AbortCallN2C;
 import common.call.n2c.GetDirectoryCallN2C;
-import common.call.n2c.GetFileCallN2C;
 import common.network.Connector;
-import common.task.Task;
 import common.util.Logger;
 
-public class GetDirectoryTask extends Task {
+public class GetDirectoryTask extends NameServerTask {
 	private final static Logger logger = Logger
 			.getLogger(GetDirectoryTask.class);
 
 	private String dirName;
-
-	private Connector connector;
-
-	private String initiator;
-
-	private long remoteTaskId;
 
 	private List<String> fileList;
 
 	private List<String> dirList;
 
 	public GetDirectoryTask(long tid, Call call, Connector connector) {
-		super(tid);
+		super(tid, call, connector);
 		GetDirectoryCallC2N c = (GetDirectoryCallC2N) call;
 		this.dirName = c.getDirName();
-		this.connector = connector;
-		this.initiator = c.getInitiator();
-		this.remoteTaskId = call.getFromTaskId();
 	}
 
 	@Override
@@ -48,7 +32,7 @@ public class GetDirectoryTask extends Task {
 		if (call.getToTaskId() != getTaskId())
 			return;
 
-		if (call.getType() == Call.Type.LEASE) {
+		if (call.getType() == Call.Type.LEASE_C2N) {
 			renewLease();
 			return;
 		}
@@ -63,6 +47,7 @@ public class GetDirectoryTask extends Task {
 
 			if (!directoryExists()) {
 				sendAbortCall("Task aborted, directory does not exist.");
+				setFinish();
 				return;
 			} else {
 				logger.info("GetDirectoryTask " + getTaskId() + " started.");
@@ -75,7 +60,7 @@ public class GetDirectoryTask extends Task {
 				for (String fname : dir.getValidFileNameList().keySet())
 					fileList.add(fname);
 
-				for (String dname: meta.getSubDirectoryName(dirName))
+				for (String dname : meta.getSubDirectoryName(dirName))
 					dirList.add(dname);
 
 				logger.info("GetDirectoryTask " + getTaskId() + " commit.");
@@ -88,8 +73,6 @@ public class GetDirectoryTask extends Task {
 
 	@Override
 	public void release() {
-		// TODO Auto-generated method stub
-
 	}
 
 	private boolean directoryExists() {
@@ -99,21 +82,8 @@ public class GetDirectoryTask extends Task {
 			return false;
 	}
 
-	private void sendAbortCall(String reason) {
-		Call back = new AbortCallN2C(reason);
-		back.setFromTaskId(getTaskId());
-		back.setToTaskId(remoteTaskId);
-		back.setInitiator(initiator);
-		connector.sendCall(back);
-		release();
-		setFinish();
-	}
-
 	private void sendResponseCall() {
 		Call back = new GetDirectoryCallN2C(fileList, dirList);
-		back.setFromTaskId(getTaskId());
-		back.setToTaskId(remoteTaskId);
-		back.setInitiator(initiator);
-		connector.sendCall(back);
+		sendCall(back);
 	}
 }

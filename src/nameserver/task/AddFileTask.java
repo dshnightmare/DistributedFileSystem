@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import nameserver.BackupUtil;
-import nameserver.CallUtil;
 import nameserver.meta.Directory;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
@@ -14,13 +13,11 @@ import nameserver.meta.Storage;
 import common.network.Connector;
 import common.call.Call;
 import common.call.c2n.AddFileCallC2N;
-import common.call.n2c.AbortCallN2C;
 import common.call.n2c.AddFileCallN2C;
-import common.task.Task;
 import common.util.IdGenerator;
 import common.util.Logger;
 
-public class AddFileTask extends Task {
+public class AddFileTask extends NameServerTask {
 	private final static Logger logger = Logger.getLogger(AddFileTask.class);
 
 	private int duplicate;
@@ -30,12 +27,6 @@ public class AddFileTask extends Task {
 	private String fileName;
 
 	private Object syncRoot = new Object();
-
-	private Connector connector;
-
-	private String initiator;
-
-	private long remoteTaskId;
 
 	/**
 	 * Indicates whether the directory is already existed before adding this
@@ -47,14 +38,11 @@ public class AddFileTask extends Task {
 	private File file = null;
 
 	public AddFileTask(long tid, Call call, Connector connector, int duplicate) {
-		super(tid);
+		super(tid, call, connector);
 		AddFileCallC2N c = (AddFileCallC2N) call;
 		this.dirName = c.getDirName();
 		this.fileName = c.getFileName();
-		this.connector = connector;
-		this.initiator = c.getInitiator();
 		this.duplicate = duplicate;
-		this.remoteTaskId = call.getFromTaskId();
 	}
 
 	@Override
@@ -64,10 +52,7 @@ public class AddFileTask extends Task {
 
 		synchronized (meta) {
 			if (fileExists()) {
-				CallUtil.getInstatnce()
-						.sendAbortCall(connector, getTaskId(), remoteTaskId,
-								initiator,
-								"Task aborted, there has been a directory/file with the same name.");
+				sendAbortCall("Task aborted, there has been a directory/file with the same name.");
 				setFinish();
 				return;
 			} else {
@@ -109,12 +94,12 @@ public class AddFileTask extends Task {
 		if (call.getToTaskId() != getTaskId())
 			return;
 
-		if (call.getType() == Call.Type.LEASE) {
+		if (call.getType() == Call.Type.LEASE_C2N) {
 			renewLease();
 			return;
 		}
 
-		if (call.getType() == Call.Type.FINISH) {
+		if (call.getType() == Call.Type.FINISH_C2N) {
 			logger.info("AddFileTask " + getTaskId() + " HOHO.");
 			synchronized (syncRoot) {
 				syncRoot.notify();
@@ -177,10 +162,7 @@ public class AddFileTask extends Task {
 
 		String fileId = file.getId() + "-" + file.getVersion();
 		Call back = new AddFileCallN2C(fileId, locations);
-		back.setFromTaskId(getTaskId());
-		back.setToTaskId(remoteTaskId);
-		back.setInitiator(initiator);
-		connector.sendCall(back);
+		sendCall(back);
 	}
 
 	private void commit() {

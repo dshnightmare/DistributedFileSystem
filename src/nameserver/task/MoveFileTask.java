@@ -4,120 +4,82 @@ import nameserver.BackupUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
 import common.call.Call;
-import common.call.c2n.FinishCallC2N;
 import common.call.c2n.MoveFileCallC2N;
-import common.call.n2c.AbortCallN2C;
-import common.task.Task;
 import common.util.Logger;
 
-public class MoveFileTask
-    extends Task
-{
-    private final static Logger logger = Logger.getLogger(MoveFileTask.class);
+public class MoveFileTask extends NameServerTask {
+	private final static Logger logger = Logger.getLogger(MoveFileTask.class);
 
-    private String oldDirName;
+	private String oldDirName;
 
-    private String oldFileName;
+	private String oldFileName;
 
-    private String newDirName;
+	private String newDirName;
 
-    private String newFileName;
+	private String newFileName;
 
-    private Connector connector;
+	public MoveFileTask(long tid, Call call, Connector connector) {
+		super(tid, call, connector);
+		MoveFileCallC2N c = (MoveFileCallC2N) call;
+		this.oldDirName = c.getOldDirName();
+		this.oldFileName = c.getOldFileName();
+		this.newDirName = c.getNewDirName();
+		this.newFileName = c.getNewFileName();
+	}
 
-    private String initiator;
-    
-    private long remoteTaskId;
+	@Override
+	public void run() {
+		final BackupUtil backup = BackupUtil.getInstance();
 
-    public MoveFileTask(long tid, Call call, Connector connector)
-    {
-        super(tid);
-        MoveFileCallC2N c = (MoveFileCallC2N) call;
-        this.oldDirName = c.getOldDirName();
-        this.oldFileName = c.getOldFileName();
-        this.newDirName = c.getNewDirName();
-        this.newFileName = c.getNewFileName();
-        this.connector = connector;
-        this.initiator = c.getInitiator();
-        this.remoteTaskId = call.getFromTaskId();
-    }
+		synchronized (Meta.getInstance()) {
+			if (!oldFileExists()) {
+				sendAbortCall("Task aborted, old file does not exist.");
+				setFinish();
+			} else if (newFileExists()) {
+				sendAbortCall("Task aborted, new file has arealdy existed.");
+				setFinish();
+			} else {
+				logger.info("MoveFileTask " + getTaskId() + " started.");
+				backup.writeLogIssue(getTaskId(), Call.Type.MOVE_FILE_C2N,
+						oldDirName + " " + oldFileName + " " + newDirName + " "
+								+ newFileName);
 
-    @Override
-    public void run()
-    {
-        final BackupUtil backup = BackupUtil.getInstance();
-        
-        synchronized (Meta.getInstance())
-        {
-            if (!oldFileExists())
-            {
-                sendAbortCall("Task aborted, old file does not exist.");
-            }
-            else if (newFileExists())
-            {
-                sendAbortCall("Task aborted, new file has arealdy existed.");
-            }
-            else
-            {
-                logger.info("MoveFileTask " + getTaskId() + " started.");
-                backup.writeLogIssue(
-                    getTaskId(),
-                    Call.Type.MOVE_FILE_C2N,
-                    oldDirName + " " + oldFileName + " " + newDirName + " "
-                        + newFileName);
+				logger.info("MoveFileTask " + getTaskId() + " commit.");
+				backup.writeLogCommit(getTaskId());
 
-                logger.info("MoveFileTask " + getTaskId() + " commit.");
-                backup.writeLogCommit(getTaskId());
+				Meta.getInstance().renameFile(oldDirName, oldFileName,
+						newDirName, newFileName);
+				setFinish();
+			}
+		}
+	}
 
-                Meta.getInstance().renameFile(oldDirName, oldFileName,
-                    newDirName, newFileName);
-                setFinish();
-            }
-        }
-    }
+	@Override
+	public void release() {
+	}
 
-    @Override
-    public void release()
-    {
-    }
+	@Override
+	public void handleCall(Call call) {
+		if (call.getToTaskId() != getTaskId())
+			return;
 
-    @Override
-    public void handleCall(Call call)
-    {
-        if (call.getToTaskId() != getTaskId())
-            return;
+		if (call.getType() == Call.Type.LEASE_C2N) {
+			renewLease();
+			return;
+		}
+	}
 
-        if (call.getType() == Call.Type.LEASE)
-        {
-            renewLease();
-            return;
-        }
-    }
+	private boolean oldFileExists() {
+		if (Meta.getInstance().containFile(oldDirName, oldFileName))
+			return true;
+		else
+			return false;
+	}
 
-    private boolean oldFileExists()
-    {
-        if (Meta.getInstance().containFile(oldDirName, oldFileName))
-            return true;
-        else
-            return false;
-    }
-
-    private boolean newFileExists()
-    {
-        if (Meta.getInstance().containFile(newDirName, newFileName))
-            return true;
-        else
-            return false;
-    }
-
-    private void sendAbortCall(String reason)
-    {
-        Call back = new AbortCallN2C(reason);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-        release();
-        setFinish();
-    }
+	private boolean newFileExists() {
+		if (Meta.getInstance().containFile(newDirName, newFileName))
+			return true;
+		else
+			return false;
+	}
 }
