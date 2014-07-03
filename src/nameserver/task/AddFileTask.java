@@ -17,17 +17,38 @@ import common.call.n2c.AddFileCallN2C;
 import common.util.IdGenerator;
 import common.util.Logger;
 
+/**
+ * Task of adding file.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class AddFileTask
     extends NameServerTask
 {
+    /**
+     * Logger.
+     */
     private final static Logger logger = Logger.getLogger(AddFileTask.class);
 
+    /**
+     * Duplicate number of file.
+     */
     private int duplicate;
 
+    /**
+     * File directory name.
+     */
     private String dirName;
 
+    /**
+     * File name.
+     */
     private String fileName;
 
+    /**
+     * Sync object which is used for synchronizing.
+     */
     private Object syncRoot = new Object();
 
     /**
@@ -37,8 +58,19 @@ public class AddFileTask
      */
     private boolean hasDir = false;
 
+    /**
+     * The file that we focus on.
+     */
     private File file = null;
 
+    /**
+     * Construction method.
+     * 
+     * @param tid
+     * @param call
+     * @param connector
+     * @param duplicate
+     */
     public AddFileTask(long tid, Call call, Connector connector, int duplicate)
     {
         super(tid, call, connector);
@@ -48,6 +80,9 @@ public class AddFileTask
         this.duplicate = duplicate;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -95,6 +130,9 @@ public class AddFileTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {
@@ -111,6 +149,9 @@ public class AddFileTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {
@@ -134,6 +175,11 @@ public class AddFileTask
         }
     }
 
+    /**
+     * Test whether the file that client wants to add has existed.
+     * 
+     * @return
+     */
     private boolean fileExists()
     {
         if (Meta.getInstance().containDirectory(dirName))
@@ -150,6 +196,9 @@ public class AddFileTask
             return false;
     }
 
+    /**
+     * Add file into meta structure.
+     */
     private void addFileToMeta()
     {
         Meta.getInstance().addFile(dirName, file);
@@ -161,6 +210,9 @@ public class AddFileTask
             s.addFile(file);
     }
 
+    /**
+     * Remove file from meta structure.
+     */
     private void removeFileFromMeta()
     {
         Meta.getInstance().removeFile(dirName, fileName);
@@ -174,6 +226,9 @@ public class AddFileTask
             s.removeFile(file);
     }
 
+    /**
+     * Wait until task has finished.
+     */
     private void waitUntilTaskFinish()
     {
         try
@@ -189,6 +244,9 @@ public class AddFileTask
         }
     }
 
+    /**
+     * Send response call back to client.
+     */
     private void sendResponseCall()
     {
         List<Storage> storages = file.getLocations();
@@ -201,6 +259,11 @@ public class AddFileTask
         sendCall(back);
     }
 
+    /**
+     * Commit task.
+     * <p>
+     * Once a task is committed, all works it has done won't be lost.
+     */
     private void commit()
     {
         Directory dir = Meta.getInstance().getDirectory(dirName);

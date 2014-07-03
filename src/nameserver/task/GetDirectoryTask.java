@@ -11,18 +11,45 @@ import common.call.n2c.GetDirectoryCallN2C;
 import common.network.Connector;
 import common.util.Logger;
 
+/**
+ * Task of getting directory.
+ * <p>
+ * Return all files or directories among the specified directory.
+ * 
+ * @author lishunyang
+ * 
+ */
 public class GetDirectoryTask
     extends NameServerTask
 {
+    /**
+     * Logger.
+     */
     private final static Logger logger = Logger
         .getLogger(GetDirectoryTask.class);
 
+    /**
+     * Directory name.
+     */
     private String dirName;
 
+    /**
+     * List of files that among this directory.
+     */
     private List<String> fileList;
 
+    /**
+     * List of direcoties that among this directory.
+     */
     private List<String> dirList;
 
+    /**
+     * Construction method.
+     * 
+     * @param tid
+     * @param call
+     * @param connector
+     */
     public GetDirectoryTask(long tid, Call call, Connector connector)
     {
         super(tid, call, connector);
@@ -30,6 +57,9 @@ public class GetDirectoryTask
         this.dirName = c.getDirName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {
@@ -44,6 +74,9 @@ public class GetDirectoryTask
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -81,12 +114,20 @@ public class GetDirectoryTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {
         setDead();
     }
 
+    /**
+     * Test whether the directory that client wants to get exists.
+     * 
+     * @return
+     */
     private boolean directoryExists()
     {
         if (Meta.getInstance().containDirectory(dirName))
@@ -95,6 +136,9 @@ public class GetDirectoryTask
             return false;
     }
 
+    /**
+     * Send response call back to client.
+     */
     private void sendResponseCall()
     {
         Call back = new GetDirectoryCallN2C(fileList, dirList);

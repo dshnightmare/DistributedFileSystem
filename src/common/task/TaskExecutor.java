@@ -5,6 +5,14 @@ import java.util.concurrent.Executors;
 
 import common.util.Logger;
 
+/**
+ * Executor of task.
+ * <p>
+ * Encapsulate tasks into thread and execute them.
+ * 
+ * @author lishunyang
+ * 
+ */
 public class TaskExecutor
 {
     private final static Logger logger = Logger.getLogger(TaskExecutor.class);

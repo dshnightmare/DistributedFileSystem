@@ -8,14 +8,33 @@ import common.call.c2n.AddDirectoryCallC2N;
 import common.network.Connector;
 import common.util.Logger;
 
+/**
+ * Task of adding directory.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class AddDirectoryTask
     extends NameServerTask
 {
+    /**
+     * Logger
+     */
     private final static Logger logger = Logger
         .getLogger(AddDirectoryTask.class);
 
+    /**
+     * Name of the directory that client wants to add.
+     */
     private String dirName;
 
+    /**
+     * Construnction method.
+     * 
+     * @param tid Id of this task.
+     * @param call Add directory call.
+     * @param connector ServerConnector.
+     */
     public AddDirectoryTask(long tid, Call call, Connector connector)
     {
         super(tid, call, connector);
@@ -23,11 +42,17 @@ public class AddDirectoryTask
         this.dirName = c.getDirName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -59,12 +84,20 @@ public class AddDirectoryTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {
         setDead();
     }
 
+    /**
+     * Test whether the directory that client wants to add has existed.
+     * 
+     * @return
+     */
     private boolean directoryExists()
     {
         if (Meta.getInstance().containDirectory(dirName))
