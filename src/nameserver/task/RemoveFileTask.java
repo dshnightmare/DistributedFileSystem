@@ -7,15 +7,37 @@ import common.call.Call;
 import common.call.c2n.RemoveFileCallC2N;
 import common.util.Logger;
 
+/**
+ * Task of removing file.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class RemoveFileTask
     extends NameServerTask
 {
+    /**
+     * Logger.
+     */
     private final static Logger logger = Logger.getLogger(RemoveFileTask.class);
 
+    /**
+     * File directory name.
+     */
     private String dirName;
 
+    /**
+     * File name.
+     */
     private String fileName;
 
+    /**
+     * Construction method.
+     * 
+     * @param tid
+     * @param call
+     * @param connector
+     */
     public RemoveFileTask(long tid, Call call, Connector connector)
     {
         super(tid, call, connector);
@@ -24,6 +46,9 @@ public class RemoveFileTask
         this.fileName = c.getFileName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -51,12 +76,18 @@ public class RemoveFileTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {
         setDead();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {
@@ -70,6 +101,11 @@ public class RemoveFileTask
         }
     }
 
+    /**
+     * Test whether the file that client wants to remove exists.
+     * 
+     * @return
+     */
     private boolean fileExists()
     {
         return Meta.getInstance().containFile(dirName, fileName);

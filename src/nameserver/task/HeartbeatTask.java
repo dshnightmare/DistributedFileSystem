@@ -17,19 +17,42 @@ import common.call.s2n.HeartbeatCallS2N;
 import common.event.TaskEvent;
 import common.util.Logger;
 
+/**
+ * Task of handling heatbeat.
+ * <p>
+ * Heartbeat task also handles data migration.
+ * <p>
+ * Everytime we get a heartbeat call, we send back a migration call.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class HeartbeatTask
     extends NameServerTask
 {
-
+    /**
+     * Logger.
+     */
     private final static Logger logger = Logger.getLogger(HeartbeatTask.class);
 
+    /**
+     * The storage that we focus on.
+     */
     private Storage storage;
 
     /**
-     * How many seconds between two adjacent heartbeat check.
+     * Heartbeat check period.(second)
      */
     private final long period;
 
+    /**
+     * Construction method.
+     * 
+     * @param tid
+     * @param call
+     * @param connector
+     * @param period
+     */
     public HeartbeatTask(long tid, Call call, Connector connector, long period)
     {
         super(tid, call, connector);
@@ -37,6 +60,9 @@ public class HeartbeatTask
         this.period = period;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -44,8 +70,7 @@ public class HeartbeatTask
 
         synchronized (status)
         {
-            this.storage =
-                new Storage(getInitiator());
+            this.storage = new Storage(getInitiator());
             Status.getInstance().addStorage(storage);
         }
 
@@ -74,12 +99,18 @@ public class HeartbeatTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {
         // TODO Auto-generated method stub
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {
@@ -101,11 +132,22 @@ public class HeartbeatTask
         }
     }
 
+    // FIXME: Why we need this method?
+    /**
+     * Get storage that we focus on.
+     * 
+     * @return
+     */
     public Storage getStorage()
     {
         return storage;
     }
 
+    /**
+     * Test whether the storage is dead.
+     * 
+     * @return
+     */
     private boolean longTimeNoSee()
     {
         final long currentTime = System.currentTimeMillis();
@@ -114,17 +156,32 @@ public class HeartbeatTask
         return false;
     }
 
+    /**
+     * Update storage heartbeat timestamp.
+     */
     private void updateHeartbeatTimestamp()
     {
         storage.setHeartbeatTime(System.currentTimeMillis());
     }
 
+    /**
+     * Update migrate file list.
+     * <p>
+     * When we get heatbeat call, it includes files of which storage server has
+     * complete migration. So we just remove those files from un-migrate file
+     * list.
+     * 
+     * @param migratedFiles
+     */
     private void removeMigratedFilesFromMigrateList(
         Map<String, List<String>> migratedFiles)
     {
         storage.removeMigrateFiles(migratedFiles);
     }
 
+    /**
+     * Send migration call back to storage server.
+     */
     private void sendMigrationCall()
     {
         // As to heartbeaet call, name server always send the migration call

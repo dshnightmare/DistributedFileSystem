@@ -10,20 +10,12 @@ public class SyncCallS2N
 
     private static final long serialVersionUID = 5000625749190241770L;
 
-    private final String address;
-
     private final List<String> files;
 
-    public SyncCallS2N(String address, List<String> files)
+    public SyncCallS2N(List<String> files)
     {
         super(Call.Type.SYNC_S2N);
-        this.address = address;
         this.files = files;
-    }
-
-    public String getAddress()
-    {
-        return address;
     }
 
     public List<String> getFiles()

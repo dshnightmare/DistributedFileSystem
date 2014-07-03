@@ -17,7 +17,7 @@ import common.util.Logger;
  * Return all files or directories among the specified directory.
  * 
  * @author lishunyang
- * 
+ * @see NameServerTask
  */
 public class GetDirectoryTask
     extends NameServerTask
