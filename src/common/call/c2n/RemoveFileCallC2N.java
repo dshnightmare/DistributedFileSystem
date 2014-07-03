@@ -5,7 +5,6 @@ import common.call.Call;
 public class RemoveFileCallC2N
     extends Call
 {
-
     private static final long serialVersionUID = 7834245963090160026L;
 
     private String dirName;

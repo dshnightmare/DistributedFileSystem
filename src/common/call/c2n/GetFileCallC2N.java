@@ -2,12 +2,12 @@ package common.call.c2n;
 
 import common.call.Call;
 
-public class GetFileCallC2N 
-	extends Call{
+public class GetFileCallC2N
+    extends Call
+{
+    private static final long serialVersionUID = -6321724391912644392L;
 
-	private static final long serialVersionUID = -6321724391912644392L;
-
-	private String dirName;
+    private String dirName;
 
     private String fileName;
 

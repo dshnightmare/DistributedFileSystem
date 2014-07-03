@@ -13,110 +13,135 @@ import common.call.c2n.GetFileCallC2N;
 import common.call.n2c.GetFileCallN2C;
 import common.util.Logger;
 
-public class GetFileTask extends NameServerTask {
-	private final static Logger logger = Logger.getLogger(GetFileTask.class);
+public class GetFileTask
+    extends NameServerTask
+{
+    private final static Logger logger = Logger.getLogger(GetFileTask.class);
 
-	private String dirName;
+    private String dirName;
 
-	private String fileName;
+    private String fileName;
 
-	private Object syncRoot = new Object();
+    private Object syncRoot = new Object();
 
-	private File file = null;
+    private File file = null;
 
-	public GetFileTask(long tid, Call call, Connector connector) {
-		super(tid, call, connector);
-		GetFileCallC2N c = (GetFileCallC2N) call;
-		this.dirName = c.getDirName();
-		this.fileName = c.getFileName();
-	}
+    public GetFileTask(long tid, Call call, Connector connector)
+    {
+        super(tid, call, connector);
+        GetFileCallC2N c = (GetFileCallC2N) call;
+        this.dirName = c.getDirName();
+        this.fileName = c.getFileName();
+    }
 
-	@Override
-	public void run() {
-		final Meta meta = Meta.getInstance();
+    @Override
+    public void run()
+    {
+        final Meta meta = Meta.getInstance();
 
-		synchronized (meta) {
+        synchronized (meta)
+        {
 
-			if (!fileExists()) {
-				sendAbortCall("Task aborted, file does not exist.");
-				setFinish();
-				return;
-			} else {
-				logger.info("GetFileTask " + getTaskId() + " started.");
+            if (!fileExists())
+            {
+                sendAbortCall("Task aborted, file does not exist.");
+                setFinish();
+                return;
+            }
+            else
+            {
+                logger.info("GetFileTask " + getTaskId() + " started.");
 
-				file = Meta.getInstance().getFile(dirName, fileName);
-				if (file.tryLockRead(1, TimeUnit.SECONDS)) {
-					sendResponseCall();
-				} else {
-					sendAbortCall("Task aborted, someone is using the file.");
-					return;
-				}
-			}
-		}
+                file = Meta.getInstance().getFile(dirName, fileName);
+                if (file.tryLockRead(1, TimeUnit.SECONDS))
+                {
+                    sendResponseCall();
+                }
+                else
+                {
+                    sendAbortCall("Task aborted, someone is using the file.");
+                    return;
+                }
+            }
+        }
 
-		waitUntilTaskFinish();
+        waitUntilTaskFinish();
 
-		if (isDead())
-			return;
+        if (isDead())
+            return;
 
-		synchronized (meta) {
-			logger.info("GetFileTask " + getTaskId() + " commit.");
+        synchronized (meta)
+        {
+            logger.info("GetFileTask " + getTaskId() + " commit.");
 
-			file.updateVersion();
-			file.unlockRead();
-			setFinish();
-		}
-	}
+            file.updateVersion();
+            file.unlockRead();
+            setFinish();
+        }
+    }
 
-	@Override
-	public void release() {
-		setDead();
-		synchronized (syncRoot) {
-			syncRoot.notify();
-		}
-		file.unlockRead();
-	}
+    @Override
+    public void release()
+    {
+        setDead();
+        synchronized (syncRoot)
+        {
+            syncRoot.notify();
+        }
+        file.unlockRead();
+    }
 
-	@Override
-	public void handleCall(Call call) {
-		if (call.getToTaskId() != getTaskId())
-			return;
+    @Override
+    public void handleCall(Call call)
+    {
+        if (call.getToTaskId() != getTaskId())
+            return;
 
-		if (call.getType() == Call.Type.LEASE_C2N) {
-			renewLease();
-			return;
-		}
+        if (call.getType() == Call.Type.LEASE_C2N)
+        {
+            renewLease();
+            return;
+        }
 
-		if (call.getType() == Call.Type.FINISH_C2N) {
-			synchronized (syncRoot) {
-				syncRoot.notify();
-			}
-			return;
-		}
-	}
+        if (call.getType() == Call.Type.FINISH_C2N)
+        {
+            synchronized (syncRoot)
+            {
+                syncRoot.notify();
+            }
+            return;
+        }
+    }
 
-	private boolean fileExists() {
-		return Meta.getInstance().containFile(dirName, fileName);
-	}
+    private boolean fileExists()
+    {
+        return Meta.getInstance().containFile(dirName, fileName);
+    }
 
-	private void sendResponseCall() {
-		List<String> locations = new ArrayList<String>();
-		for (Storage s : file.getLocations())
-			locations.add(s.getAddress());
+    private void sendResponseCall()
+    {
+        List<String> locations = new ArrayList<String>();
+        for (Storage s : file.getLocations())
+            locations.add(s.getAddress());
 
-		String fileId = file.getId() + "-" + file.getVersion();
+        String fileId = file.getId() + "-" + file.getVersion();
 
-		Call back = new GetFileCallN2C(fileId, locations);
-		sendCall(back);
-	}
+        Call back = new GetFileCallN2C(fileId, locations);
+        sendCall(back);
+    }
 
-	private void waitUntilTaskFinish() {
-		try {
-			synchronized (syncRoot) {
-				syncRoot.wait();
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+    private void waitUntilTaskFinish()
+    {
+        try
+        {
+            synchronized (syncRoot)
+            {
+                syncRoot.wait();
+            }
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+    }
 }
