@@ -3,71 +3,61 @@ package nameserver.meta;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Directory
-{
-    private String name;
+public class Directory {
+	private String name;
 
-    private Map<String, File> files = new HashMap<String, File>();
+	private Map<String, File> files = new HashMap<String, File>();
 
-    /**
-     * Indicate whether this directory has committed. If it's false, someone
-     * could be using the directory now.
-     */
-    private boolean valid = false;
+	/**
+	 * Indicate whether this directory has committed. If it's false, someone
+	 * could be using the directory now.
+	 */
+	private boolean valid = false;
 
-    public Directory(String name)
-    {
-        this.name = name;
-    }
+	public Directory(String name) {
+		this.name = name;
+	}
 
-    public String getName()
-    {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public synchronized File getFile(String fileName)
-    {
-        return files.get(fileName);
-    }
+	public synchronized File getFile(String fileName) {
+		return files.get(fileName);
+	}
 
-    public synchronized void addFile(File file)
-    {
-        files.put(file.getName(), file);
-    }
+	public synchronized void addFile(File file) {
+		files.put(file.getName(), file);
+	}
 
-    public synchronized File removeFile(String fileName)
-    {
-        return files.remove(fileName);
-    }
+	public synchronized File removeFile(String fileName) {
+		return files.remove(fileName);
+	}
 
-    public synchronized boolean contains(String fileName)
-    {
-        return files.containsKey(fileName);
-    }
+	public synchronized boolean contains(String fileName) {
+		return files.containsKey(fileName);
+	}
 
-    public synchronized void setValid(boolean valid)
-    {
-        this.valid = valid;
-    }
+	public synchronized void setValid(boolean valid) {
+		this.valid = valid;
+	}
 
-    public synchronized boolean isValid()
-    {
-        return valid;
-    }
+	public synchronized boolean isValid() {
+		return valid;
+	}
 
-    public synchronized void setName(String name)
-    {
-        this.name = name;
-    }
-    
-    public synchronized Map<String, Long> getFileList()
-    {
-        Map<String, Long> fileList = new HashMap<String, Long>();
-        for (File f : files.values())
-        {
-            if (f.isValid())
-                fileList.put(f.getName(), f.getId());
-        }
-        return fileList;
-    }
+	public synchronized void setName(String name) {
+		this.name = name;
+	}
+
+	public synchronized Map<String, String> getFileList() {
+		Map<String, String> fileList = new HashMap<String, String>();
+
+		for (File f : files.values()) {
+			if (f.isValid())
+				fileList.put(f.getName(), f.getId());
+		}
+		
+		return fileList;
+	}
 }

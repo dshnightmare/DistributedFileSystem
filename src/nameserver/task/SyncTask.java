@@ -12,99 +12,89 @@ import common.call.Call;
 import common.call.SyncCallN2S;
 import common.call.SyncCallS2N;
 import common.task.Task;
+import common.util.Logger;
 
-public class SyncTask
-    extends Task
-{
-    private String address;
+public class SyncTask extends Task {
+	private final static Logger logger = Logger.getLogger(SyncTask.class);
 
-    private String initiator;
+	private String address;
 
-    private Connector connector;
+	private String initiator;
 
-    private List<Long> files;
+	private Connector connector;
 
-    private int duplicate;
-    
-    private long remoteTaskId;
+	private List<Long> files;
 
-    public SyncTask(long tid, Call call, Connector connector, int duplicate)
-    {
-        super(tid);
-        SyncCallS2N c = (SyncCallS2N) call;
-        this.address = c.getAddress();
-        this.initiator = c.getInitiator();
-        this.files = c.getFiles();
-        this.connector = connector;
-        this.duplicate = duplicate;
-        this.remoteTaskId = call.getFromTaskId();
-    }
+	private int duplicate;
 
-    @Override
-    public void run()
-    {
-        synchronized (Meta.getInstance())
-        {
-            if (!storageExists())
-            {
-                sendAbortCall("Task aborted, unidentified storage server.");
-            }
-            else
-            {
-                List<Long> removeList = new ArrayList<Long>();
-                for (Long l : files)
-                {
-                    File file = Meta.getInstance().getFile(l);
-                    if (null == file)
-                        removeList.add(l);
-                    else
-                    {
-                        if (file.getLocationsCount() > duplicate)
-                            removeList.add(l);
-                        else
-                            file.addLocation(Status.getInstance().getStorage(
-                                address));
-                    }
-                }
-                sendResponseCall(removeList);
-                setFinish();
-            }
-        }
-    }
+	private long remoteTaskId;
 
-    @Override
-    public void release()
-    {
-    }
+	public SyncTask(long tid, Call call, Connector connector, int duplicate) {
+		super(tid);
+		SyncCallS2N c = (SyncCallS2N) call;
+		this.address = c.getAddress();
+		this.initiator = c.getInitiator();
+		this.files = c.getFiles();
+		this.connector = connector;
+		this.duplicate = duplicate;
+		this.remoteTaskId = call.getFromTaskId();
+	}
 
-    @Override
-    public void handleCall(Call call)
-    {
-    }
+	@Override
+	public void run() {
+		logger.info("SyncTask started.");
 
-    private void sendAbortCall(String reason)
-    {
-        Call back = new AbortCall(reason);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-        release();
-        setFinish();
-    }
+		synchronized (Meta.getInstance()) {
+			if (!storageExists()) {
+				sendAbortCall("Task aborted, unidentified storage server.");
+			} else {
+				List<Long> removeList = new ArrayList<Long>();
+				for (Long l : files) {
+					File file = Meta.getInstance().getFile(l);
+					if (null == file)
+						removeList.add(l);
+					else {
+						if (file.getLocationsCount() > duplicate)
+							removeList.add(l);
+						else
+							file.addLocation(Status.getInstance().getStorage(
+									address));
+					}
+				}
+				sendResponseCall(removeList);
+				setFinish();
+			}
+		}
+	}
 
-    private boolean storageExists()
-    {
-        return Status.getInstance().contains(address);
-    }
+	@Override
+	public void release() {
+	}
 
-    private void sendResponseCall(List<Long> removeList)
-    {
+	@Override
+	public void handleCall(Call call) {
+	}
 
-        Call back = new SyncCallN2S(removeList);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-    }
+	private void sendAbortCall(String reason) {
+		Call back = new AbortCall(reason);
+		back.setFromTaskId(getTaskId());
+		back.setToTaskId(remoteTaskId);
+		back.setInitiator(initiator);
+		connector.sendCall(back);
+		release();
+		setFinish();
+	}
+
+	private boolean storageExists() {
+		return Status.getInstance().contains(address);
+	}
+
+	private void sendResponseCall(List<Long> removeList) {
+
+		Call back = new SyncCallN2S(removeList);
+		back.setFromTaskId(getTaskId());
+		back.setToTaskId(remoteTaskId);
+		back.setInitiator(initiator);
+		connector.sendCall(back);
+	}
 }

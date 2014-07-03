@@ -127,6 +127,7 @@ public class AddFileTask
 
         if (call.getType() == Call.Type.FINISH)
         {
+        	logger.info("AddFileTask " + getTaskId() + " HOHO.");
             synchronized (syncRoot)
             {
                 syncRoot.notify();

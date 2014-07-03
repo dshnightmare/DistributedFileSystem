@@ -19,149 +19,133 @@ import common.call.RegistrationCallS2N;
 import common.event.TaskEvent;
 import common.task.Task;
 import common.util.IdGenerator;
+import common.util.Logger;
 
-public class HeartbeatTask
-    extends Task
-{
-    private Storage storage;
+public class HeartbeatTask extends Task {
 
-    private final String address;
+	private final static Logger logger = Logger.getLogger(HeartbeatTask.class);
 
-    private final Connector connector;
+	private Storage storage;
 
-    private final String initiator;
-    
-    private long remoteTaskId;
+	private final String address;
 
-    /**
-     * How many seconds between two adjacent heartbeat check.
-     */
-    private final long period;
+	private final Connector connector;
 
-    public HeartbeatTask(long tid, Call call, Connector connector, long period)
-    {
-        super(tid);
-        // Notice that the type is RegistrationCall.
-        RegistrationCallS2N c = (RegistrationCallS2N) call;
-        this.initiator = c.getInitiator();
-        this.address = c.getAddress();
-        this.connector = connector;
-        this.period = period;
-        this.remoteTaskId = call.getFromTaskId();
-    }
+	private final String initiator;
 
-    @Override
-    public void run()
-    {
-        this.storage =
-            new Storage(IdGenerator.getInstance().getLongId(), address);
-        Status.getInstance().addStorage(storage);
-        // As for registration, send a finish call to notify storage server.
-        sendFinishCall();
+	private long remoteTaskId;
 
-        while (true)
-        {
-            try
-            {
-                TimeUnit.SECONDS.sleep(period);
+	/**
+	 * How many seconds between two adjacent heartbeat check.
+	 */
+	private final long period;
 
-                if (longTimeNoSee())
-                {
-                    fireEvent(new TaskEvent(TaskEvent.Type.HEARTBEAT_FATAL,
-                        this));
-                    break;
-                }
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-                break;
-            }
-        }
-    }
+	public HeartbeatTask(long tid, Call call, Connector connector, long period) {
+		super(tid);
+		// Notice that the type is RegistrationCall.
+		RegistrationCallS2N c = (RegistrationCallS2N) call;
+		this.initiator = c.getInitiator();
+		this.address = c.getAddress();
+		this.connector = connector;
+		this.period = period;
+		this.remoteTaskId = call.getFromTaskId();
+	}
 
-    @Override
-    public void release()
-    {
-        // TODO Auto-generated method stub
-    }
+	@Override
+	public void run() {
+		this.storage = new Storage(IdGenerator.getInstance().getLongId(),
+				address);
+		Status.getInstance().addStorage(storage);
+		// As for registration, send a finish call to notify storage server.
+		sendFinishCall();
 
-    @Override
-    public void handleCall(Call call)
-    {
-        if (call.getToTaskId() != getTaskId())
-            return;
+		while (true) {
+			try {
+				TimeUnit.SECONDS.sleep(period);
 
-        if (call.getType() == Call.Type.HEARTBEAT_S2N)
-        {
-            updateHeartbeatTimestamp();
+				if (longTimeNoSee()) {
+					fireEvent(new TaskEvent(TaskEvent.Type.HEARTBEAT_FATAL,
+							this));
+					break;
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				break;
+			}
+		}
+	}
 
-            removeMigratedFilesFromMigrateList(((HeartbeatCallS2N) call)
-                .getMigratedFiles());
+	@Override
+	public void release() {
+		// TODO Auto-generated method stub
+	}
 
-            sendMigrationCall();
-            return;
-        }
-    }
+	@Override
+	public void handleCall(Call call) {
+		logger.info("Heartbeat Task receive a call: " + call.getType());
+		if (call.getToTaskId() != getTaskId())
+			return;
 
-    public Storage getStorage()
-    {
-        return storage;
-    }
+		if (call.getType() == Call.Type.HEARTBEAT_S2N) {
+			updateHeartbeatTimestamp();
 
-    private boolean longTimeNoSee()
-    {
-        final long currentTime = System.currentTimeMillis();
-        if ((currentTime - storage.getHearbeatTime()) > (period * 2))
-            return true;
-        return false;
-    }
+			removeMigratedFilesFromMigrateList(((HeartbeatCallS2N) call)
+					.getMigratedFiles());
 
-    private void updateHeartbeatTimestamp()
-    {
-        storage.setHeartbeatTime(System.currentTimeMillis());
-    }
+			sendMigrationCall();
+			return;
+		}
+	}
 
-    private void removeMigratedFilesFromMigrateList(
-        Map<String, List<Long>> migratedFiles)
-    {
-        storage.removeMigrateFiles(migratedFiles);
-    }
+	public Storage getStorage() {
+		return storage;
+	}
 
-    private void sendMigrationCall()
-    {
-        // As to heartbeaet call, name server always send the migration call
-        // back to storage server. So, if storage server doesn't receive the
-        // migration call, it will realize he is dead and should register
-        // again.
-        Map<Storage, List<File>> migrateFiles = storage.getMigrateFiles();
-        Map<String, List<Long>> rawMigrateFiles =
-            new HashMap<String, List<Long>>();
+	private boolean longTimeNoSee() {
+		final long currentTime = System.currentTimeMillis();
+		if ((currentTime - storage.getHearbeatTime()) > (period * 2))
+			return true;
+		return false;
+	}
 
-        for (Entry<Storage, List<File>> e : migrateFiles.entrySet())
-        {
-            List<Long> fileList = new ArrayList<Long>();
+	private void updateHeartbeatTimestamp() {
+		storage.setHeartbeatTime(System.currentTimeMillis());
+	}
 
-            for (File f : e.getValue())
-            {
-                fileList.add(f.getId());
-            }
-            rawMigrateFiles.put(e.getKey().getAddress(), fileList);
-        }
+	private void removeMigratedFilesFromMigrateList(
+			Map<String, List<String>> migratedFiles) {
+		storage.removeMigrateFiles(migratedFiles);
+	}
 
-        Call back = new MigrateFileCallN2S(rawMigrateFiles);
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-    }
+	private void sendMigrationCall() {
+		// As to heartbeaet call, name server always send the migration call
+		// back to storage server. So, if storage server doesn't receive the
+		// migration call, it will realize he is dead and should register
+		// again.
+		Map<Storage, List<File>> migrateFiles = storage.getMigrateFiles();
+		Map<String, List<String>> rawMigrateFiles = new HashMap<String, List<String>>();
 
-    private void sendFinishCall()
-    {
-        Call back = new FinishCall();
-        back.setFromTaskId(getTaskId());
-        back.setToTaskId(remoteTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-    }
+		for (Entry<Storage, List<File>> e : migrateFiles.entrySet()) {
+			List<String> fileList = new ArrayList<String>();
+
+			for (File f : e.getValue()) {
+				fileList.add(f.getId());
+			}
+			rawMigrateFiles.put(e.getKey().getAddress(), fileList);
+		}
+
+		Call back = new MigrateFileCallN2S(rawMigrateFiles);
+		back.setFromTaskId(getTaskId());
+		back.setToTaskId(remoteTaskId);
+		back.setInitiator(initiator);
+		connector.sendCall(back);
+	}
+
+	private void sendFinishCall() {
+		Call back = new FinishCall();
+		back.setFromTaskId(getTaskId());
+		back.setToTaskId(remoteTaskId);
+		back.setInitiator(initiator);
+		connector.sendCall(back);
+	}
 }

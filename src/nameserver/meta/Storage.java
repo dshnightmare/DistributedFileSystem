@@ -91,9 +91,9 @@ public class Storage
     }
 
     // <storage address, <file id list>>
-    public synchronized void removeMigrateFiles(Map<String, List<Long>> files)
+    public synchronized void removeMigrateFiles(Map<String, List<String>> files)
     {
-        List<Long> list = null;
+        List<String> list = null;
         for (Storage storage : migrateFiles.keySet())
         {
             list = files.get(storage.getAddress());

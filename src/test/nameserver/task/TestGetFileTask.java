@@ -119,6 +119,7 @@ private static Task task;
                 System.out.println();
 
                 FinishCall ack = new FinishCall();
+                ack.setToTaskId(1);
                 CConnector.sendCall(ack);
             }
         }

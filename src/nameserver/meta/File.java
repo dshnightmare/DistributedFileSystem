@@ -6,128 +6,114 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class File
-{
-    private String name;
+/**
+ * File meta structure, holds file information such as file id, version, name,
+ * read&write lock.
+ * <p>
+ * <strong>Warning:</strong> This structure is thread-unsafe.
+ * 
+ * @author lishunyang
+ * 
+ */
+public class File {
+	private final static String SEPERATOR = "-";
 
-    private final long id;
+	private String name;
 
-    private long version = 0;
+	private final long bareId;
 
-    private ReadWriteLock rwLock = new ReentrantReadWriteLock();
+	private long version = 0;
 
-    /**
-     * Indicate whether this file has committed. If it's false, someone could be
-     * using the file now.
-     */
-    private boolean valid = false;
+	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
-    private List<Storage> locations = new ArrayList<Storage>();
+	/**
+	 * Indicate whether this file has committed. If it's false, someone could be
+	 * using the file now.
+	 */
+	private boolean valid = false;
 
-    public File(String name, long id)
-    {
-        this.name = name;
-        this.id = id;
-        this.version = 0;
-    }
+	private List<Storage> locations = new ArrayList<Storage>();
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+	public File(String name, long bareId) {
+		this.name = name;
+		this.bareId = bareId;
+	}
 
-    public String getName()
-    {
-        return name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public long getId()
-    {
-        return id;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setLocations(List<Storage> locations)
-    {
-        this.locations = locations;
-    }
+	public String getId() {
+		return bareId + SEPERATOR + version;
+	}
 
-    public void addLocation(Storage storage)
-    {
-        if (!locations.contains(storage))
-            this.locations.add(storage);
-    }
+	public void setLocations(List<Storage> locations) {
+		this.locations = locations;
+	}
 
-    public int getLocationsCount()
-    {
-        return locations.size();
-    }
+	public void addLocation(Storage storage) {
+		if (!locations.contains(storage))
+			this.locations.add(storage);
+	}
 
-    public void removeLocations(Storage storage)
-    {
-        this.locations.remove(storage);
-    }
+	public int getLocationsCount() {
+		return locations.size();
+	}
 
-    public List<Storage> getLocations()
-    {
-        return locations;
-    }
+	public void removeLocations(Storage storage) {
+		this.locations.remove(storage);
+	}
 
-    public boolean isValid()
-    {
-        return valid;
-    }
+	public List<Storage> getLocations() {
+		return locations;
+	}
 
-    public void setValid(boolean valid)
-    {
-        this.valid = valid;
-    }
+	public boolean isValid() {
+		return valid;
+	}
 
-    public void updateVersion()
-    {
-        this.version++;
-    }
+	public void setValid(boolean valid) {
+		this.valid = valid;
+	}
 
-    public long getVersion()
-    {
-        return version;
-    }
+	public void updateVersion() {
+		version++;
+	}
 
-    public boolean tryLockRead(long time, TimeUnit unit)
-    {
-        try
-        {
-            return rwLock.readLock().tryLock(time, unit);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-            // Is that correct?
-            rwLock.readLock().unlock();
-            return false;
-        }
-    }
+	public long getVersion() {
+		return version;
+	}
 
-    public void unlockRead()
-    {
-        rwLock.readLock().unlock();
-    }
+	public boolean tryLockRead(long time, TimeUnit unit) {
+		try {
+			return rwLock.readLock().tryLock(time, unit);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			// Is that correct?
+			rwLock.readLock().unlock();
+			return false;
+		}
+	}
 
-    public boolean tryLockWrite(long time, TimeUnit unit)
-    {
-        try
-        {
-            return rwLock.writeLock().tryLock(time, unit);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-            rwLock.writeLock().unlock();
-            return false;
-        }
-    }
+	public void unlockRead() {
+		rwLock.readLock().unlock();
+	}
 
-    public void unlockWrite()
-    {
-        rwLock.writeLock().unlock();
-    }
+	public boolean tryLockWrite(long time, TimeUnit unit) {
+		try {
+			return rwLock.writeLock().tryLock(time, unit);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			rwLock.writeLock().unlock();
+			return false;
+		}
+	}
+
+	public void unlockWrite() {
+		rwLock.writeLock().unlock();
+	}
 }

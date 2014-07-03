@@ -10,9 +10,9 @@ public class HeartbeatCallS2N
 
     private final String address;
 
-    private final Map<String, List<Long>> migratedFiles;
+    private final Map<String, List<String>> migratedFiles;
 
-    public HeartbeatCallS2N(String address, Map<String, List<Long>> migratedFiles)
+    public HeartbeatCallS2N(String address, Map<String, List<String>> migratedFiles)
     {
         super(Call.Type.HEARTBEAT_S2N);
         this.address = address;
@@ -24,7 +24,7 @@ public class HeartbeatCallS2N
         return address;
     }
 
-    public Map<String, List<Long>> getMigratedFiles()
+    public Map<String, List<String>> getMigratedFiles()
     {
         return migratedFiles;
     }
