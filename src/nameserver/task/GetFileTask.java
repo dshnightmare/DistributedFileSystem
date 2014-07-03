@@ -32,24 +32,6 @@ public class GetFileTask extends NameServerTask {
 	}
 
 	@Override
-	public void handleCall(Call call) {
-		if (call.getToTaskId() != getTaskId())
-			return;
-
-		if (call.getType() == Call.Type.LEASE_C2N) {
-			renewLease();
-			return;
-		}
-
-		if (call.getType() == Call.Type.FINISH_C2N) {
-			synchronized (syncRoot) {
-				syncRoot.notify();
-			}
-			return;
-		}
-	}
-
-	@Override
 	public void run() {
 		final Meta meta = Meta.getInstance();
 
@@ -74,19 +56,43 @@ public class GetFileTask extends NameServerTask {
 
 		waitUntilTaskFinish();
 
+		if (isDead())
+			return;
+
 		synchronized (meta) {
 			logger.info("GetFileTask " + getTaskId() + " commit.");
 
 			file.updateVersion();
 			file.unlockRead();
 			setFinish();
-			// sendFinishCall();
 		}
 	}
 
 	@Override
 	public void release() {
+		setDead();
+		synchronized (syncRoot) {
+			syncRoot.notify();
+		}
 		file.unlockRead();
+	}
+
+	@Override
+	public void handleCall(Call call) {
+		if (call.getToTaskId() != getTaskId())
+			return;
+
+		if (call.getType() == Call.Type.LEASE_C2N) {
+			renewLease();
+			return;
+		}
+
+		if (call.getType() == Call.Type.FINISH_C2N) {
+			synchronized (syncRoot) {
+				syncRoot.notify();
+			}
+			return;
+		}
 	}
 
 	private boolean fileExists() {

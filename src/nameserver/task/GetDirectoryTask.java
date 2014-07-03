@@ -73,6 +73,7 @@ public class GetDirectoryTask extends NameServerTask {
 
 	@Override
 	public void release() {
+		setDead();
 	}
 
 	private boolean directoryExists() {

@@ -23,7 +23,7 @@ public class StorageNode implements TaskEventListener, CallListener {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		StorageNode node = new StorageNode(null, "");
-		TaskMonitor monitor = TaskMonitor.getInstance();
+		TaskMonitor monitor = new TaskMonitor();
 		monitor.addListener(node);
 	}
 

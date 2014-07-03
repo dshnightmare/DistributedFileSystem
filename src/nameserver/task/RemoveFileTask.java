@@ -45,6 +45,7 @@ public class RemoveFileTask extends NameServerTask {
 
 	@Override
 	public void release() {
+		setDead();
 	}
 
 	@Override

@@ -15,136 +15,97 @@ import common.event.TaskEventListener;
 import common.util.Configuration;
 import common.util.Logger;
 
-public class TaskMonitor
-    implements TaskEventDispatcher, TaskEventListener
-{
-    private static TaskMonitor instance = null;
+public class TaskMonitor implements TaskEventDispatcher, TaskEventListener {
+	private Map<Long, Task> tasks = new HashMap<Long, Task>();
 
-    private Map<Long, Task> threads = new HashMap<Long, Task>();
+	private List<TaskEventListener> listeners = new ArrayList<TaskEventListener>();
 
-    private List<TaskEventListener> listeners =
-        new ArrayList<TaskEventListener>();
+	private long period;
 
-    private long period;
+	private Timer timer = new Timer();
 
-    private Timer timer = new Timer();
+	private TimerTask task = new MonitorTask();
 
-    private TimerTask task = new MonitorTask();
+	private boolean isMonitoring = false;
 
-    private boolean isMonitoring = false;
+	private static Logger logger = Logger.getLogger(TaskMonitor.class);
 
-    private static Logger logger = Logger.getLogger(TaskMonitor.class);
+	public TaskMonitor() {
+		this.period = Configuration.getInstance().getLong(
+				Configuration.LEASE_PERIOD_KEY) * 2;
+	}
 
-    private TaskMonitor()
-    {
-        this.period =
-            Configuration.getInstance().getLong(Configuration.LEASE_PERIOD_KEY) * 2;
-    }
+	public synchronized void monitor(Task thread) {
+		tasks.put(thread.getTaskId(), thread);
+		thread.addListener(this);
+	}
 
-    public static TaskMonitor getInstance()
-    {
-        if (null == instance)
-        {
-            synchronized (TaskMonitor.class)
-            {
-                if (null == instance)
-                {
-                    instance = new TaskMonitor();
-                    instance.startMonitoring();
-                }
-            }
-        }
+	public void startMonitoring() {
+		if (!isMonitoring) {
+			timer.scheduleAtFixedRate(task, 0, period);
+			isMonitoring = true;
+		}
+	}
 
-        return instance;
-    }
+	public void stopMonitoring() {
+		if (isMonitoring) {
+			timer.cancel();
+			isMonitoring = false;
+		}
+	}
 
-    public synchronized void addThread(Task thread)
-    {
-        threads.put(thread.getTaskId(), thread);
-        thread.addListener(this);
-    }
+	// private void restartMonitoring()
+	// {
+	// stopMonitoring();
+	// startMonitoring();
+	// }
 
-    private void startMonitoring()
-    {
-        if (!isMonitoring)
-        {
-            timer.scheduleAtFixedRate(task, 0, period);
-            isMonitoring = true;
-        }
-    }
+	@Override
+	public synchronized void addListener(TaskEventListener listener) {
+		listeners.add(listener);
+	}
 
-    public void stopMonitoring()
-    {
-        if (isMonitoring)
-        {
-            timer.cancel();
-            isMonitoring = false;
-        }
-    }
+	@Override
+	public synchronized void removeListener(TaskEventListener listener) {
+		listeners.remove(listener);
+	}
 
-//    private void restartMonitoring()
-//    {
-//        stopMonitoring();
-//        startMonitoring();
-//    }
+	@Override
+	public void fireEvent(TaskEvent event) {
+		for (TaskEventListener l : listeners)
+			l.handle(event);
+	}
 
-    @Override
-    public synchronized void addListener(TaskEventListener listener)
-    {
-        listeners.add(listener);
-    }
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Once a task has finished, it will notify task monitor and taskmonitor
+	 * will notify its listeners.
+	 */
+	@Override
+	public void handle(TaskEvent event) {
+		fireEvent(event);
+		synchronized (tasks) {
+			tasks.remove(event.getTaskThread());
+			logger.debug("TASK_FINISHED");
+		}
+	}
 
-    @Override
-    public synchronized void removeListener(TaskEventListener listener)
-    {
-        listeners.remove(listener);
-    }
-
-    @Override
-    public void fireEvent(TaskEvent event)
-    {
-        for (TaskEventListener l : listeners)
-            l.handle(event);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Once a task has finished, it will notify task monitor and taskmonitor
-     * will notify its listeners.
-     */
-    @Override
-    public void handle(TaskEvent event)
-    {
-        fireEvent(event);
-        synchronized (threads)
-        {
-            threads.remove(event.getTaskThread());
-            logger.debug("TASK_FINISHED");
-        }
-    }
-
-    private class MonitorTask
-        extends TimerTask
-    {
-        @Override
-        public void run()
-        {
-            synchronized (threads)
-            {
-                List<Long> abortedList = new ArrayList<Long>();
-                for (Entry<Long, Task> e : threads.entrySet())
-                {
-                    if (!e.getValue().isLeaseValid())
-                        abortedList.add(e.getKey());
-                }
-                for (Long l : abortedList)
-                {
-                    fireEvent(new TaskEvent(Type.TASK_ABORTED, threads.get(l)));
-                    listeners.remove(threads.remove(l));
-                    logger.debug("TASK_ABORTED");
-                }
-            }
-        }
-    }
+	private class MonitorTask extends TimerTask {
+		@Override
+		public void run() {
+			synchronized (tasks) {
+				List<Long> abortedList = new ArrayList<Long>();
+				for (Entry<Long, Task> e : tasks.entrySet()) {
+					if (!e.getValue().isLeaseValid())
+						abortedList.add(e.getKey());
+				}
+				for (Long l : abortedList) {
+					fireEvent(new TaskEvent(Type.TASK_ABORTED, tasks.get(l)));
+					listeners.remove(tasks.remove(l));
+					logger.debug("TASK_ABORTED");
+				}
+			}
+		}
+	}
 }

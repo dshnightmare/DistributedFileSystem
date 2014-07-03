@@ -3,7 +3,6 @@ package common.call.s2n;
 import java.util.List;
 
 import common.call.Call;
-import common.call.Call.Type;
 
 public class SyncCallS2N
     extends Call

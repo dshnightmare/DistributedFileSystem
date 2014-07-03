@@ -23,7 +23,7 @@ public class Client
 	
 	public Client(){
 		connector = ClientConnector.getInstance();
-		taskMonitor = TaskMonitor.getInstance();
+		taskMonitor = new TaskMonitor();
 		taskMonitor.addListener(this);
 	}
 

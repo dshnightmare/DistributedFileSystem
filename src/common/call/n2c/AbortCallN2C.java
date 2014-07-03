@@ -1,7 +1,6 @@
 package common.call.n2c;
 
 import common.call.Call;
-import common.call.Call.Type;
 
 public class AbortCallN2C
     extends Call

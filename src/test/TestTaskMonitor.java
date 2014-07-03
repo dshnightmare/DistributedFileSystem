@@ -22,7 +22,7 @@ public class TestTaskMonitor
     @Override
     protected void setUp()
     {
-        monitor = TaskMonitor.getInstance();
+        monitor = new TaskMonitor();
         monitor.addListener(new TaskEventListener()
         {
             @Override
@@ -71,7 +71,7 @@ public class TestTaskMonitor
         };
         taskA.setLease(new TaskLease(3000));
         taskA.renewLease();
-        monitor.addThread(taskA);
+        monitor.monitor(taskA);
         new Thread(taskA).start();
         
         taskB = new Task(2)
@@ -106,7 +106,7 @@ public class TestTaskMonitor
             }
         };
         taskB.setLease(new TaskLease(7000));
-        monitor.addThread(taskB);
+        monitor.monitor(taskB);
         new Thread(taskB).start();
         
         try

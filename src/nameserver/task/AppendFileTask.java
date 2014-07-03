@@ -62,6 +62,9 @@ public class AppendFileTask extends NameServerTask {
 
 		waitUntilTaskFinish();
 
+		if (isDead())
+			return;
+
 		synchronized (meta) {
 			logger.info("AppendFileTask " + getTaskId() + " commit.");
 			backup.writeLogCommit(getTaskId());
@@ -75,6 +78,10 @@ public class AppendFileTask extends NameServerTask {
 
 	@Override
 	public void release() {
+		setDead();
+		synchronized (syncRoot) {
+			syncRoot.notify();
+		}
 		file.unlockWrite();
 	}
 

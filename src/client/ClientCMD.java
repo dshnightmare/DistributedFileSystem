@@ -37,7 +37,7 @@ public class ClientCMD
 		config = Configuration.getInstance();
 		usage = config.getString("usage");
 		
-		taskMonitor = TaskMonitor.getInstance();
+		taskMonitor = new TaskMonitor();
 		taskMonitor.addListener(this);
 	}
 	
@@ -85,7 +85,7 @@ public class ClientCMD
 	                    tasks.put(task.getTaskId(), task);
 	                }
 
-	                taskMonitor.addThread(task);
+	                taskMonitor.monitor(task);
 	                new Thread(task).start();
 				}
 			} catch (IOException e) {

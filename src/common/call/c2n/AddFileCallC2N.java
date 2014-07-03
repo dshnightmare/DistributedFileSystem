@@ -1,7 +1,6 @@
 package common.call.c2n;
 
 import common.call.Call;
-import common.call.Call.Type;
 
 public class AddFileCallC2N
     extends Call

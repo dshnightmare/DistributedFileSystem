@@ -56,6 +56,7 @@ public class MoveFileTask extends NameServerTask {
 
 	@Override
 	public void release() {
+		setDead();
 	}
 
 	@Override

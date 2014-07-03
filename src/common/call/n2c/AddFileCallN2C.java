@@ -3,7 +3,6 @@ package common.call.n2c;
 import java.util.List;
 
 import common.call.Call;
-import common.call.Call.Type;
 
 public class AddFileCallN2C
     extends Call

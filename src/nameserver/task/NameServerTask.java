@@ -13,6 +13,8 @@ public abstract class NameServerTask extends Task {
 
 	private long remoteTaskId;
 
+	private boolean dead = false;
+
 	public NameServerTask(long tid, Call call, Connector connector) {
 		super(tid);
 		this.connector = connector;
@@ -20,11 +22,6 @@ public abstract class NameServerTask extends Task {
 		this.remoteTaskId = call.getFromTaskId();
 	}
 
-	/**
-	 * Send abort call.
-	 * 
-	 * @param reason
-	 */
 	protected void sendAbortCall(String reason) {
 		sendCall(new AbortCallN2C(reason));
 	}
@@ -35,5 +32,13 @@ public abstract class NameServerTask extends Task {
 		call.setInitiator(initiator);
 
 		connector.sendCall(call);
+	}
+
+	protected void setDead() {
+		this.dead = true;
+	}
+
+	protected boolean isDead() {
+		return dead;
 	}
 }

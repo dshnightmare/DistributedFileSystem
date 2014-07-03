@@ -59,6 +59,7 @@ public class SyncTask extends NameServerTask {
 
 	@Override
 	public void release() {
+		setDead();
 	}
 
 	@Override

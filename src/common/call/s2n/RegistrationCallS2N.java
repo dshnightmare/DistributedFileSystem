@@ -1,7 +1,6 @@
 package common.call.s2n;
 
 import common.call.Call;
-import common.call.Call.Type;
 
 public class RegistrationCallS2N
     extends Call
