@@ -1,32 +1,36 @@
 package storageserver;
 
-import javax.security.auth.login.Configuration;
 
 import common.call.Call;
 import common.call.CallListener;
+import common.call.s2n.RegistrationCallS2N;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.task.TaskMonitor;
+import common.network.ClientConnector;
+import common.util.Configuration;
 
-public class StorageNode implements TaskEventListener, CallListener {
+public class StorageServer implements TaskEventListener, CallListener {
 	private final static int maxTask = 20;
 	private final Storage storage;
+	private ClientConnector connector;
 	private int taskCount;
 	private int taskIDCount;
 
-	StorageNode(Configuration conf, String StorageLocation) {
+	StorageServer(String StorageLocation) {
 		storage = new Storage();
 		taskCount = 0;
 		taskIDCount = 0;
+		connector = ClientConnector.getInstance();
+		connector.addListener(this);
+		Configuration conf = Configuration.getInstance();
 	}
-
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		StorageNode node = new StorageNode(null, "");
-		TaskMonitor monitor = new TaskMonitor();
-		monitor.addListener(node);
-	}
-
+	
+	
+	public void start()
+	{
+		RegistrationCallS2N call =  new RegistrationCallS2N("");
+		connector.sendCall(call);
+ 	}
 	@Override
 	public void handleCall(Call call) {
 		// TODO Auto-generated method stub
