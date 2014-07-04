@@ -3,42 +3,25 @@ package client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
 
 import client.task.CAddFileTask;
 import client.task.CGetFileTask;
-import common.network.ClientConnector;
-import common.call.Call;
-import common.call.CallListener;
-import common.call.c2n.AddFileCallC2N;
-import common.event.TaskEvent;
-import common.event.TaskEventListener;
-import common.task.TaskLease;
 import common.task.Task;
-import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.IdGenerator;
 import common.util.Log;
 
 public class ClientCMD 
-	extends Thread
-	implements TaskEventListener, CallListener{
+	extends Thread{
 
-	private ClientConnector connector;
 	private Configuration config;
+	private Client client;
 	private String usage;
 	
-	private Map<Long, Task> tasks = new HashMap<Long, Task>();
-	private TaskMonitor taskMonitor;
-	
 	public ClientCMD(){
-		connector = ClientConnector.getInstance();
 		config = Configuration.getInstance();
 		usage = config.getString("usage");
-		
-		taskMonitor = new TaskMonitor();
-		taskMonitor.addListener(this);
+		client = Client.getInstance();
 	}
 	
 	public void run(){
@@ -61,6 +44,7 @@ public class ClientCMD
 					else {
 						task = new CAddFileTask(IdGenerator.getInstance().getLongId()
 								, args[1], args[2]);
+						client.addTask(task);
 					}
 				}
 				else if(cmdString.toLowerCase().equals("getfile")){
@@ -71,6 +55,7 @@ public class ClientCMD
 					else {
 						task = new CGetFileTask(IdGenerator.getInstance().getLongId()
 								, args[1], args[2]);
+						client.addTask(task);
 					}
 				}
 				else if(cmdString.toLowerCase().equals("")){
@@ -79,32 +64,11 @@ public class ClientCMD
 				else {
 					Log.print(usage);
 				}
-				if(null != task){
-					synchronized (tasks)
-	                {
-	                    tasks.put(task.getTaskId(), task);
-	                }
-
-	                taskMonitor.monitor(task);
-	                new Thread(task).start();
-				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				Log.info("Read command failed, please try again.");
 			}
 		}
-	}
-
-	@Override
-	public void handleCall(Call call) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void handle(TaskEvent event) {
-		// TODO Auto-generated method stub
-		
 	}
 }

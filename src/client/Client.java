@@ -14,17 +14,37 @@ import common.util.Configuration;
 import common.util.IdGenerator;
 import common.util.Log;
 
-public class Client 
+/**
+ * tasks are generated elsewhere, and addTask() here to start
+ * @author gengyufeng
+ *
+ */
+public class Client
 	implements TaskEventListener, CallListener{
 
-	private ClientConnector connector;
+	private volatile static Client instance;
+	
 	private TaskMonitor taskMonitor;
 	private Map<Long, Task> tasks = new HashMap<Long, Task>();
 	
 	public Client(){
-		connector = ClientConnector.getInstance();
 		taskMonitor = new TaskMonitor();
 		taskMonitor.addListener(this);
+	}
+	
+	public static Client getInstance(){
+		if(null == instance){
+			synchronized (Client.class) {
+				instance = new Client();
+			}
+		}
+		return instance;
+	}
+	
+	public void addTask(Task task){
+		taskMonitor.monitor(task);
+        new Thread(task).start();
+        tasks.put(task.getTaskId(), task);
 	}
 
 	@Override
