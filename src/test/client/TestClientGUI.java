@@ -1,7 +1,6 @@
 package test.client;
 
 import nameserver.NameServer;
-
 import client.ClientCMD;
 import client.ClientGUI;
 import junit.framework.TestCase;
@@ -10,7 +9,14 @@ public class TestClientGUI extends TestCase{
 
 	protected void setUp(){
 		NameServer ns = new NameServer();
-		ns.initilize();
+		try
+        {
+            ns.initilize();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 	}
 	
 	public void testClient(){

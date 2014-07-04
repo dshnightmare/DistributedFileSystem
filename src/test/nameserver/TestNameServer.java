@@ -22,7 +22,14 @@ public class TestNameServer
     protected void setUp()
     {
         ns = new NameServer();
-        ns.initilize();
+        try
+        {
+            ns.initilize();
+        }
+        catch (Exception e1)
+        {
+            e1.printStackTrace();
+        }
         
         try
         {
@@ -75,6 +82,7 @@ public class TestNameServer
             System.out.println();
 
             FinishCall ack = new FinishCall();
+            ack.setToTaskId(call.getFromTaskId());
             CConnector.sendCall(ack);
         }
     }

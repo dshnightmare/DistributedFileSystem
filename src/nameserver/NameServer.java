@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import nameserver.meta.File;
@@ -17,9 +20,9 @@ import common.call.CallListener;
 import common.call.all.AbortCall;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.task.TaskExecutor;
 import common.task.Task;
 import common.task.TaskMonitor;
+import common.util.Configuration;
 import common.util.Logger;
 
 // TODO: Snapshot hasn't been added.
@@ -44,18 +47,23 @@ public class NameServer
     /**
      * Logger.
      */
-    private static final Logger logger = Logger.getLogger(NameServer.class);
+    private final static Logger logger = Logger.getLogger(NameServer.class);
 
     /**
-     * Task monitor, used to check task status.
+     * Maximum number of task which can be running simultaneously.
      */
-    private TaskMonitor monitor = new TaskMonitor();
+    private final static int MAX_THREADS = 20;
+
+    /**
+     * Time period of making snapshot.(second)
+     */
+    private final static long SNAPSHOT_PERIOD = 10;
 
     /**
      * Server connector, used to send/receive call to/from client and storage
      * server.
      */
-    private ServerConnector connector = ServerConnector.getInstance();
+    private ServerConnector connector = null;
 
     /**
      * Task list.
@@ -65,14 +73,24 @@ public class NameServer
     private Map<Long, Task> tasks = new HashMap<Long, Task>();
 
     /**
-     * Task executor.
+     * Task monitor, used to check task status.
      */
-    private TaskExecutor executor = new TaskExecutor();
+    private TaskMonitor taskMonitor = null;
+
+    /**
+     * Task thread executor.
+     */
+    private ExecutorService taskExecutor = null;
+
+    /**
+     * Snapshot maker thread executor.
+     */
+    private ScheduledExecutorService snapshotExecutor = null;
 
     /**
      * When name server is pausing, it won't response for any new call.
      */
-    private boolean pause = false;
+    private boolean pausing = false;
 
     /**
      * Determine whether name server has initiated.
@@ -84,8 +102,6 @@ public class NameServer
      */
     public NameServer()
     {
-        monitor.addListener(this);
-        connector.addListener(this);
     }
 
     /**
@@ -94,17 +110,53 @@ public class NameServer
      * <p>
      * <strong>Warning:</strong> It MUST be called before using
      * <tt>NameServer</tt>.
+     * 
+     * @throws Exception
      */
-    public void initilize()
+    public void initilize() throws Exception
     {
         if (initialized)
         {
             logger
                 .warn("NameServer has been initialized before, you can't do it twice.");
+            return;
         }
         else
         {
-            // TODO
+            // Check configuration.
+            if (null == Configuration.getInstance())
+            {
+                throw new Exception(
+                    "Initiation failed, couldn't load configuration file.");
+            }
+
+            // Check backup util.
+            if (null == BackupUtil.getInstance())
+            {
+                throw new Exception(
+                    "Initiation failed, couldn't create backup directory.");
+            }
+
+            // Check connector.
+            if (null == ServerConnector.getInstance())
+            {
+                throw new Exception(
+                    "Initiation failed, couldn't create server connector.");
+            }
+
+            taskExecutor = Executors.newFixedThreadPool(MAX_THREADS);
+
+            snapshotExecutor = Executors.newSingleThreadScheduledExecutor();
+            snapshotExecutor.schedule(new SnapshotMaker(), SNAPSHOT_PERIOD,
+                TimeUnit.SECONDS);
+
+            taskMonitor = new TaskMonitor();
+            taskMonitor.addListener(this);
+
+            connector = ServerConnector.getInstance();
+            connector.addListener(this);
+
+            initialized = true;
         }
     }
 
@@ -120,21 +172,9 @@ public class NameServer
         long localTaskId = call.getToTaskId();
         long remoteTaskId = call.getFromTaskId();
 
-        // TODO: It seems wired, I should refactor it.
-        if (!isNewCall(call))
+        if (isNewCall(call))
         {
-            if (isTaskExisted(call.getToTaskId()))
-            {
-                tasks.get(call.getToTaskId()).handleCall(call);
-            }
-            else
-            {
-                // Should we send an abort call? Maybe not.
-            }
-        }
-        else
-        {
-            if (pause)
+            if (pausing)
             {
                 Call back =
                     new AbortCall(
@@ -144,11 +184,26 @@ public class NameServer
                 connector.sendCall(back);
                 return;
             }
+            else
+            {
+                task = TaskFactory.createTask(call);
+                tasks.put(task.getTaskId(), task);
+                taskExecutor.execute(task);
+                taskMonitor.addTask(task);
+            }
+        }
+        else
+        {
+            task = getRelatedTask(call.getToTaskId());
 
-            task = TaskFactory.createTask(call);
-            tasks.put(task.getTaskId(), task);
-            executor.executeTask(task);
-            monitor.addTask(task);
+            if (null != task)
+            {
+                tasks.get(call.getToTaskId()).handleCall(call);
+            }
+            else
+            {
+                // Shall we send an abort call? Maybe not.
+            }
         }
     }
 
@@ -156,9 +211,10 @@ public class NameServer
      * {@inheritDoc}
      */
     @Override
-    public void handle(TaskEvent event)
+    public synchronized void handle(TaskEvent event)
     {
-        Task task = event.getTaskThread();
+        final Task task = event.getTaskThread();
+
         tasks.remove(task);
 
         if (event.getType() == TaskEvent.Type.TASK_ABORTED)
@@ -181,7 +237,7 @@ public class NameServer
      * 
      * @param event
      */
-    private void handleHeartbeatFatal(TaskEvent event)
+    private synchronized void handleHeartbeatFatal(TaskEvent event)
     {
         Storage storage =
             ((HeartbeatTask) (event.getTaskThread())).getStorage();
@@ -221,48 +277,61 @@ public class NameServer
      * @param call
      * @return
      */
-    private boolean isNewCall(Call call)
+    private synchronized boolean isNewCall(Call call)
     {
         return call.getToTaskId() < 0;
     }
 
     /**
-     * Test whether the specified task exists.
+     * Get task with specified task id.
      * 
      * @param tid
      * @return
      */
-    private boolean isTaskExisted(long tid)
+    private synchronized Task getRelatedTask(long tid)
     {
-        return tasks.containsKey(tid);
+        return tasks.get(tid);
     }
 
-    /**
-     * Make an image snapshot.
-     */
-    private synchronized void makeSnapshot()
+    private class SnapshotMaker
+        implements Runnable
     {
-        pause = true;
-        final BackupUtil backup = BackupUtil.getInstance();
-
-        boolean hasRunningTask = !tasks.isEmpty();
-
-        while (hasRunningTask)
+        @Override
+        public void run()
         {
-            try
+            synchronized (NameServer.this)
             {
-                TimeUnit.SECONDS.sleep(1);
-                hasRunningTask = !tasks.isEmpty();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
+                makeSnapshot();
             }
         }
 
-        backup.writeBackupImage();
-        backup.readBackupLog();
+        /**
+         * Make an image snapshot.
+         */
+        private void makeSnapshot()
+        {
+            pausing = true;
+            final BackupUtil backup = BackupUtil.getInstance();
 
-        pause = false;
+            boolean hasRunningTask = !tasks.isEmpty();
+
+            while (hasRunningTask)
+            {
+                try
+                {
+                    TimeUnit.SECONDS.sleep(1);
+                    hasRunningTask = !tasks.isEmpty();
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+
+            backup.writeBackupImage();
+            backup.readBackupLog();
+
+            pausing = false;
+        }
     }
 }
