@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 import javax.swing.JFrame;
 
-import client.ClientWindow;
+import client.ClientGUI;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.network.ServerListener;
@@ -21,7 +21,7 @@ public class main
 
         // 设置Swing窗口使用Java风格
         JFrame.setDefaultLookAndFeelDecorated(true);
-        new ClientWindow().init();
+        new ClientGUI().init();
 
 //        System.out
 //            .print("Start type is(c:client, n:nameserver, s:storageserver):");

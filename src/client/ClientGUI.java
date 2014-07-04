@@ -20,15 +20,18 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.text.FlowView;
+import javax.swing.text.View;
 
 import common.util.Log;
 import common.util.WrapLayout;
 
-public class ClientWindow
+public class ClientGUI
 {
 	
 	JFrame frame = new JFrame("DFS");
 	JPanel bottomPanel = new JPanel();
+	JPanel topPanel = new JPanel();
 	JScrollPane sp;
 	//main file panel
 	public JPanel filePanel;
@@ -45,9 +48,66 @@ public class ClientWindow
 		frame.setLayout(new BorderLayout());
 		filePanel = new JPanel();
 		filePanel.setLayout(new WrapLayout(FlowLayout.LEFT, 10, 15));
+			
+		sp = new JScrollPane(filePanel);
+		frame.add(sp, BorderLayout.CENTER);
 		
-		List<String> fakeFileList = new ArrayList(Arrays.asList("1.txt", "b/", "c.rmvb")); 
-		for(String filename : fakeFileList){
+		showDirectory(currentDirectory);
+		
+		//top 
+		topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 20));
+
+		//create directory
+		JButton createDirButton = new JButton("新建目录");
+		createDirButton.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e){
+				String subdir = JOptionPane.showInputDialog("请输入子目录名称");
+				if(null == subdir)
+					return;
+				
+			}
+		});
+		
+		//upload file
+		JButton addButton = new JButton("上传文件");
+		addButton.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				JFileChooser fChooser = new JFileChooser(".");
+				fChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				int ret = fChooser.showOpenDialog(frame);
+				if (ret == JFileChooser.APPROVE_OPTION) {
+					File file = fChooser.getSelectedFile();
+					//TODO feed file to task
+					client.addFileAsync(currentDirectory, file.getName());
+				}
+		    }
+		});
+		topPanel.add(addButton);
+		
+		//refresh
+		JButton refreshButton = new JButton("刷新");
+		refreshButton.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e){
+				showDirectory(currentDirectory);
+			}
+		});
+		topPanel.add(refreshButton);
+		
+		//bottom -- add file
+		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 10));
+		
+		
+		frame.add(topPanel, BorderLayout.NORTH);
+		frame.add(bottomPanel, BorderLayout.SOUTH);
+		
+		frame.setSize(700, 433);
+		frame.setVisible(true);
+	}
+	
+	private void showDirectory(String dir){
+		filePanel.removeAll();
+		List<String> itemList = client.getDirectorySync(dir);
+		for(String filename : itemList){
 			fileItem = new JPanel();
 			fileItem.setLayout(new BorderLayout(0, 1));
 			JLabel icon = new JLabel();
@@ -83,29 +143,7 @@ public class ClientWindow
 			fileItem.setPreferredSize(new Dimension(45, 55));
 			filePanel.add(fileItem);
 		}
-			
-		sp = new JScrollPane(filePanel);
-		frame.add(sp, BorderLayout.CENTER);
-		
-		//bottom -- add file
-		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-		JButton addButton = new JButton("上传文件");
-		addButton.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				JFileChooser fChooser = new JFileChooser(".");
-				fChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				int ret = fChooser.showOpenDialog(frame);
-				if (ret == JFileChooser.APPROVE_OPTION) {
-					File file = fChooser.getSelectedFile();
-					JOptionPane.showMessageDialog(frame, file.getName());
-				}
-		    }
-		});
-		bottomPanel.add(addButton);
-		frame.add(bottomPanel, BorderLayout.SOUTH);
-		
-		frame.setSize(700, 433);
-		frame.setVisible(true);
+		filePanel.updateUI();
 	}
 	
 	/**
@@ -113,10 +151,10 @@ public class ClientWindow
 	 * @author geng yufeng
 	 *
 	 */
-	public static class IconFactory{
+	private static class IconFactory{
 		private static final ImageIcon dirIcon = new ImageIcon("ico/folder.png");
-		private static final ImageIcon txtIcon = new ImageIcon("ico/pict.png");
-		private static final ImageIcon videoIcon = new ImageIcon("ico/pict.png");
+		private static final ImageIcon txtIcon = new ImageIcon("ico/txt.png");
+		private static final ImageIcon videoIcon = new ImageIcon("ico/avi.png");
 		private static final ImageIcon imgIcon = new ImageIcon("ico/pict.png");
 		private static final ImageIcon otherIcon = new ImageIcon("ico/pict.png");
 		public static ImageIcon getIcon(String filename){

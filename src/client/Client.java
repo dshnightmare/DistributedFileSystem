@@ -80,6 +80,14 @@ public class Client
 		new Thread(task).start();
 		taskMonitor.addTask(task);
 	}
+	
+	/**
+	 * create directory
+	 * @param dir full path of new directory
+	 */
+	public void createDirectorySync(String dir){
+		
+	}
 
 	@Override
 	public void handleCall(Call call) {

@@ -3,7 +3,7 @@ package test.client;
 import nameserver.NameServer;
 
 import client.ClientCMD;
-import client.ClientWindow;
+import client.ClientGUI;
 import junit.framework.TestCase;
 
 public class TestClientGUI extends TestCase{
@@ -14,7 +14,7 @@ public class TestClientGUI extends TestCase{
 	}
 	
 	public void testClient(){
-		ClientWindow client = new ClientWindow();
+		ClientGUI client = new ClientGUI();
 		client.init();
 		while (true) {
 			
