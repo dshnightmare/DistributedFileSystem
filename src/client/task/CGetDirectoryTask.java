@@ -70,6 +70,9 @@ public class CGetDirectoryTask
 		for(String item : callN2C.getDirectoryList()){
 			ret.add(item);
 		}
+		for(String item : callN2C.getFileList()){
+			ret.add(item);
+		}
 		synchronized (taskWaitor) {
 			taskWaitor.notify();
 		}
