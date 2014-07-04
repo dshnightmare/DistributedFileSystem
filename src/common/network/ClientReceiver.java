@@ -27,7 +27,6 @@ public class ClientReceiver extends Thread{
 				int buffer_size = Configuration.getInstance().getInteger("ByteBuffer_size");
 				byte[] buffer = new byte[buffer_size];
 				int received = in.read(buffer);
-				System.out.println("Received response: "+received);
 				Call response = (Call)SwitchObjectAndByte.switchByteToObject(buffer);
 				connector.addResponseCall(response);
 				Log.debug("Client received response: "+response.getType());

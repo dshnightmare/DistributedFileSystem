@@ -37,6 +37,8 @@ public class ClientGUI
 	public JPanel filePanel;
 	//file item
 	public JPanel fileItem;
+	//goback button
+	JButton backButton;
 	
 	//current directory
 	private String currentDirectory = "/";
@@ -62,9 +64,9 @@ public class ClientGUI
 		createDirButton.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e){
 				String subdir = JOptionPane.showInputDialog("请输入子目录名称");
-				if(null == subdir)
+				if(null == subdir || subdir.equals(""))
 					return;
-				client.createDirectorySync(subdir);
+				client.createDirectorySync(currentDirectory+subdir+"/");
 			}
 		});
 		
@@ -91,10 +93,27 @@ public class ClientGUI
 			}
 		});
 		
+		//goback
+		backButton = new JButton("返回上层");
+		backButton.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e){
+				int lastx = currentDirectory
+						.substring(0, currentDirectory.length()-1).lastIndexOf("/");
+				currentDirectory = currentDirectory.substring(0, lastx+1);
+				if (currentDirectory.equals("/")) {
+					backButton.setEnabled(false);
+				}
+				showDirectory(currentDirectory);
+				frame.setTitle("DFS -- "+currentDirectory);
+			}
+		});
+		backButton.setEnabled(false);
+		
 		//add buttons 
 		topPanel.add(createDirButton);
 		topPanel.add(addButton);
 		topPanel.add(refreshButton);
+		topPanel.add(backButton);
 		
 		// TODO bottom panel
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 10));
@@ -104,9 +123,14 @@ public class ClientGUI
 		frame.add(bottomPanel, BorderLayout.SOUTH);
 		
 		frame.setSize(700, 433);
+		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 	}
 	
+	/**
+	 * show the contents of directory
+	 * @param dir full path directory address
+	 */
 	private void showDirectory(String dir){
 		filePanel.removeAll();
 		List<String> itemList = client.getDirectorySync(dir);
@@ -126,11 +150,14 @@ public class ClientGUI
 					// TODO double click: open directory
 					if(e.getClickCount() == 2){
 						JPanel item = (JPanel)e.getSource();
-						String pathString = currentDirectory+((JLabel)item.getComponent(1)).getText();
-						if( ((ImageIcon)((JLabel)item.getComponent(0)).getIcon()).getDescription().equals("dir"))
-						JOptionPane.showMessageDialog(frame, "go into direct "+pathString);
-						List<String> dirs = client.getDirectorySync(pathString);	//will block here
-						Log.debug(""+dirs.size());
+						String pathString = currentDirectory+((JLabel)item.getComponent(1)).getText()+"/";
+						if( ((ImageIcon)((JLabel)item.getComponent(0))
+								.getIcon()).getDescription().equals("dir")){
+							currentDirectory = pathString;
+							backButton.setEnabled(true);
+							showDirectory(pathString);
+							frame.setTitle("DFS -- "+currentDirectory);
+						}
 					}
 					else if (e.getClickCount() == 1) {
 						if(((JPanel)e.getSource()).getBackground() == Color.cyan){

@@ -63,7 +63,6 @@ public class ServerConnector implements CallDispatcher, Connector{
 		 *  @TODO use callQueue and multithread Handler, or call 
 		 *  listeners here?
 		 */
-		Log.debug("NameServer call looking for listener.");
 		for (CallListener listener : callListeners) {
 			listener.handleCall(call);
 		}
@@ -76,7 +75,6 @@ public class ServerConnector implements CallDispatcher, Connector{
 	@Override
 	public void sendCall(Call response){
 		try {
-			System.out.println("Server trying to send response to "+response.getInitiator());
 			responseQueue.put(response);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
