@@ -14,7 +14,7 @@ import nameserver.task.TaskFactory;
 import common.network.ServerConnector;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.n2c.AbortCallN2C;
+import common.call.all.AbortCall;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.task.TaskExecutor;
@@ -137,7 +137,7 @@ public class NameServer
             if (pause)
             {
                 Call back =
-                    new AbortCallN2C(
+                    new AbortCall(
                         "Nameserver is maintaining, please try later.");
                 back.setFromTaskId(localTaskId);
                 back.setToTaskId(remoteTaskId);

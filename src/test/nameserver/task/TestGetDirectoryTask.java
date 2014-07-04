@@ -82,7 +82,7 @@ public class TestGetDirectoryTask extends TestCase {
 				task = new GetDirectoryTask(1, call, NConnector);
 				task.addListener(new TaskListener());
 				new Thread(task).start();
-			} else if (Call.Type.FINISH_C2N == call.getType()) {
+			} else if (Call.Type.FINISH == call.getType()) {
 				task.handleCall(call);
 			}
 		}

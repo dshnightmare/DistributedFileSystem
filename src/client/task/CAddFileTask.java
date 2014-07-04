@@ -7,8 +7,8 @@ import java.net.Socket;
 import common.network.ClientConnector;
 import common.network.XConnector;
 import common.call.Call;
+import common.call.all.FinishCall;
 import common.call.c2n.AddFileCallC2N;
-import common.call.c2n.FinishCallC2N;
 import common.call.n2c.AddFileCallN2C;
 import common.task.Task;
 import common.util.IdGenerator;
@@ -95,7 +95,7 @@ public class CAddFileTask
         {
             Log.print("Fatal error! No storage server returned");
             Log.debug("" + call.getFromTaskId() + " " + call.getToTaskId());
-            FinishCallC2N finishCall = new FinishCallC2N();
+            FinishCall finishCall = new FinishCall();
             finishCall.setToTaskId(toTaskId);
             finishCall.setFromTaskId(getTaskId());
             ClientConnector.getInstance().sendCall(finishCall);

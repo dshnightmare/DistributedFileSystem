@@ -1,15 +1,15 @@
-package common.call.c2n;
+package common.call.all;
 
 import common.call.Call;
 
-public class FinishCallC2N
+public class FinishCall
     extends Call
 {
     private static final long serialVersionUID = 8622180358347032874L;
 
-    public FinishCallC2N()
+    public FinishCall()
     {
-        super(Call.Type.FINISH_C2N);
+        super(Call.Type.FINISH);
     }
 
 }

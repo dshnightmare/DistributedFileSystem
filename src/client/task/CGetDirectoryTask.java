@@ -38,7 +38,7 @@ public class CGetDirectoryTask
 				netWaitor.notify();
 			}
 		}
-		else if (call.getType() == Call.Type.ABORT_N2C) {
+		else if (call.getType() == Call.Type.ABORT) {
 			synchronized (taskWaitor) {
 				taskWaitor.notify();
 			}

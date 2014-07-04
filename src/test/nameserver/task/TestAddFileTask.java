@@ -11,8 +11,8 @@ import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.call.Call;
 import common.call.CallListener;
+import common.call.all.FinishCall;
 import common.call.c2n.AddFileCallC2N;
-import common.call.c2n.FinishCallC2N;
 import common.call.n2c.AddFileCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
@@ -93,7 +93,7 @@ public class TestAddFileTask
                 task.addListener(new TaskListener());
                 new Thread(task).start();
             }
-            else if (Call.Type.FINISH_C2N == call.getType())
+            else if (Call.Type.FINISH == call.getType())
             {
                 task.handleCall(call);
             }
@@ -116,7 +116,7 @@ public class TestAddFileTask
                     System.out.print(l + " ");
                 System.out.println();
 
-                FinishCallC2N ack = new FinishCallC2N();
+                FinishCall ack = new FinishCall();
                 ack.setToTaskId(1);
                 CConnector.sendCall(ack);
             }

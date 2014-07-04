@@ -1,17 +1,17 @@
-package common.call.n2c;
+package common.call.all;
 
 import common.call.Call;
 
-public class AbortCallN2C
+public class AbortCall
     extends Call
 {
     private static final long serialVersionUID = -4194888093602447089L;
 
     private String reason;
 
-    public AbortCallN2C(String reason)
+    public AbortCall(String reason)
     {
-        super(Call.Type.ABORT_N2C);
+        super(Call.Type.ABORT);
         this.reason = reason;
     }
     

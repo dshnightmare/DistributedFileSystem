@@ -1,7 +1,7 @@
 package nameserver.task;
 
 import common.call.Call;
-import common.call.n2c.AbortCallN2C;
+import common.call.all.AbortCall;
 import common.network.Connector;
 import common.task.Task;
 
@@ -66,7 +66,7 @@ public abstract class NameServerTask
      */
     protected void sendAbortCall(String reason)
     {
-        sendCall(new AbortCallN2C(reason));
+        sendCall(new AbortCall(reason));
     }
 
     /**

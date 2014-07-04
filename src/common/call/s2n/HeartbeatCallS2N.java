@@ -12,9 +12,15 @@ public class HeartbeatCallS2N
 
     private final String address;
 
+    /**
+     * Files that have been migrated.
+     * <p>
+     * {storage id, list of file id}
+     */
     private final Map<String, List<String>> migratedFiles;
 
-    public HeartbeatCallS2N(String address, Map<String, List<String>> migratedFiles)
+    public HeartbeatCallS2N(String address,
+        Map<String, List<String>> migratedFiles)
     {
         super(Call.Type.HEARTBEAT_S2N);
         this.address = address;

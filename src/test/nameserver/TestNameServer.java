@@ -6,8 +6,8 @@ import java.util.concurrent.TimeUnit;
 import common.network.ClientConnector;
 import common.call.Call;
 import common.call.CallListener;
+import common.call.all.FinishCall;
 import common.call.c2n.AddFileCallC2N;
-import common.call.c2n.FinishCallC2N;
 import common.call.n2c.AddFileCallN2C;
 import nameserver.NameServer;
 import junit.framework.TestCase;
@@ -74,7 +74,7 @@ public class TestNameServer
                 System.out.print(l + " ");
             System.out.println();
 
-            FinishCallC2N ack = new FinishCallC2N();
+            FinishCall ack = new FinishCall();
             CConnector.sendCall(ack);
         }
     }

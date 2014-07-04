@@ -54,7 +54,7 @@ public abstract class Call implements Serializable {
 		/**
 		 * Abort the task
 		 */
-		ABORT_N2C("ABORT_N2C"),
+		ABORT("ABORT"),
 
 		/**
 		 * Heartbeat call from storage server to names erver
@@ -125,7 +125,7 @@ public abstract class Call implements Serializable {
 		/**
 		 * Notify task finish.
 		 */
-		FINISH_C2N("FINISH_C2N"),
+		FINISH("FINISH"),
 
 		/**
 		 * Renew lease call.

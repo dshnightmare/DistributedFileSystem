@@ -140,7 +140,7 @@ public class GetFileTask
             return;
         }
 
-        if (call.getType() == Call.Type.FINISH_C2N)
+        if (call.getType() == Call.Type.FINISH)
         {
             synchronized (syncRoot)
             {

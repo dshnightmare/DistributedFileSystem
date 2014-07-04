@@ -146,7 +146,7 @@ public class AppendFileTask
             return;
         }
 
-        if (call.getType() == Call.Type.FINISH_C2N)
+        if (call.getType() == Call.Type.FINISH)
         {
             synchronized (syncRoot)
             {
