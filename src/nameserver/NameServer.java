@@ -147,14 +147,16 @@ public class NameServer
             taskExecutor = Executors.newFixedThreadPool(MAX_THREADS);
 
             snapshotExecutor = Executors.newSingleThreadScheduledExecutor();
-            snapshotExecutor.schedule(new SnapshotMaker(), SNAPSHOT_PERIOD,
-                TimeUnit.SECONDS);
+            snapshotExecutor.scheduleAtFixedRate(new SnapshotMaker(),
+                SNAPSHOT_PERIOD, SNAPSHOT_PERIOD, TimeUnit.SECONDS);
 
             taskMonitor = new TaskMonitor();
             taskMonitor.addListener(this);
 
             connector = ServerConnector.getInstance();
             connector.addListener(this);
+
+            logger.info("NameServer initialization finished.");
 
             initialized = true;
         }
@@ -220,7 +222,7 @@ public class NameServer
         if (event.getType() == TaskEvent.Type.TASK_ABORTED)
         {
             task.release();
-            logger.fatal("Task: " + task.getTaskId() + " " + event.getType());
+            logger.info("Task: " + task.getTaskId() + " " + event.getType());
         }
         else if (event.getType() == TaskEvent.Type.TASK_FINISHED)
         {

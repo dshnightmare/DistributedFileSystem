@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import common.event.TaskEvent;
 import common.event.TaskEvent.Type;
@@ -15,7 +17,6 @@ import common.event.TaskEventListener;
 import common.util.Configuration;
 import common.util.Logger;
 
-// FIXME: Code refactoring, replace timer with scheduled task executor.
 /**
  * <tt>TaskMonitor</tt> is used for checking tasks status, whether they are
  * aborted or finished. If something happens, it will notify
@@ -39,6 +40,12 @@ public class TaskMonitor
     private Map<Long, Task> tasks = new HashMap<Long, Task>();
 
     /**
+     * Monitor thread executor.
+     */
+    private ScheduledExecutorService monitor = Executors
+        .newSingleThreadScheduledExecutor();
+
+    /**
      * Task event listeners, if some task's lease is invalid, notify them.
      */
     private List<TaskEventListener> listeners =
@@ -49,22 +56,6 @@ public class TaskMonitor
      */
     private long period;
 
-    // FIXME: Relpace it with scheduled task executor.
-    /**
-     * Timer.
-     */
-    private Timer timer = new Timer();
-
-    /**
-     * Monitoring thread, it will wake up regularly and check all running tasks.
-     */
-    private TimerTask monitor = new Monitor();
-
-    /**
-     * Indicate whether the monitor is working.
-     */
-    private boolean isMonitoring = false;
-
     /**
      * Construction method.
      */
@@ -72,6 +63,9 @@ public class TaskMonitor
     {
         this.period =
             Configuration.getInstance().getLong(Configuration.LEASE_PERIOD_KEY) * 2;
+        monitor.scheduleAtFixedRate(new Monitor(), 0, period, TimeUnit.SECONDS);
+
+        logger.info("Task monitor started. Checking period: " + period + "s.");
     }
 
     /**
@@ -85,30 +79,6 @@ public class TaskMonitor
     {
         tasks.put(thread.getTaskId(), thread);
         thread.addListener(this);
-    }
-
-    /**
-     * Turn on <tt>TaskMonitor</tt> switch.
-     */
-    public void startMonitoring()
-    {
-        if (!isMonitoring)
-        {
-            timer.scheduleAtFixedRate(monitor, 0, period);
-            isMonitoring = true;
-        }
-    }
-
-    /**
-     * Turn off <tt>TaskMonitor</tt> switch.
-     */
-    public void stopMonitoring()
-    {
-        if (isMonitoring)
-        {
-            timer.cancel();
-            isMonitoring = false;
-        }
     }
 
     /**
@@ -149,6 +119,7 @@ public class TaskMonitor
     public void handle(TaskEvent event)
     {
         fireEvent(event);
+
         synchronized (tasks)
         {
             tasks.remove(event.getTaskThread());

@@ -32,8 +32,7 @@ public class TestTaskMonitor
                     + event.getTaskThread().getTaskId());
             }
         });
-        
-        
+
     }
 
     public void testStartMonitoring()
@@ -45,7 +44,8 @@ public class TestTaskMonitor
             {
                 while (true)
                 {
-                    System.out.println(this.getTaskId());
+                    System.out.println("Task " + this.getTaskId()
+                        + " is running.");
                     try
                     {
                         TimeUnit.SECONDS.sleep(1);
@@ -73,7 +73,7 @@ public class TestTaskMonitor
         taskA.renewLease();
         monitor.addTask(taskA);
         new Thread(taskA).start();
-        
+
         taskB = new Task(2)
         {
             @Override
@@ -81,7 +81,9 @@ public class TestTaskMonitor
             {
                 while (true)
                 {
-                    System.out.println(this.getTaskId());
+                    System.out.println("Task " + this.getTaskId()
+                        + " is running.");
+
                     try
                     {
                         TimeUnit.SECONDS.sleep(1);
@@ -108,22 +110,23 @@ public class TestTaskMonitor
         taskB.setLease(new TaskLease(7000));
         monitor.addTask(taskB);
         new Thread(taskB).start();
-        
-        try
-        {
-            TimeUnit.SECONDS.sleep(15);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
 
-        monitor.stopMonitoring();
+        for (int i = 0; i < 15; i++)
+        {
+            try
+            {
+                System.out.println("Sleep " + i + "s.");
+                TimeUnit.SECONDS.sleep(1);
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     protected void tearDown()
     {
-        monitor.stopMonitoring();
     }
 }
