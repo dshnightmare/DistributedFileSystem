@@ -36,7 +36,7 @@ public class CAddFileTask
 
     private String filename;
     
-    private long remoteTaskId;
+    private long toTaskId;
 
     public CAddFileTask(long tid, String _path, String _name)
     {
@@ -56,7 +56,7 @@ public class CAddFileTask
         if (call.getType() == Call.Type.ADD_FILE_N2C)
         {
             this.call = (AddFileCallN2C) call;
-            this.remoteTaskId = call.getFromTaskId();
+            this.toTaskId = call.getFromTaskId();
             synchronized (waitor)
             {
                 waitor.notify();
@@ -64,7 +64,7 @@ public class CAddFileTask
         }
         else
         {
-            Log.print("Fatal error: call type dismatch.");
+            Log.error("Fatal error: call type dismatch.");
         }
     }
 
@@ -96,7 +96,7 @@ public class CAddFileTask
             Log.print("Fatal error! No storage server returned");
             Log.debug("" + call.getFromTaskId() + " " + call.getToTaskId());
             FinishCallC2N finishCall = new FinishCallC2N();
-            finishCall.setToTaskId(remoteTaskId);
+            finishCall.setToTaskId(toTaskId);
             finishCall.setFromTaskId(getTaskId());
             ClientConnector.getInstance().sendCall(finishCall);
             return;

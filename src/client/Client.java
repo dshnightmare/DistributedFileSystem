@@ -1,7 +1,12 @@
 package client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import client.task.CAddFileTask;
+import client.task.CGetDirectoryTask;
 
 import common.network.ClientConnector;
 import common.call.Call;
@@ -26,6 +31,7 @@ public class Client
 	
 	private TaskMonitor taskMonitor;
 	private Map<Long, Task> tasks = new HashMap<Long, Task>();
+	private Object taskWaitor = new Object();
 	
 	public Client(){
 		taskMonitor = new TaskMonitor();
@@ -41,15 +47,43 @@ public class Client
 		return instance;
 	}
 	
-	public void addTask(Task task){
+	/**
+	 * RPC call, must block
+	 * @param direct target directory
+	 * @return
+	 */
+	public List<String> getDirectorySync(String direct){
+		List<String> ret = new ArrayList<String>();
+		CGetDirectoryTask task = new CGetDirectoryTask(IdGenerator.getInstance().getLongId()
+				, direct, ret, taskWaitor);
+		new Thread(task).start();
 		taskMonitor.addTask(task);
-        new Thread(task).start();
-        tasks.put(task.getTaskId(), task);
+		
+		synchronized (taskWaitor) {
+			try {
+				taskWaitor.wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * RPC call, run in background and will not block
+	 * @param dir
+	 * @param fileName
+	 */
+	public void addFileAsync(String dir, String fileName){
+		CAddFileTask task = new CAddFileTask(IdGenerator.getInstance().getLongId()
+				, dir, fileName);
+		new Thread(task).start();
+		taskMonitor.addTask(task);
 	}
 
 	@Override
 	public void handleCall(Call call) {
-		// TODO Auto-generated method stub
 
         Task task = null;
         long remoteTaskId = call.getFromTaskId();

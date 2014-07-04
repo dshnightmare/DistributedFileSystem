@@ -1,11 +1,16 @@
 package client;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -24,42 +29,68 @@ public class ClientWindow
 	JFrame frame = new JFrame("DFS");
 	JPanel bottomPanel = new JPanel();
 	JScrollPane sp;
-	JPanel panel;
-	JPanel fileIcon;
+	//main file panel
+	public JPanel filePanel;
+	//file item
+	public JPanel fileItem;
+	private ImageIcon dirIcon;
+	private ImageIcon fileIcon;
 	
 	//current directory
-	private String currentDirectory = ".";
+	private String currentDirectory = "/a/b/c";
+	
+	private Client client = Client.getInstance();
 	
 	public void init(){
+		frame.setTitle("DFS -- "+currentDirectory);
 		frame.setLayout(new BorderLayout());
-		panel = new JPanel();
-		panel.setLayout(new WrapLayout(FlowLayout.LEFT, 10, 15));
+		filePanel = new JPanel();
+		filePanel.setLayout(new WrapLayout(FlowLayout.LEFT, 10, 15));
 		
+		dirIcon = new ImageIcon("ico/folder.png");
+		fileIcon = new ImageIcon("ico/folder.png");
 
-		for(int i=0; i<20; i++){
-			fileIcon = new JPanel();
-			fileIcon.setSize(20, 30);
-			fileIcon.setLayout(new BorderLayout(0, 1));
+		
+		List<String> fakeFileList = new ArrayList(Arrays.asList("1.txt", "b/", "c.rmvb")); 
+		for(String filename : fakeFileList){
+			fileItem = new JPanel();
+			fileItem.setLayout(new BorderLayout(0, 1));
 			JLabel icon = new JLabel();
-			JLabel text = new JLabel("file_"+i);
-			icon.setIcon(new ImageIcon("ico/folder.png"));
-			fileIcon.add(icon, BorderLayout.CENTER);
-			fileIcon.add(text, BorderLayout.SOUTH);
+			icon.setIcon(IconFactory.getIcon(filename));
+			icon.setHorizontalAlignment(JLabel.CENTER);
+			JLabel text = new JLabel(filename.replace("/", ""));
+			text.setHorizontalAlignment(JLabel.CENTER);
+			fileItem.add(icon, BorderLayout.CENTER);
+			fileItem.add(text, BorderLayout.SOUTH);
 			
-			fileIcon.addMouseListener(new MouseAdapter() {
+			fileItem.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
-					JOptionPane.showMessageDialog(frame, "go into direct "
-				+((JLabel)((JPanel)e.getSource()).getComponent(1)).getText());
+					// TODO double click: open directory
+					if(e.getClickCount() == 2){
+						if( ((ImageIcon)((JLabel)((JPanel)e.getSource()).getComponent(0)).getIcon()).getDescription().equals("dir"))
+						JOptionPane.showMessageDialog(frame, "go into direct "
+								+((JLabel)((JPanel)e.getSource()).getComponent(1)).getText());
+						//List<String> dirs = client.getDirectorySync(currentDirectory);	//will block here
+					}
+					else if (e.getClickCount() == 1) {
+						if(((JPanel)e.getSource()).getBackground() == Color.cyan){
+							((JPanel)e.getSource()).setBackground(null);
+						}
+						else {
+							((JPanel)e.getSource()).setBackground(Color.cyan);
+						}
+					}
 				}
 			});
-			fileIcon.setToolTipText("will this");
-			panel.add(fileIcon);
+			fileItem.setToolTipText(text.getText());
+			fileItem.setPreferredSize(new Dimension(45, 55));
+			filePanel.add(fileItem);
 		}
 			
-		sp = new JScrollPane(panel);
+		sp = new JScrollPane(filePanel);
 		frame.add(sp, BorderLayout.CENTER);
 		
-		//bottom-- add file
+		//bottom -- add file
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 10));
 		JButton addButton = new JButton("上传文件");
 		addButton.addMouseListener(new MouseAdapter() {
@@ -78,5 +109,38 @@ public class ClientWindow
 		
 		frame.setSize(700, 433);
 		frame.setVisible(true);
+	}
+	
+	/**
+	 * return ImageIcon according to file suffix
+	 * @author geng yufeng
+	 *
+	 */
+	public static class IconFactory{
+		private static final ImageIcon dirIcon = new ImageIcon("ico/folder.png");
+		private static final ImageIcon txtIcon = new ImageIcon("ico/pict.png");
+		private static final ImageIcon videoIcon = new ImageIcon("ico/pict.png");
+		private static final ImageIcon imgIcon = new ImageIcon("ico/pict.png");
+		private static final ImageIcon otherIcon = new ImageIcon("ico/pict.png");
+		public static ImageIcon getIcon(String filename){
+			int lasts = filename.lastIndexOf("/");
+			if (lasts == filename.length()-1) {
+				dirIcon.setDescription("dir");
+				return dirIcon;
+			}
+			filename = filename.substring(lasts+1, filename.length());
+			String[] tmp = filename.split("\\.");
+			String suffix = tmp[tmp.length-1];
+			if (suffix.equals("txt")) {
+				return txtIcon;
+			}
+			else if (suffix.equals("avi") || suffix.equals("rmvb")) {
+				return videoIcon;
+			}
+			else if (suffix.equals("txt")) {
+				return txtIcon;
+			}
+			return otherIcon;
+		}
 	}
 }

@@ -3,6 +3,7 @@ package client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import client.task.CAddFileTask;
 import client.task.CGetFileTask;
@@ -42,20 +43,16 @@ public class ClientCMD
 						continue;
 					}
 					else {
-						task = new CAddFileTask(IdGenerator.getInstance().getLongId()
-								, args[1], args[2]);
-						client.addTask(task);
+						client.addFileAsync(args[1], args[2]);
 					}
 				}
-				else if(cmdString.toLowerCase().equals("getfile")){
-					if (args.length != 3) {
+				else if(cmdString.toLowerCase().equals("getdir")){
+					if (args.length != 2) {
 						Log.print("Wrong argument number.");
 						continue;
 					}
 					else {
-						task = new CGetFileTask(IdGenerator.getInstance().getLongId()
-								, args[1], args[2]);
-						client.addTask(task);
+						List<String> res = client.getDirectorySync(args[1]);
 					}
 				}
 				else if(cmdString.toLowerCase().equals("")){

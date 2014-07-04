@@ -22,12 +22,20 @@ public class Log {
 	public static void info(String info){
 		System.out.println("Info-"+info);
 	}
-	
+
 	/**
 	 * SHOULD NOT be printed as debug information
 	 * @param debug
 	 */
 	public static void debug(String debug){
 		System.out.println("Debug-"+debug);
+	}
+	
+	/**
+	 * MUST be printed as error information
+	 * @param error
+	 */
+	public static void error(String error){
+		System.err.println("Error-"+error);
 	}
 }
