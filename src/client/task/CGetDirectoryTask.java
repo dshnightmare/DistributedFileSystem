@@ -65,7 +65,11 @@ public class CGetDirectoryTask
 			}
 		}
 		
-		ret = callN2C.getDirectoryList();
+		//ret = callN2C.getDirectoryList();
+		// make sure the same ret location
+		for(String item : callN2C.getDirectoryList()){
+			ret.add(item);
+		}
 		synchronized (taskWaitor) {
 			taskWaitor.notify();
 		}

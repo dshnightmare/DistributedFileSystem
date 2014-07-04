@@ -53,6 +53,7 @@ public class ClientCMD
 					}
 					else {
 						List<String> res = client.getDirectorySync(args[1]);
+						Log.debug("getdir returned "+res.size());
 					}
 				}
 				else if(cmdString.toLowerCase().equals("")){

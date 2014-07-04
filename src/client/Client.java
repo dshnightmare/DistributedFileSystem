@@ -8,7 +8,6 @@ import java.util.Map;
 import client.task.CAddFileTask;
 import client.task.CGetDirectoryTask;
 
-import common.network.ClientConnector;
 import common.call.Call;
 import common.call.CallListener;
 import common.event.TaskEvent;

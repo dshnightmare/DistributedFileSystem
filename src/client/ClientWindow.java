@@ -36,7 +36,7 @@ public class ClientWindow
 	public JPanel fileItem;
 	
 	//current directory
-	private String currentDirectory = "/a/b/c";
+	private String currentDirectory = "/";
 	
 	private Client client = Client.getInstance();
 	
