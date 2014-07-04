@@ -83,8 +83,6 @@ public class GetDirectoryTask
             if (!directoryExists())
             {
                 sendAbortCall("Task aborted, directory does not exist.");
-                setFinish();
-                return;
             }
             else
             {
@@ -101,8 +99,9 @@ public class GetDirectoryTask
                 logger.info("GetDirectoryTask " + getTaskId() + " commit.");
 
                 sendResponseCall();
-                setFinish();
             }
+
+            setFinish();
         }
     }
 

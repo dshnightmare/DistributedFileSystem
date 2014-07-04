@@ -70,7 +70,6 @@ public class AddDirectoryTask
             if (directoryExists())
             {
                 sendAbortCall("Task aborted, there has been a directory with the same name.");
-                return;
             }
             else
             {
@@ -83,10 +82,10 @@ public class AddDirectoryTask
                 logger.info("AddDirectoryTask " + getTaskId() + " commit.");
                 backup.writeLogCommit(getTaskId());
 
+                sendFinishCall();
                 meta.addDirectory(dir);
             }
 
-            sendFinishCall();
             setFinish();
         }
     }

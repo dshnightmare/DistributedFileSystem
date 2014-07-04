@@ -219,7 +219,7 @@ public class NameServer
 
         tasks.remove(task);
 
-        if (event.getType() == TaskEvent.Type.TASK_ABORTED)
+        if (event.getType() == TaskEvent.Type.TASK_DUE)
         {
             task.release();
             logger.info("Task: " + task.getTaskId() + " " + event.getType());

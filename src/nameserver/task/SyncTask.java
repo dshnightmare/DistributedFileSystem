@@ -68,7 +68,6 @@ public class SyncTask
             if (!storageExists())
             {
                 sendAbortCall("Task aborted, unidentified storage server.");
-                setFinish();
             }
             else
             {
@@ -88,8 +87,9 @@ public class SyncTask
                     }
                 }
                 sendResponseCall(removeList);
-                setFinish();
             }
+
+            setFinish();
         }
     }
 

@@ -93,7 +93,12 @@ public abstract class NameServerTask
     }
 
     /**
-     * Set task status to dead.
+     * Set task status to dead. If a task is dead, it shouldn't do anything but
+     * exit.
+     * <p>
+     * For those time-consuming tasks, they could be killed by
+     * <tt>NameServer</tt>. After being killed, they will be woke up and do some
+     * clean up jobs.
      */
     protected void setDead()
     {

@@ -126,6 +126,8 @@ public class AddFileTask
             backup.writeLogCommit(getTaskId());
             commit();
             file.unlockWrite();
+
+            sendFinishCall();
             setFinish();
         }
     }

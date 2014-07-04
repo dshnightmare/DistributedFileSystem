@@ -101,6 +101,11 @@ public abstract class Task
             return true;
     }
 
+    // TODO: Actually "finish" is not very suitable. When a task is aborted,
+    // we also think it's finished. For instance, client send a rename call to
+    // name server, but the original file didn't exist, so name server send
+    // abort call back to client and let that task finish. So we should change
+    // the opion of this method and related stuff.
     /**
      * Notify event listens this task has finished.
      */

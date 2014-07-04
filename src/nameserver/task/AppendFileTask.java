@@ -95,6 +95,7 @@ public class AppendFileTask
                 else
                 {
                     sendAbortCall("Task aborted, someone is using the file.");
+                    setFinish();
                     return;
                 }
             }
@@ -112,6 +113,8 @@ public class AppendFileTask
 
             file.updateVersion();
             file.unlockWrite();
+            
+            sendFinishCall();
             setFinish();
         }
 

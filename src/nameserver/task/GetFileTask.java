@@ -91,6 +91,7 @@ public class GetFileTask
                 else
                 {
                     sendAbortCall("Task aborted, someone is using the file.");
+                    setFinish();
                     return;
                 }
             }

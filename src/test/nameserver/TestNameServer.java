@@ -16,6 +16,8 @@ public class TestNameServer
 {
     private static ClientConnector CConnector;
 
+    private static CCallListener CListener;
+
     private static NameServer ns;
 
     @Override
@@ -40,14 +42,29 @@ public class TestNameServer
             e.printStackTrace();
         }
         CConnector = ClientConnector.getInstance();
-        CConnector.addListener(new CCallListener());
+        CListener = new CCallListener();
+        CConnector.addListener(CListener);
     }
 
     public void testHandleCall()
     {
         Call call = null;
 
+        CListener.setSleepTime(1);
         call = new AddFileCallC2N("/a/", "b");
+        CConnector.sendCall(call);
+
+        try
+        {
+            TimeUnit.SECONDS.sleep(2);
+        }
+        catch (InterruptedException e1)
+        {
+            e1.printStackTrace();
+        }
+
+        CListener.setSleepTime(10);
+        call = new AddFileCallC2N("/", "b");
         CConnector.sendCall(call);
 
         for (int i = 0; i < 20; i++)
@@ -72,6 +89,13 @@ public class TestNameServer
     private class CCallListener
         implements CallListener
     {
+        private long sleepTime = 0;
+
+        public void setSleepTime(long sleepTime)
+        {
+            this.sleepTime = sleepTime;
+        }
+
         @Override
         public void handleCall(Call call)
         {
@@ -88,7 +112,7 @@ public class TestNameServer
 
                 try
                 {
-                    TimeUnit.SECONDS.sleep(15);
+                    TimeUnit.SECONDS.sleep(sleepTime);
                 }
                 catch (InterruptedException e)
                 {

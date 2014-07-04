@@ -154,8 +154,7 @@ public class TaskMonitor
                 }
                 for (Long taskId : abortedList)
                 {
-                    fireEvent(new TaskEvent(Type.TASK_ABORTED,
-                        tasks.get(taskId)));
+                    fireEvent(new TaskEvent(Type.TASK_DUE, tasks.get(taskId)));
                     listeners.remove(tasks.remove(taskId));
                     logger.info("Task " + taskId
                         + " is aborted because of invalid lease.");

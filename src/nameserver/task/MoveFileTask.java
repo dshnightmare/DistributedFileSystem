@@ -71,12 +71,10 @@ public class MoveFileTask
             if (!oldFileExists())
             {
                 sendAbortCall("Task aborted, old file does not exist.");
-                setFinish();
             }
             else if (newFileExists())
             {
                 sendAbortCall("Task aborted, new file has arealdy existed.");
-                setFinish();
             }
             else
             {
@@ -88,10 +86,12 @@ public class MoveFileTask
                 logger.info("MoveFileTask " + getTaskId() + " commit.");
                 backup.writeLogCommit(getTaskId());
 
+                sendFinishCall();
                 Meta.getInstance().renameFile(oldDirName, oldFileName,
                     newDirName, newFileName);
-                setFinish();
             }
+
+            setFinish();
         }
     }
 

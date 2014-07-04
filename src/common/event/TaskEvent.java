@@ -34,7 +34,7 @@ public class TaskEvent
         /**
          * 
          */
-        TASK_ABORTED("TASK_ABORTED"),
+        TASK_DUE("TASK_DUE"),
 
         /**
          * 

@@ -59,7 +59,6 @@ public class RemoveFileTask
             if (!fileExists())
             {
                 sendAbortCall("Task aborted, file does not exist.");
-                setFinish();
             }
             else
             {
@@ -70,9 +69,11 @@ public class RemoveFileTask
                 logger.info("RemoveFileTask " + getTaskId() + " commit.");
                 backup.writeLogCommit(getTaskId());
 
+                sendFinishCall();
                 Meta.getInstance().removeFile(dirName, fileName);
-                setFinish();
             }
+
+            setFinish();
         }
     }
 
