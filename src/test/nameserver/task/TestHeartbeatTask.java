@@ -9,23 +9,27 @@ import junit.framework.TestCase;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import nameserver.task.HeartbeatTask;
+import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.network.XConnector;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.FinishCall;
-import common.call.HeartbeatCallS2N;
-import common.call.MigrateFileCallN2S;
+import common.call.n2s.MigrateFileCallN2S;
+import common.call.s2n.HeartbeatCallS2N;
+import common.call.s2n.RegistrationCallS2N;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.task.Task;
 
 public class TestHeartbeatTask
     extends TestCase
 {
     private static ServerConnector NConnector;
 
-    private static XConnector SConnector;
+    private static ClientConnector SConnector;
+
+    private static Task task;
+
+    private static long taskId = 1;
 
     @Override
     protected void setUp()
@@ -39,20 +43,17 @@ public class TestHeartbeatTask
         {
             e.printStackTrace();
         }
-        SConnector = XConnector.getInstance();
+        SConnector = ClientConnector.getInstance();
         NConnector.addListener(new NCallListener());
         SConnector.addListener(new SCallListener());
     }
 
     public void testTask()
     {
-        Storage storage = new Storage(1, "localhost");
-        Status.getInstance().addStorage(storage);
-        long timestamp = storage.getHearbeatTime();
+        Status status = Status.getInstance();
 
-        HeartbeatCallS2N call =
-            new HeartbeatCallS2N("localhost", new HashMap<String, List<Long>>());
-        SConnector.sendCall(call);
+        RegistrationCallS2N rcall = new RegistrationCallS2N();
+        SConnector.sendCall(rcall);
 
         try
         {
@@ -63,8 +64,40 @@ public class TestHeartbeatTask
             e.printStackTrace();
         }
 
-        storage = Status.getInstance().getStorage("localhost");
-        assertTrue(storage.getHearbeatTime() > timestamp);
+        Call hcall =
+            new HeartbeatCallS2N("localhost",
+                new HashMap<String, List<String>>());
+        hcall.setToTaskId(taskId);
+        SConnector.sendCall(hcall);
+
+        try
+        {
+            TimeUnit.SECONDS.sleep(1);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        Storage storage = status.getStorage("localhost");
+        long timestamp1 = storage.getHearbeatTime();
+        System.out.println("Timestamp1: " + timestamp1);
+
+        SConnector.sendCall(hcall);
+
+        try
+        {
+            TimeUnit.SECONDS.sleep(1);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        storage = status.getStorage("localhost");
+        long timestamp2 = storage.getHearbeatTime();
+        System.out.println("Timestamp2: " + timestamp2);
+        assertTrue(timestamp2 > timestamp1);
     }
 
     @Override
@@ -79,11 +112,15 @@ public class TestHeartbeatTask
         public void handleCall(Call call)
         {
             System.out.println("<---: " + call.getType());
-            if (Call.Type.HEARTBEAT_S2N == call.getType())
+            if (Call.Type.REGISTRATION_S2N == call.getType())
             {
-                TaskThread task = new HeartbeatTask(1, call, NConnector, 2000);
+                task = new HeartbeatTask(taskId, call, NConnector, 2000);
                 task.addListener(new TaskListener());
                 new Thread(task).start();
+            }
+            else if (Call.Type.HEARTBEAT_S2N == call.getType())
+            {
+                task.handleCall(call);
             }
         }
     }
@@ -94,18 +131,16 @@ public class TestHeartbeatTask
         @Override
         public void handleCall(Call call)
         {
-            System.out.println("Server sent a call: " + call.getType());
+            System.out.println("--->: " + call.getType());
             if (Call.Type.MIGRATE_FILE_N2S == call.getType())
             {
                 MigrateFileCallN2S c = (MigrateFileCallN2S) call;
-                for (Entry<String, List<Long>> s : c.getFiles().entrySet())
+                for (Entry<String, List<String>> s : c.getFiles().entrySet())
                 {
                     System.out.println("Get from storage: " + s.getKey());
-                    for (Long l : s.getValue())
-                        System.out.println("\t" + l);
+                    for (String id : s.getValue())
+                        System.out.println("\t" + id);
                 }
-                Call back = new FinishCall(call.getTaskId());
-                SConnector.sendCall(back);
             }
         }
     }

@@ -1,14 +1,14 @@
 package common.event;
 
-import common.thread.TaskThread;
+import common.task.Task;
 
 public class TaskEvent
 {
     private Type type;
 
-    private TaskThread thread;
+    private Task thread;
 
-    public TaskEvent(Type type, TaskThread thread)
+    public TaskEvent(Type type, Task thread)
     {
         this.type = type;
         this.thread = thread;
@@ -19,7 +19,7 @@ public class TaskEvent
         return type;
     }
 
-    public TaskThread getTaskThread()
+    public Task getTaskThread()
     {
         return thread;
     }

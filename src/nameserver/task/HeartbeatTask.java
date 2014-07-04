@@ -12,24 +12,18 @@ import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
 import common.call.Call;
-import common.call.FinishCall;
-import common.call.HeartbeatCallS2N;
-import common.call.MigrateFileCallN2S;
-import common.call.RegistrationCallS2N;
+import common.call.n2s.MigrateFileCallN2S;
+import common.call.s2n.HeartbeatCallS2N;
 import common.event.TaskEvent;
-import common.thread.TaskThread;
-import common.util.IdGenerator;
+import common.util.Logger;
 
 public class HeartbeatTask
-    extends TaskThread
+    extends NameServerTask
 {
+
+    private final static Logger logger = Logger.getLogger(HeartbeatTask.class);
+
     private Storage storage;
-
-    private final String address;
-
-    private final Connector connector;
-
-    private final String initiator;
 
     /**
      * How many seconds between two adjacent heartbeat check.
@@ -38,23 +32,26 @@ public class HeartbeatTask
 
     public HeartbeatTask(long tid, Call call, Connector connector, long period)
     {
-        super(tid);
+        super(tid, call, connector);
         // Notice that the type is RegistrationCall.
-        RegistrationCallS2N c = (RegistrationCallS2N) call;
-        this.initiator = c.getInitiator();
-        this.address = c.getAddress();
-        this.connector = connector;
         this.period = period;
     }
 
     @Override
     public void run()
     {
-        this.storage =
-            new Storage(IdGenerator.getInstance().getLongId(), address);
-        Status.getInstance().addStorage(storage);
-        // As for registration, send a finish call to notify storage server.
-        sendFinishCall();
+        final Status status = Status.getInstance();
+
+        synchronized (status)
+        {
+            this.storage =
+                new Storage(getInitiator());
+            Status.getInstance().addStorage(storage);
+        }
+
+        logger.info("New storage server registered.");
+        // As for registration, send a migration call to notify storage server.
+        sendMigrationCall();
 
         while (true)
         {
@@ -86,12 +83,15 @@ public class HeartbeatTask
     @Override
     public void handleCall(Call call)
     {
-        if (call.getTaskId() != getTaskId())
+        logger.info("Heartbeat Task receive a call: " + call.getType());
+        if (call.getToTaskId() != getTaskId())
             return;
 
         if (call.getType() == Call.Type.HEARTBEAT_S2N)
         {
             updateHeartbeatTimestamp();
+            logger.info("Heartbeat update storage server " + storage.getId()
+                + " heartbeat timestamp: " + storage.getHearbeatTime());
 
             removeMigratedFilesFromMigrateList(((HeartbeatCallS2N) call)
                 .getMigratedFiles());
@@ -120,7 +120,7 @@ public class HeartbeatTask
     }
 
     private void removeMigratedFilesFromMigrateList(
-        Map<String, List<Long>> migratedFiles)
+        Map<String, List<String>> migratedFiles)
     {
         storage.removeMigrateFiles(migratedFiles);
     }
@@ -132,29 +132,21 @@ public class HeartbeatTask
         // migration call, it will realize he is dead and should register
         // again.
         Map<Storage, List<File>> migrateFiles = storage.getMigrateFiles();
-        Map<String, List<Long>> rawMigrateFiles =
-            new HashMap<String, List<Long>>();
+        Map<String, List<String>> rawMigrateFiles =
+            new HashMap<String, List<String>>();
 
         for (Entry<Storage, List<File>> e : migrateFiles.entrySet())
         {
-            List<Long> fileList = new ArrayList<Long>();
+            List<String> fileList = new ArrayList<String>();
 
             for (File f : e.getValue())
             {
                 fileList.add(f.getId());
             }
-            rawMigrateFiles.put(e.getKey().getAddress(), fileList);
+            rawMigrateFiles.put(e.getKey().getId(), fileList);
         }
 
-        Call back = new MigrateFileCallN2S(getTaskId(), rawMigrateFiles);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-    }
-
-    private void sendFinishCall()
-    {
-        Call back = new FinishCall(getTaskId());
-        back.setInitiator(initiator);
-        connector.sendCall(back);
+        Call back = new MigrateFileCallN2S(rawMigrateFiles);
+        sendCall(back);
     }
 }

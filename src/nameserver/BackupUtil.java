@@ -112,12 +112,12 @@ public class BackupUtil
             {
                 writer = new BufferedWriter(new FileWriter(imageFilePath));
 
-                for (Entry<String, Map<String, Long>> e : meta
-                    .getDirectoryList().entrySet())
+                for (Entry<String, Map<String, String>> e : meta
+                    .getValidDirectoryList().entrySet())
                 {
                     writer.write(e.getKey() + SEPERATOR + e.getValue().size());
                     writer.newLine();
-                    for (Entry<String, Long> en : e.getValue().entrySet())
+                    for (Entry<String, String> en : e.getValue().entrySet())
                     {
                         writer.write(SEPERATOR + en.getKey() + SEPERATOR
                             + en.getValue());

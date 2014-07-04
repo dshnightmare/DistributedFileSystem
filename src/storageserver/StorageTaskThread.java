@@ -1,9 +1,9 @@
 package storageserver;
 
 import common.call.Call;
-import common.thread.TaskThread;
+import common.task.Task;
 
-public class StorageTaskThread extends TaskThread
+public class StorageTaskThread extends Task
 {
 	private Call call;
 	private Storage storage;
@@ -12,14 +12,14 @@ public class StorageTaskThread extends TaskThread
     	if(call == null || storage == null)
     		return;
     	switch (call.getType()) {
-		case ADD_FILE_SS:
-			// TODO 
-			DataReciever reciever = new DataReciever();
-			break;
-		case GET_FILE_SS:
-			//TODO
-			DataSender sender = new DataSender();
-			break;
+//		case ADD_FILE_SS:
+//			// TODO 
+//			DataReciever reciever = new DataReciever();
+//			break;
+//		case GET_FILE_SS:
+//			//TODO
+//			DataSender sender = new DataSender();
+//			break;
 		default:
 			break;
 		}

@@ -5,24 +5,24 @@ import java.util.concurrent.TimeUnit;
 import common.call.Call;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskLease;
-import common.thread.TaskThread;
-import common.thread.TaskThreadMonitor;
+import common.task.TaskLease;
+import common.task.Task;
+import common.task.TaskMonitor;
 import junit.framework.TestCase;
 
 public class TestTaskMonitor
     extends TestCase
 {
-    private static TaskThreadMonitor monitor;
+    private static TaskMonitor monitor;
 
-    private static TaskThread taskA;
+    private static Task taskA;
 
-    private static TaskThread taskB;
+    private static Task taskB;
 
     @Override
     protected void setUp()
     {
-        monitor = TaskThreadMonitor.getInstance();
+        monitor = new TaskMonitor();
         monitor.addListener(new TaskEventListener()
         {
             @Override
@@ -38,7 +38,7 @@ public class TestTaskMonitor
 
     public void testStartMonitoring()
     {
-        taskA = new TaskThread(1)
+        taskA = new Task(1)
         {
             @Override
             public void run()
@@ -71,10 +71,10 @@ public class TestTaskMonitor
         };
         taskA.setLease(new TaskLease(3000));
         taskA.renewLease();
-        monitor.addThread(taskA);
+        monitor.monitor(taskA);
         new Thread(taskA).start();
         
-        taskB = new TaskThread(2)
+        taskB = new Task(2)
         {
             @Override
             public void run()
@@ -106,7 +106,7 @@ public class TestTaskMonitor
             }
         };
         taskB.setLease(new TaskLease(7000));
-        monitor.addThread(taskB);
+        monitor.monitor(taskB);
         new Thread(taskB).start();
         
         try

@@ -6,105 +6,125 @@ import java.net.Socket;
 
 import common.network.ClientConnector;
 import common.network.XConnector;
-import common.call.AddFileCallC2N;
-import common.call.AddFileCallN2C;
 import common.call.Call;
-import common.call.FinishCall;
-import common.thread.TaskThread;
+import common.call.c2n.AddFileCallC2N;
+import common.call.c2n.FinishCallC2N;
+import common.call.n2c.AddFileCallN2C;
+import common.task.Task;
 import common.util.IdGenerator;
 import common.util.Log;
 
-public class CAddFileTask 
-	extends TaskThread{
-	
-	/*
-	 * get connection with storage server
-	 */
-	private XConnector xConnector;
-	private Socket storageSocket;
-	private DataOutputStream out;
-	
-	//wait for the ns to return the call
-	private AddFileCallN2C call;
-	private long taskId;
-	
-	private Object waitor = new Object();
-	
-	private String filepath;
-	private String filename;
+public class CAddFileTask
+    extends Task
+{
 
-	public CAddFileTask(long tid, String _path, String _name) {
-		super(tid);
-		xConnector = XConnector.getInstance();
-		filepath = _path;
-		filename = _name;
-		taskId = IdGenerator.getInstance().getLongId().longValue();
-	}
+    /*
+     * get connection with storage server
+     */
+    private XConnector xConnector;
 
-	@Override
-	public void handleCall(Call call) {
-		if(call.getClientTaskId() != taskId){
-			return;
-		}
-		if (call.getType() == Call.Type.ADD_FILE_N2C) {
-			this.call = (AddFileCallN2C) call;
-			synchronized (waitor)
+    private Socket storageSocket;
+
+    private DataOutputStream out;
+
+    // wait for the ns to return the call
+    private AddFileCallN2C call;
+
+    private Object waitor = new Object();
+
+    private String filepath;
+
+    private String filename;
+    
+    private long remoteTaskId;
+
+    public CAddFileTask(long tid, String _path, String _name)
+    {
+        super(tid);
+        xConnector = XConnector.getInstance();
+        filepath = _path;
+        filename = _name;
+    }
+
+    @Override
+    public void handleCall(Call call)
+    {
+        if (call.getToTaskId() != getTaskId())
+        {
+            return;
+        }
+        if (call.getType() == Call.Type.ADD_FILE_N2C)
+        {
+            this.call = (AddFileCallN2C) call;
+            this.remoteTaskId = call.getFromTaskId();
+            synchronized (waitor)
             {
-				waitor.notify();
+                waitor.notify();
             }
-		}
-		else {
-			Log.print("Fatal error: call type dismatch.");
-		}
-	}
+        }
+        else
+        {
+            Log.print("Fatal error: call type dismatch.");
+        }
+    }
 
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		
-		AddFileCallC2N callC2N = new AddFileCallC2N(taskId
-				, filepath, filename);
-		ClientConnector.getInstance().sendCall(callC2N);
-		ClientConnector.getInstance().addListener(this);
-		
-		try {
-			synchronized (waitor)
+    @Override
+    public void run()
+    {
+        // TODO Auto-generated method stub
+
+        AddFileCallC2N callC2N = new AddFileCallC2N(filepath, filename);
+        callC2N.setFromTaskId(getTaskId());
+        ClientConnector.getInstance().sendCall(callC2N);
+        ClientConnector.getInstance().addListener(this);
+
+        try
+        {
+            synchronized (waitor)
             {
-				waitor.wait();
+                waitor.wait();
             }
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		if(call.getLocations().size() == 0){
-			Log.print("Fatal error! No storage server returned");
-			Log.debug(""+call.getTaskId()+" "+call.getClientTaskId());
-			FinishCall finishCall = new FinishCall(call.getTaskId());
-			ClientConnector.getInstance().sendCall(finishCall);
-			return;
-		}
-		
-		String location = call.getLocations().get(0);
-		storageSocket = xConnector.getSocket(location);
-		
-		try {
-			out = new DataOutputStream(storageSocket.getOutputStream());
-			out.writeByte(XConnector.Type.OP_WRITE_BLOCK);
-			// TODO get file -> id
-			out.writeUTF(call.getFileId());
-			
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+        }
+        catch (InterruptedException e1)
+        {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
-	@Override
-	public void release() {
-		// TODO Auto-generated method stub
-		
-	}
+        if (call.getLocations().size() == 0)
+        {
+            Log.print("Fatal error! No storage server returned");
+            Log.debug("" + call.getFromTaskId() + " " + call.getToTaskId());
+            FinishCallC2N finishCall = new FinishCallC2N();
+            finishCall.setToTaskId(remoteTaskId);
+            finishCall.setFromTaskId(getTaskId());
+            ClientConnector.getInstance().sendCall(finishCall);
+            return;
+        }
+
+        String location = call.getLocations().get(0);
+        storageSocket = xConnector.getSocket(location);
+
+        try
+        {
+            out = new DataOutputStream(storageSocket.getOutputStream());
+            out.writeByte(XConnector.Type.OP_WRITE_BLOCK);
+            // TODO get file -> id
+            out.writeUTF(call.getFileId());
+
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void release()
+    {
+        // TODO Auto-generated method stub
+
+    }
 
 }

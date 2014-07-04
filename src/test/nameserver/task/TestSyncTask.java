@@ -6,15 +6,17 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 import nameserver.meta.File;
+import nameserver.meta.Meta;
+import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import nameserver.task.SyncTask;
+import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.network.XConnector;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.SyncCallN2S;
-import common.call.SyncCallS2N;
-import common.thread.TaskThread;
+import common.call.n2s.SyncCallN2S;
+import common.call.s2n.SyncCallS2N;
+import common.task.Task;
 import common.util.Configuration;
 
 public class TestSyncTask
@@ -22,7 +24,7 @@ public class TestSyncTask
 {
     private static ServerConnector NConnector;
 
-    private static XConnector SConnector;
+    private static ClientConnector SConnector;
 
     @Override
     protected void setUp()
@@ -36,7 +38,7 @@ public class TestSyncTask
         {
             e.printStackTrace();
         }
-        SConnector = XConnector.getInstance();
+        SConnector = ClientConnector.getInstance();
         SConnector.addListener(new SCallListener());
         NConnector.addListener(new NCallListener());
     }
@@ -44,12 +46,13 @@ public class TestSyncTask
     public void testTask()
     {
         File file = new File("b", 1);
-        Storage storage = new Storage(1, "localhost");
-        storage.addFile(file);
+        Storage storage = new Storage("localhost");
+        Status.getInstance().addStorage(storage);
+        Meta.getInstance().addFile("/a/", file);
 
-        List<Long> files = new ArrayList<Long>();
-        files.add((long) 1);
-        files.add((long) 2);
+        List<String> files = new ArrayList<String>();
+        files.add("1_0");
+        files.add("2_0");
         SyncCallS2N call = new SyncCallS2N("localhost", files);
 
         SConnector.sendCall(call);
@@ -78,7 +81,7 @@ public class TestSyncTask
             System.out.println("<---: " + call.getType());
             if (Call.Type.SYNC_S2N == call.getType())
             {
-                TaskThread task =
+                Task task =
                     new SyncTask(1, call, NConnector, Configuration
                         .getInstance().getInteger(Configuration.DUPLICATE_KEY));
                 new Thread(task).start();
@@ -98,8 +101,8 @@ public class TestSyncTask
             {
                 SyncCallN2S c = (SyncCallN2S) call;
                 System.out.println("Sync file list:");
-                for (Long l : c.getFiles())
-                    System.out.println(l);
+                for (String id : c.getFiles())
+                    System.out.println(id);
             }
         }
     }

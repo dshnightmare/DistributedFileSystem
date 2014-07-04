@@ -8,16 +8,15 @@ import java.util.Map;
 
 import client.task.CAddFileTask;
 import client.task.CGetFileTask;
-
 import common.network.ClientConnector;
-import common.call.AddFileCallC2N;
 import common.call.Call;
 import common.call.CallListener;
+import common.call.c2n.AddFileCallC2N;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskLease;
-import common.thread.TaskThread;
-import common.thread.TaskThreadMonitor;
+import common.task.TaskLease;
+import common.task.Task;
+import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.IdGenerator;
 import common.util.Log;
@@ -30,15 +29,15 @@ public class ClientCMD
 	private Configuration config;
 	private String usage;
 	
-	private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
-	private TaskThreadMonitor taskMonitor;
+	private Map<Long, Task> tasks = new HashMap<Long, Task>();
+	private TaskMonitor taskMonitor;
 	
 	public ClientCMD(){
 		connector = ClientConnector.getInstance();
 		config = Configuration.getInstance();
 		usage = config.getString("usage");
 		
-		taskMonitor = TaskThreadMonitor.getInstance();
+		taskMonitor = new TaskMonitor();
 		taskMonitor.addListener(this);
 	}
 	
@@ -52,7 +51,7 @@ public class ClientCMD
 				String[] args = inputLine.split(" ");
 				String cmdString = args[0];
 				
-				TaskThread task = null;
+				Task task = null;
 				
 				if(cmdString.toLowerCase().equals("addfile")){
 					if (args.length != 3) {
@@ -86,7 +85,7 @@ public class ClientCMD
 	                    tasks.put(task.getTaskId(), task);
 	                }
 
-	                taskMonitor.addThread(task);
+	                taskMonitor.monitor(task);
 	                new Thread(task).start();
 				}
 			} catch (IOException e) {

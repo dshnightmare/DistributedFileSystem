@@ -9,23 +9,17 @@ import java.util.concurrent.TimeUnit;
 import nameserver.meta.File;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
-import nameserver.task.AddFileTask;
-import nameserver.task.AppendFileTask;
 import nameserver.task.HeartbeatTask;
-import nameserver.task.MoveFileTask;
-import nameserver.task.RemoveFileTask;
-import nameserver.task.SyncTask;
+import nameserver.task.TaskFactory;
 import common.network.ServerConnector;
-import common.call.AbortCall;
 import common.call.Call;
 import common.call.CallListener;
+import common.call.n2c.AbortCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskLease;
-import common.thread.TaskThread;
-import common.thread.TaskThreadMonitor;
-import common.util.Configuration;
-import common.util.IdGenerator;
+import common.task.TaskExecutor;
+import common.task.Task;
+import common.task.TaskMonitor;
 import common.util.Logger;
 
 /**
@@ -50,28 +44,30 @@ public class NameServer
 
     private static final Logger logger = Logger.getLogger(NameServer.class);
 
-    private TaskThreadMonitor taskMonitor;
+    private TaskMonitor monitor = new TaskMonitor();
 
     private ServerConnector connector = ServerConnector.getInstance();
 
-    private Map<Long, TaskThread> tasks = new HashMap<Long, TaskThread>();
+    private Map<Long, Task> tasks = new HashMap<Long, Task>();
+
+    private TaskExecutor executor = new TaskExecutor();
 
     private boolean pause = false;
-    
+
     private boolean initialized = false;
 
     private NameServer()
     {
-        taskMonitor = TaskThreadMonitor.getInstance();
-        taskMonitor.addListener(this);
+        monitor.addListener(this);
         connector.addListener(this);
     }
-    
+
     public void initilize()
     {
         if (initialized)
         {
-            logger.error("NameServer has been initialized before, you can't do it twice.");
+            logger
+                .error("NameServer has been initialized before, you can't do it twice.");
         }
         else
         {
@@ -92,14 +88,15 @@ public class NameServer
     {
         logger.info("NameServer received a call: " + call.getType());
 
-        TaskThread task = null;
-        Configuration conf = Configuration.getInstance();
+        Task task = null;
+        long localTaskId = call.getToTaskId();
+        long remoteTaskId = call.getFromTaskId();
 
         if (!isNewCall(call))
         {
-            if (taskExisted(call.getTaskId()))
+            if (taskExisted(call.getToTaskId()))
             {
-                tasks.get(call.getTaskId()).handleCall(call);
+                tasks.get(call.getToTaskId()).handleCall(call);
             }
             else
             {
@@ -111,77 +108,25 @@ public class NameServer
             if (pause)
             {
                 Call back =
-                    new AbortCall(-1,
+                    new AbortCallN2C(
                         "Nameserver is maintaining, please try later.");
+                back.setFromTaskId(localTaskId);
+                back.setToTaskId(remoteTaskId);
                 connector.sendCall(back);
                 return;
             }
 
-            long tid = IdGenerator.getInstance().getLongId();
-
-            if (Call.Type.ADD_FILE_C2N == call.getType())
-            {
-                task =
-                    new AddFileTask(tid, call, connector,
-                        conf.getInteger(Configuration.DUPLICATE_KEY));
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
-            }
-            else if (Call.Type.APPEND_FILE_C2N == call.getType())
-            {
-                task = new AppendFileTask(tid, call, connector);
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
-            }
-            else if (Call.Type.MOVE_FILE_C2N == call.getType())
-            {
-                task = new MoveFileTask(tid, call, connector);
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
-            }
-            else if (Call.Type.REMOVE_FILE_C2N == call.getType())
-            {
-                task = new RemoveFileTask(tid, call, connector);
-                task.setLease(new TaskLease(conf
-                    .getLong(Configuration.LEASE_PERIOD_KEY)));
-            }
-            else if (Call.Type.SYNC_S2N == call.getType())
-            {
-                task =
-                    new SyncTask(tid, call, connector,
-                        conf.getInteger(Configuration.DUPLICATE_KEY));
-                new Thread(task).start();
-                task = null;
-            }
-            else if (Call.Type.REGISTRATION_S2N == call.getType())
-            {
-                // Heartbeat task doesn't need lease.
-                task =
-                    new HeartbeatTask(tid, call, connector,
-                        conf.getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
-                new Thread(task).start();
-                task = null;
-            }
-
-            // Heartbeat task and Sync task won't be put into tasks. They don't
-            // need to be monitored.
-            if (null != task)
-            {
-                synchronized (tasks)
-                {
-                    tasks.put(tid, task);
-                }
-
-                taskMonitor.addThread(task);
-                new Thread(task).start();
-            }
+            task = TaskFactory.createTask(call);
+            tasks.put(task.getTaskId(), task);
+            executor.executeTask(task);
+            monitor.monitor(task);
         }
     }
 
     @Override
     public void handle(TaskEvent event)
     {
-        TaskThread task = event.getTaskThread();
+        Task task = event.getTaskThread();
         tasks.remove(task);
 
         if (event.getType() == TaskEvent.Type.TASK_ABORTED)
@@ -235,7 +180,7 @@ public class NameServer
 
     private boolean isNewCall(Call call)
     {
-        return call.getTaskId() < 0;
+        return call.getToTaskId() < 0;
     }
 
     private boolean taskExisted(long tid)
@@ -265,7 +210,7 @@ public class NameServer
 
         backup.writeBackupImage();
         backup.readBackupLog();
-        
+
         pause = false;
     }
 }

@@ -7,57 +7,55 @@ import nameserver.meta.File;
 import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import common.network.Connector;
-import common.call.AbortCall;
 import common.call.Call;
-import common.call.SyncCallN2S;
-import common.call.SyncCallS2N;
-import common.thread.TaskThread;
+import common.call.n2s.SyncCallN2S;
+import common.call.s2n.SyncCallS2N;
+import common.util.Logger;
 
 public class SyncTask
-    extends TaskThread
+    extends NameServerTask
 {
+    private final static Logger logger = Logger.getLogger(SyncTask.class);
+
     private String address;
 
-    private String initiator;
-
-    private Connector connector;
-
-    private List<Long> files;
+    private List<String> files;
 
     private int duplicate;
 
     public SyncTask(long tid, Call call, Connector connector, int duplicate)
     {
-        super(tid);
+        super(tid, call, connector);
         SyncCallS2N c = (SyncCallS2N) call;
         this.address = c.getAddress();
-        this.initiator = c.getInitiator();
         this.files = c.getFiles();
-        this.connector = connector;
         this.duplicate = duplicate;
     }
 
     @Override
     public void run()
     {
+        logger.info("SyncTask started.");
+
         synchronized (Meta.getInstance())
         {
             if (!storageExists())
             {
                 sendAbortCall("Task aborted, unidentified storage server.");
+                setFinish();
             }
             else
             {
-                List<Long> removeList = new ArrayList<Long>();
-                for (Long l : files)
+                List<String> removeList = new ArrayList<String>();
+                for (String id : files)
                 {
-                    File file = Meta.getInstance().getFile(l);
+                    File file = Meta.getInstance().getFile(id);
                     if (null == file)
-                        removeList.add(l);
+                        removeList.add(id);
                     else
                     {
                         if (file.getLocationsCount() > duplicate)
-                            removeList.add(l);
+                            removeList.add(id);
                         else
                             file.addLocation(Status.getInstance().getStorage(
                                 address));
@@ -72,6 +70,7 @@ public class SyncTask
     @Override
     public void release()
     {
+        setDead();
     }
 
     @Override
@@ -79,26 +78,14 @@ public class SyncTask
     {
     }
 
-    private void sendAbortCall(String reason)
-    {
-        Call back = new AbortCall(getTaskId(), reason);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-        release();
-        setFinish();
-    }
-
     private boolean storageExists()
     {
         return Status.getInstance().contains(address);
     }
 
-    private void sendResponseCall(List<Long> removeList)
+    private void sendResponseCall(List<String> removeList)
     {
-
         Call back = new SyncCallN2S(removeList);
-        back.setInitiator(initiator);
-        back.setTaskId(getTaskId());
-        connector.sendCall(back);
+        sendCall(back);
     }
 }

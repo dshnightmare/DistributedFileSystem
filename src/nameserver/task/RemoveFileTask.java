@@ -3,15 +3,12 @@ package nameserver.task;
 import nameserver.BackupUtil;
 import nameserver.meta.Meta;
 import common.network.Connector;
-import common.call.AbortCall;
 import common.call.Call;
-import common.call.FinishCall;
-import common.call.RemoveFileCallC2N;
-import common.thread.TaskThread;
+import common.call.c2n.RemoveFileCallC2N;
 import common.util.Logger;
 
 public class RemoveFileTask
-    extends TaskThread
+    extends NameServerTask
 {
     private final static Logger logger = Logger.getLogger(RemoveFileTask.class);
 
@@ -19,21 +16,12 @@ public class RemoveFileTask
 
     private String fileName;
 
-    private Connector connector;
-
-    private String initiator;
-
-    private long clientTaskId;
-
     public RemoveFileTask(long tid, Call call, Connector connector)
     {
-        super(tid);
+        super(tid, call, connector);
         RemoveFileCallC2N c = (RemoveFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
-        this.initiator = c.getInitiator();
-        this.connector = connector;
-        this.clientTaskId = call.getClientTaskId();
     }
 
     @Override
@@ -46,6 +34,7 @@ public class RemoveFileTask
             if (!fileExists())
             {
                 sendAbortCall("Task aborted, file does not exist.");
+                setFinish();
             }
             else
             {
@@ -58,7 +47,6 @@ public class RemoveFileTask
 
                 Meta.getInstance().removeFile(dirName, fileName);
                 setFinish();
-                // sendFinishCall();
             }
         }
     }
@@ -66,15 +54,16 @@ public class RemoveFileTask
     @Override
     public void release()
     {
+        setDead();
     }
 
     @Override
     public void handleCall(Call call)
     {
-        if (call.getTaskId() != getTaskId())
+        if (call.getToTaskId() != getTaskId())
             return;
 
-        if (call.getType() == Call.Type.LEASE)
+        if (call.getType() == Call.Type.LEASE_C2N)
         {
             renewLease();
             return;
@@ -84,23 +73,5 @@ public class RemoveFileTask
     private boolean fileExists()
     {
         return Meta.getInstance().containFile(dirName, fileName);
-    }
-
-    private void sendAbortCall(String reason)
-    {
-        Call back = new AbortCall(getTaskId(), reason);
-        back.setClientTaskId(clientTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-        release();
-        setFinish();
-    }
-
-    private void sendFinishCall()
-    {
-        Call back = new FinishCall(getTaskId());
-        back.setClientTaskId(clientTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
     }
 }

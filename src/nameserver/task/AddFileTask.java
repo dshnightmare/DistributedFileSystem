@@ -11,33 +11,45 @@ import nameserver.meta.Meta;
 import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import common.network.Connector;
-import common.call.AbortCall;
-import common.call.AddFileCallC2N;
-import common.call.AddFileCallN2C;
 import common.call.Call;
-import common.call.FinishCall;
-import common.thread.TaskThread;
+import common.call.c2n.AddFileCallC2N;
+import common.call.n2c.AddFileCallN2C;
 import common.util.IdGenerator;
 import common.util.Logger;
 
+/**
+ * Task of adding file.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class AddFileTask
-    extends TaskThread
+    extends NameServerTask
 {
+    /**
+     * Logger.
+     */
     private final static Logger logger = Logger.getLogger(AddFileTask.class);
 
+    /**
+     * Duplicate number of file.
+     */
     private int duplicate;
 
+    /**
+     * File directory name.
+     */
     private String dirName;
 
+    /**
+     * File name.
+     */
     private String fileName;
 
+    /**
+     * Sync object which is used for synchronizing.
+     */
     private Object syncRoot = new Object();
-
-    private Connector connector;
-
-    private String initiator;
-
-    private long clientTaskId;
 
     /**
      * Indicates whether the directory is already existed before adding this
@@ -46,20 +58,31 @@ public class AddFileTask
      */
     private boolean hasDir = false;
 
+    /**
+     * The file that we focus on.
+     */
     private File file = null;
 
+    /**
+     * Construction method.
+     * 
+     * @param tid
+     * @param call
+     * @param connector
+     * @param duplicate
+     */
     public AddFileTask(long tid, Call call, Connector connector, int duplicate)
     {
-        super(tid);
+        super(tid, call, connector);
         AddFileCallC2N c = (AddFileCallC2N) call;
         this.dirName = c.getDirName();
         this.fileName = c.getFileName();
-        this.connector = connector;
-        this.initiator = c.getInitiator();
         this.duplicate = duplicate;
-        this.clientTaskId = call.getClientTaskId();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -71,6 +94,7 @@ public class AddFileTask
             if (fileExists())
             {
                 sendAbortCall("Task aborted, there has been a directory/file with the same name.");
+                setFinish();
                 return;
             }
             else
@@ -93,6 +117,9 @@ public class AddFileTask
 
         waitUntilTaskFinish();
 
+        if (isDead())
+            return;
+
         synchronized (meta)
         {
             logger.info("AddFileTask " + getTaskId() + " commit.");
@@ -100,33 +127,46 @@ public class AddFileTask
             commit();
             file.unlockWrite();
             setFinish();
-//            sendFinishCall();
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {
+        setDead();
+
+        synchronized (syncRoot)
+        {
+            syncRoot.notify();
+        }
+
         synchronized (Meta.getInstance())
         {
             removeFileFromMeta();
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {
-        if (call.getTaskId() != getTaskId())
+        if (call.getToTaskId() != getTaskId())
             return;
 
-        if (call.getType() == Call.Type.LEASE)
+        if (call.getType() == Call.Type.LEASE_C2N)
         {
             renewLease();
             return;
         }
 
-        if (call.getType() == Call.Type.FINISH)
+        if (call.getType() == Call.Type.FINISH_C2N)
         {
+            logger.info("AddFileTask " + getTaskId() + " HOHO.");
             synchronized (syncRoot)
             {
                 syncRoot.notify();
@@ -135,6 +175,11 @@ public class AddFileTask
         }
     }
 
+    /**
+     * Test whether the file that client wants to add has existed.
+     * 
+     * @return
+     */
     private boolean fileExists()
     {
         if (Meta.getInstance().containDirectory(dirName))
@@ -151,6 +196,9 @@ public class AddFileTask
             return false;
     }
 
+    /**
+     * Add file into meta structure.
+     */
     private void addFileToMeta()
     {
         Meta.getInstance().addFile(dirName, file);
@@ -162,6 +210,9 @@ public class AddFileTask
             s.addFile(file);
     }
 
+    /**
+     * Remove file from meta structure.
+     */
     private void removeFileFromMeta()
     {
         Meta.getInstance().removeFile(dirName, fileName);
@@ -175,6 +226,9 @@ public class AddFileTask
             s.removeFile(file);
     }
 
+    /**
+     * Wait until task has finished.
+     */
     private void waitUntilTaskFinish()
     {
         try
@@ -190,39 +244,26 @@ public class AddFileTask
         }
     }
 
-    private void sendAbortCall(String reason)
-    {
-        Call back = new AbortCall(getTaskId(), reason);
-        back.setClientTaskId(clientTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-        release();
-        setFinish();
-    }
-
+    /**
+     * Send response call back to client.
+     */
     private void sendResponseCall()
     {
         List<Storage> storages = file.getLocations();
         List<String> locations = new ArrayList<String>();
         for (Storage s : storages)
-            locations.add(s.getAddress());
+            locations.add(s.getId());
 
         String fileId = file.getId() + "-" + file.getVersion();
         Call back = new AddFileCallN2C(fileId, locations);
-        back.setClientTaskId(clientTaskId);
-        back.setInitiator(initiator);
-        back.setTaskId(getTaskId());
-        connector.sendCall(back);
+        sendCall(back);
     }
 
-    private void sendFinishCall()
-    {
-        Call back = new FinishCall(getTaskId());
-        back.setClientTaskId(clientTaskId);
-        back.setInitiator(initiator);
-        connector.sendCall(back);
-    }
-
+    /**
+     * Commit task.
+     * <p>
+     * Once a task is committed, all works it has done won't be lost.
+     */
     private void commit()
     {
         Directory dir = Meta.getInstance().getDirectory(dirName);

@@ -13,129 +13,105 @@ import common.network.ClientConnector;
 import common.network.ServerConnector;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.FinishCall;
-import common.call.GetFileCallC2N;
-import common.call.GetFileCallN2C;
+import common.call.c2n.FinishCallC2N;
+import common.call.c2n.GetFileCallC2N;
+import common.call.n2c.GetFileCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.task.Task;
 
-public class TestGetFileTask extends TestCase
-{
-private static TaskThread task;
-    
-    private static ServerConnector NConnector;
+public class TestGetFileTask extends TestCase {
+	private static Task task;
 
-    private static ClientConnector CConnector;
+	private static ServerConnector NConnector;
 
-    @Override
-    protected void setUp()
-    {
-        NConnector = ServerConnector.getInstance();
-        try
-        {
-            TimeUnit.SECONDS.sleep(1);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-        CConnector = ClientConnector.getInstance();
-        CConnector.addListener(new CCallListener());
-        NConnector.addListener(new NCallListener());
-    }
+	private static ClientConnector CConnector;
 
-    public void testTask()
-    {
-        Directory dir = new Directory("/a/");
-        File file = new File("b", 1);
-        Storage storage = new Storage(1, "localhost");
+	@Override
+	protected void setUp() {
+		NConnector = ServerConnector.getInstance();
+		try {
+			TimeUnit.SECONDS.sleep(1);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		CConnector = ClientConnector.getInstance();
+		CConnector.addListener(new CCallListener());
+		NConnector.addListener(new NCallListener());
+	}
 
-        file.addLocation(storage);
-        storage.addFile(file);
-        dir.addFile(file);
-        Meta.getInstance().addDirectory(dir);
-        Status.getInstance().addStorage(storage);
+	public void testTask() {
+		Directory dir = new Directory("/a/");
+		File file = new File("b", 1);
+		Storage storage = new Storage("localhost");
 
-        dir = Meta.getInstance().getDirectory("/a/");
-        assertNotNull(dir);
+		file.addLocation(storage);
+		storage.addFile(file);
+		dir.addFile(file);
+		Meta.getInstance().addDirectory(dir);
+		Status.getInstance().addStorage(storage);
 
-        GetFileCallC2N call = new GetFileCallC2N(1, "/a/", "b");
-        CConnector.sendCall(call);
+		dir = Meta.getInstance().getDirectory("/a/");
+		assertNotNull(dir);
 
-        try
-        {
-            TimeUnit.SECONDS.sleep(1);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
+		GetFileCallC2N call = new GetFileCallC2N("/a/", "b");
+		CConnector.sendCall(call);
 
-        dir = Meta.getInstance().getDirectory("/a/");
-        assertNotNull(dir);
-    }
+		try {
+			TimeUnit.SECONDS.sleep(1);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
-    @Override
-    protected void tearDown()
-    {
-    }
+		dir = Meta.getInstance().getDirectory("/a/");
+		assertNotNull(dir);
+	}
 
-    private class NCallListener
-        implements CallListener
-    {
-        @Override
-        public void handleCall(Call call)
-        {
-            System.out.println("<---: " + call.getType());
-            if (Call.Type.GET_FILE_C2N == call.getType())
-            {
-                task = new GetFileTask(1, call, NConnector);
-                task.addListener(new TaskListener());
-                new Thread(task).start();
-            }
-            else if (Call.Type.FINISH == call.getType())
-            {
-                task.handleCall(call);
-            }
-        }
-    }
+	@Override
+	protected void tearDown() {
+	}
 
-    private class CCallListener
-        implements CallListener
-    {
+	private class NCallListener implements CallListener {
+		@Override
+		public void handleCall(Call call) {
+			System.out.println("<---: " + call.getType());
+			if (Call.Type.GET_FILE_C2N == call.getType()) {
+				task = new GetFileTask(1, call, NConnector);
+				task.addListener(new TaskListener());
+				new Thread(task).start();
+			} else if (Call.Type.FINISH_C2N == call.getType()) {
+				task.handleCall(call);
+			}
+		}
+	}
 
-        @Override
-        public void handleCall(Call call)
-        {
-            System.out.println("--->: " + call.getType());
-            if (Call.Type.GET_FILE_N2C == call.getType())
-            {
-                GetFileCallN2C c = (GetFileCallN2C) call;
-                System.out.println("task id: " + c.getTaskId());
-                System.out.println("call type: " + c.getType());
-                System.out.println("initiator: " + c.getInitiator());
-                System.out.print("location: ");
-                for (String l : c.getLocations())
-                    System.out.print(l + " ");
-                System.out.println();
+	private class CCallListener implements CallListener {
 
-                FinishCall ack = new FinishCall(call.getTaskId());
-                CConnector.sendCall(ack);
-            }
-        }
-    }
+		@Override
+		public void handleCall(Call call) {
+			System.out.println("--->: " + call.getType());
+			if (Call.Type.GET_FILE_N2C == call.getType()) {
+				GetFileCallN2C c = (GetFileCallN2C) call;
+				System.out.println("call type: " + c.getType());
+				System.out.print("location: ");
+				for (String l : c.getLocations())
+					System.out.print(l + " ");
+				System.out.println();
 
-    private class TaskListener
-        implements TaskEventListener
-    {
+				FinishCallC2N ack = new FinishCallC2N();
+				ack.setToTaskId(1);
+				CConnector.sendCall(ack);
+			}
+		}
+	}
 
-        @Override
-        public void handle(TaskEvent event)
-        {
-            System.out.println("Task " + event.getTaskThread().getTaskId()
-                + " " + event.getType());
-        }
+	private class TaskListener implements TaskEventListener {
 
-    }
+		@Override
+		public void handle(TaskEvent event) {
+			System.out.println("Task " + event.getTaskThread().getTaskId()
+					+ " " + event.getType());
+		}
+
+	}
 }

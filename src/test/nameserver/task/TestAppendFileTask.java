@@ -11,19 +11,19 @@ import nameserver.meta.Storage;
 import nameserver.task.AppendFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
-import common.call.AppendFileCallC2N;
-import common.call.AppendFileCallN2C;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.FinishCall;
+import common.call.c2n.AppendFileCallC2N;
+import common.call.c2n.FinishCallC2N;
+import common.call.n2c.AppendFileCallN2C;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
-import common.thread.TaskThread;
+import common.task.Task;
 
 public class TestAppendFileTask
     extends TestCase
 {
-    private static TaskThread task;
+    private static Task task;
     
     private static ServerConnector NConnector;
 
@@ -50,7 +50,7 @@ public class TestAppendFileTask
     {
         Directory dir = new Directory("/a/");
         File file = new File("b", 1);
-        Storage storage = new Storage(1, "localhost");
+        Storage storage = new Storage("localhost");
 
         file.addLocation(storage);
         storage.addFile(file);
@@ -95,7 +95,7 @@ public class TestAppendFileTask
                 task.addListener(new TaskListener());
                 new Thread(task).start();
             }
-            else if (Call.Type.FINISH == call.getType())
+            else if (Call.Type.FINISH_C2N == call.getType())
             {
                 task.handleCall(call);
             }
@@ -113,15 +113,14 @@ public class TestAppendFileTask
             if (Call.Type.APPEND_FILE_N2C == call.getType())
             {
                 AppendFileCallN2C c = (AppendFileCallN2C) call;
-                System.out.println("task id: " + c.getTaskId());
                 System.out.println("call type: " + c.getType());
-                System.out.println("initiator: " + c.getInitiator());
                 System.out.print("location: ");
                 for (String l : c.getLocations())
                     System.out.print(l + " ");
                 System.out.println();
 
-                FinishCall ack = new FinishCall(call.getTaskId());
+                FinishCallC2N ack = new FinishCallC2N();
+                ack.setToTaskId(1);
                 CConnector.sendCall(ack);
             }
         }
