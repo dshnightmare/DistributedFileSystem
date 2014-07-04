@@ -34,14 +34,9 @@ public class GetDirectoryTask
     private String dirName;
 
     /**
-     * List of files that among this directory.
+     * Files and directories that among this directory.
      */
-    private List<String> fileList;
-
-    /**
-     * List of direcoties that among this directory.
-     */
-    private List<String> dirList;
+    private List<String> filesAndDirectories = new ArrayList<String>();
 
     /**
      * Construction method.
@@ -97,14 +92,11 @@ public class GetDirectoryTask
 
                 Directory dir = meta.getDirectory(dirName);
 
-                fileList = new ArrayList<String>();
-                dirList = new ArrayList<String>();
-
                 for (String fname : dir.getValidFileNameList().keySet())
-                    fileList.add(fname);
+                    filesAndDirectories.add(fname);
 
                 for (String dname : meta.getSubDirectoryName(dirName))
-                    dirList.add(dname);
+                    filesAndDirectories.add(dname);
 
                 logger.info("GetDirectoryTask " + getTaskId() + " commit.");
 
@@ -141,7 +133,7 @@ public class GetDirectoryTask
      */
     private void sendResponseCall()
     {
-        Call back = new GetDirectoryCallN2C(fileList, dirList);
+        Call back = new GetDirectoryCallN2C(filesAndDirectories);
         sendCall(back);
     }
 }
