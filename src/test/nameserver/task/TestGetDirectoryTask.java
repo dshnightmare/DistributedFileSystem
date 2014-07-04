@@ -54,20 +54,20 @@ public class TestGetDirectoryTask
         file = new File("f1", 1);
         file.setValid(true);
         file.addLocation(storage);
-        meta.addFile("/a/b/c/", file);
+        meta.addFile("/a/b/", file);
         file = new File("f2", 2);
         file.setValid(true);
         file.addLocation(storage);
-        meta.addFile("/a/b/d", file);
+        meta.addFile("/a/c/", file);
         file = new File("f3", 3);
         file.setValid(true);
         file.addLocation(storage);
-        meta.addFile("/a/", file);
+        meta.addFile("/", file);
 
         assertNotNull(meta.getDirectory("/a/"));
         assertNotNull(meta.getDirectory("/a/b/"));
 
-        GetDirectoryCallC2N call = new GetDirectoryCallC2N("/a/");
+        GetDirectoryCallC2N call = new GetDirectoryCallC2N("/");
         CConnector.sendCall(call);
 
         try
@@ -117,9 +117,9 @@ public class TestGetDirectoryTask
             {
                 GetDirectoryCallN2C c = (GetDirectoryCallN2C) call;
                 System.out.println("call type: " + c.getType());
-                System.out.println("filesAndDirectories: ");
+                System.out.println("filesAndDirectories:");
                 for (String l : c.getFilesAndDirectories())
-                    System.out.print(l + " ");
+                    System.out.print(l + ", ");
                 System.out.println();
             }
         }

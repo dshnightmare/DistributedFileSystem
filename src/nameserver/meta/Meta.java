@@ -351,6 +351,8 @@ public class Meta
         {
             if (dir.getName().matches(currentDirName + ".*/.+"))
                 continue;
+            if (dir.getName().matches(currentDirName))
+                continue;
             result.add(dir.getName().substring(currentDirName.length()));
         }
 
