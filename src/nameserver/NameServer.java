@@ -40,34 +40,48 @@ import common.util.Logger;
 public class NameServer
     implements TaskEventListener, CallListener
 {
-    // FIXME: It's not very suitable to use single pattern for name server, I
-    // should change it.
-    /**
-     * Single pattern instance.
-     */
-    private static NameServer instance = null;
-
     /**
      * Logger.
      */
     private static final Logger logger = Logger.getLogger(NameServer.class);
 
     /**
-     * 
+     * Task monitor, used to check task status.
      */
     private TaskMonitor monitor = new TaskMonitor();
 
+    /**
+     * Server connector, used to send/receive call to/from client and storage
+     * server.
+     */
     private ServerConnector connector = ServerConnector.getInstance();
 
+    /**
+     * Task list.
+     * <p>
+     * {taskId, task}
+     */
     private Map<Long, Task> tasks = new HashMap<Long, Task>();
 
+    /**
+     * Task executor.
+     */
     private TaskExecutor executor = new TaskExecutor();
 
+    /**
+     * When name server is pausing, it won't response for any new call.
+     */
     private boolean pause = false;
 
+    /**
+     * Determine whether name server has initiated.
+     */
     private boolean initialized = false;
 
-    private NameServer()
+    /**
+     * Construction method.
+     */
+    public NameServer()
     {
         monitor.addListener(this);
         connector.addListener(this);
@@ -84,14 +98,6 @@ public class NameServer
         {
             // TODO
         }
-    }
-
-    public synchronized static NameServer getInstance()
-    {
-        if (null == instance)
-            instance = new NameServer();
-
-        return instance;
     }
 
     @Override
