@@ -22,6 +22,7 @@ import common.task.Task;
 import common.task.TaskMonitor;
 import common.util.Logger;
 
+// TODO: Snapshot hasn't been added.
 /**
  * Name server implementation.
  * <p>
@@ -87,12 +88,19 @@ public class NameServer
         connector.addListener(this);
     }
 
+    /**
+     * Initializing method. Do some initializing job and check name server
+     * status.
+     * <p>
+     * <strong>Warning:</strong> It MUST be called before using
+     * <tt>NameServer</tt>.
+     */
     public void initilize()
     {
         if (initialized)
         {
             logger
-                .error("NameServer has been initialized before, you can't do it twice.");
+                .warn("NameServer has been initialized before, you can't do it twice.");
         }
         else
         {
@@ -100,6 +108,9 @@ public class NameServer
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized void handleCall(Call call)
     {
@@ -109,9 +120,10 @@ public class NameServer
         long localTaskId = call.getToTaskId();
         long remoteTaskId = call.getFromTaskId();
 
+        // TODO: It seems wired, I should refactor it.
         if (!isNewCall(call))
         {
-            if (taskExisted(call.getToTaskId()))
+            if (isTaskExisted(call.getToTaskId()))
             {
                 tasks.get(call.getToTaskId()).handleCall(call);
             }
@@ -140,6 +152,9 @@ public class NameServer
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handle(TaskEvent event)
     {
@@ -161,6 +176,11 @@ public class NameServer
         }
     }
 
+    /**
+     * Handle heartbeat event, which means some storage server has dead.
+     * 
+     * @param event
+     */
     private void handleHeartbeatFatal(TaskEvent event)
     {
         Storage storage =
@@ -195,16 +215,31 @@ public class NameServer
         }
     }
 
+    /**
+     * Test whether the coming call is new one.
+     * 
+     * @param call
+     * @return
+     */
     private boolean isNewCall(Call call)
     {
         return call.getToTaskId() < 0;
     }
 
-    private boolean taskExisted(long tid)
+    /**
+     * Test whether the specified task exists.
+     * 
+     * @param tid
+     * @return
+     */
+    private boolean isTaskExisted(long tid)
     {
         return tasks.containsKey(tid);
     }
 
+    /**
+     * Make an image snapshot.
+     */
     private synchronized void makeSnapshot()
     {
         pause = true;
