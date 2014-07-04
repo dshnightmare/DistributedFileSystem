@@ -21,6 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import common.util.Log;
 import common.util.WrapLayout;
 
 public class ClientWindow
@@ -33,8 +34,6 @@ public class ClientWindow
 	public JPanel filePanel;
 	//file item
 	public JPanel fileItem;
-	private ImageIcon dirIcon;
-	private ImageIcon fileIcon;
 	
 	//current directory
 	private String currentDirectory = "/a/b/c";
@@ -46,10 +45,6 @@ public class ClientWindow
 		frame.setLayout(new BorderLayout());
 		filePanel = new JPanel();
 		filePanel.setLayout(new WrapLayout(FlowLayout.LEFT, 10, 15));
-		
-		dirIcon = new ImageIcon("ico/folder.png");
-		fileIcon = new ImageIcon("ico/folder.png");
-
 		
 		List<String> fakeFileList = new ArrayList(Arrays.asList("1.txt", "b/", "c.rmvb")); 
 		for(String filename : fakeFileList){
@@ -67,10 +62,12 @@ public class ClientWindow
 				public void mouseClicked(MouseEvent e) {
 					// TODO double click: open directory
 					if(e.getClickCount() == 2){
-						if( ((ImageIcon)((JLabel)((JPanel)e.getSource()).getComponent(0)).getIcon()).getDescription().equals("dir"))
-						JOptionPane.showMessageDialog(frame, "go into direct "
-								+((JLabel)((JPanel)e.getSource()).getComponent(1)).getText());
-						//List<String> dirs = client.getDirectorySync(currentDirectory);	//will block here
+						JPanel item = (JPanel)e.getSource();
+						String pathString = currentDirectory+((JLabel)item.getComponent(1)).getText();
+						if( ((ImageIcon)((JLabel)item.getComponent(0)).getIcon()).getDescription().equals("dir"))
+						JOptionPane.showMessageDialog(frame, "go into direct "+pathString);
+						List<String> dirs = client.getDirectorySync(pathString);	//will block here
+						Log.debug(""+dirs.size());
 					}
 					else if (e.getClickCount() == 1) {
 						if(((JPanel)e.getSource()).getBackground() == Color.cyan){

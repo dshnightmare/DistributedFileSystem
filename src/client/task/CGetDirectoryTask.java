@@ -39,6 +39,11 @@ public class CGetDirectoryTask
 				netWaitor.notify();
 			}
 		}
+		else if (call.getType() == Call.Type.ABORT_N2C) {
+			synchronized (taskWaitor) {
+				taskWaitor.notify();
+			}
+		}
 		else {
             Log.error("Fatal error: call type dismatch.");
 		}
