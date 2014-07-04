@@ -64,9 +64,7 @@ public class TestHeartbeatTask
             e.printStackTrace();
         }
 
-        Call hcall =
-            new HeartbeatCallS2N("localhost",
-                new HashMap<String, List<String>>());
+        Call hcall = new HeartbeatCallS2N(new HashMap<String, List<String>>());
         hcall.setToTaskId(taskId);
         SConnector.sendCall(hcall);
 
@@ -79,7 +77,8 @@ public class TestHeartbeatTask
             e.printStackTrace();
         }
 
-        Storage storage = status.getStorage("localhost");
+        // We have only one storage.
+        Storage storage = status.getStorages().get(0);
         long timestamp1 = storage.getHearbeatTime();
         System.out.println("Timestamp1: " + timestamp1);
 
@@ -94,7 +93,8 @@ public class TestHeartbeatTask
             e.printStackTrace();
         }
 
-        storage = status.getStorage("localhost");
+        // We have only one storage.
+        storage = status.getStorages().get(0);
         long timestamp2 = storage.getHearbeatTime();
         System.out.println("Timestamp2: " + timestamp2);
         assertTrue(timestamp2 > timestamp1);
@@ -132,7 +132,11 @@ public class TestHeartbeatTask
         public void handleCall(Call call)
         {
             System.out.println("--->: " + call.getType());
-            if (Call.Type.MIGRATE_FILE_N2S == call.getType())
+            if (Call.Type.FINISH == call.getType())
+            {
+                System.out.println("Get finish call.");
+            }
+            else if (Call.Type.MIGRATE_FILE_N2S == call.getType())
             {
                 MigrateFileCallN2S c = (MigrateFileCallN2S) call;
                 for (Entry<String, List<String>> s : c.getFiles().entrySet())

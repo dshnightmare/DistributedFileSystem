@@ -75,8 +75,8 @@ public class HeartbeatTask
         }
 
         logger.info("New storage server registered.");
-        // As for registration, send a migration call to notify storage server.
-        sendMigrationCall();
+        // As for registration, send a finish call to notify storage server.
+        sendFinishCall();
 
         while (true)
         {
