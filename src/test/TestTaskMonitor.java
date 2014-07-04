@@ -71,7 +71,7 @@ public class TestTaskMonitor
         };
         taskA.setLease(new TaskLease(3000));
         taskA.renewLease();
-        monitor.monitor(taskA);
+        monitor.addTask(taskA);
         new Thread(taskA).start();
         
         taskB = new Task(2)
@@ -106,7 +106,7 @@ public class TestTaskMonitor
             }
         };
         taskB.setLease(new TaskLease(7000));
-        monitor.monitor(taskB);
+        monitor.addTask(taskB);
         new Thread(taskB).start();
         
         try
