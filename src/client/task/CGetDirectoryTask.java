@@ -66,10 +66,7 @@ public class CGetDirectoryTask
 		
 		//ret = callN2C.getDirectoryList();
 		// make sure the same ret location
-		for(String item : callN2C.getDirectoryList()){
-			ret.add(item);
-		}
-		for(String item : callN2C.getFileList()){
+		for(String item : callN2C.getFilesAndDirectories()){
 			ret.add(item);
 		}
 		synchronized (taskWaitor) {
