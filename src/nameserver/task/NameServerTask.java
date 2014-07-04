@@ -2,6 +2,7 @@ package nameserver.task;
 
 import common.call.Call;
 import common.call.all.AbortCall;
+import common.call.all.FinishCall;
 import common.network.Connector;
 import common.task.Task;
 
@@ -67,6 +68,14 @@ public abstract class NameServerTask
     protected void sendAbortCall(String reason)
     {
         sendCall(new AbortCall(reason));
+    }
+
+    /**
+     * Send finish call back to remote peer.
+     */
+    protected void sendFinishCall()
+    {
+        sendCall(new FinishCall());
     }
 
     /**
