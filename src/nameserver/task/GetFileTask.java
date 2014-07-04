@@ -13,19 +13,47 @@ import common.call.c2n.GetFileCallC2N;
 import common.call.n2c.GetFileCallN2C;
 import common.util.Logger;
 
+/**
+ * Task of getting file.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class GetFileTask
     extends NameServerTask
 {
+    /**
+     * Logger.
+     */
     private final static Logger logger = Logger.getLogger(GetFileTask.class);
 
+    /**
+     * File directory name.
+     */
     private String dirName;
 
+    /**
+     * File name.
+     */
     private String fileName;
 
+    /**
+     * Sync object which is used for synchronizing.
+     */
     private Object syncRoot = new Object();
 
+    /**
+     * The file that we focus on.
+     */
     private File file = null;
 
+    /**
+     * Construction method.
+     * 
+     * @param tid
+     * @param call
+     * @param connector
+     */
     public GetFileTask(long tid, Call call, Connector connector)
     {
         super(tid, call, connector);
@@ -34,6 +62,9 @@ public class GetFileTask
         this.fileName = c.getFileName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -80,6 +111,9 @@ public class GetFileTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {
@@ -91,6 +125,9 @@ public class GetFileTask
         file.unlockRead();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {
@@ -113,11 +150,19 @@ public class GetFileTask
         }
     }
 
+    /**
+     * Test whether the file that client wants to get exists.
+     * 
+     * @return
+     */
     private boolean fileExists()
     {
         return Meta.getInstance().containFile(dirName, fileName);
     }
 
+    /**
+     * Send response call back to client.
+     */
     private void sendResponseCall()
     {
         List<String> locations = new ArrayList<String>();
@@ -130,6 +175,9 @@ public class GetFileTask
         sendCall(back);
     }
 
+    /**
+     * Wait until task is finished.
+     */
     private void waitUntilTaskFinish()
     {
         try

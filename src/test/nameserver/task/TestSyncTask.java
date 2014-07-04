@@ -53,7 +53,7 @@ public class TestSyncTask
         List<String> files = new ArrayList<String>();
         files.add("1_0");
         files.add("2_0");
-        SyncCallS2N call = new SyncCallS2N("localhost", files);
+        SyncCallS2N call = new SyncCallS2N(files);
 
         SConnector.sendCall(call);
 

@@ -7,8 +7,23 @@ import common.task.TaskLease;
 import common.util.Configuration;
 import common.util.IdGenerator;
 
+/**
+ * A task factory.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class TaskFactory
 {
+    /**
+     * Create <tt>NameServerTask</tt>.
+     * <p>
+     * As for name server, we only care about some call, such as *_C2N and
+     * *_S2N.
+     * 
+     * @param call
+     * @return
+     */
     public static NameServerTask createTask(Call call)
     {
         final Connector connector = ServerConnector.getInstance();
@@ -16,7 +31,6 @@ public class TaskFactory
         final Configuration conf = Configuration.getInstance();
         NameServerTask task = null;
 
-        // Name server only care about call: *_C2N.
         switch (call.getType())
         {
         case ADD_DIRECTORY_C2N:

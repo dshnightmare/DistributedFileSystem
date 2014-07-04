@@ -12,26 +12,52 @@ import common.call.n2s.SyncCallN2S;
 import common.call.s2n.SyncCallS2N;
 import common.util.Logger;
 
+/**
+ * Task of synchronize file between storage server and name server.
+ * <p>
+ * Storage server sends sync call to name server, name server checks it and
+ * tells storage server which files are invalid and should be deleted.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class SyncTask
     extends NameServerTask
 {
+    /**
+     * Logger.
+     */
     private final static Logger logger = Logger.getLogger(SyncTask.class);
 
-    private String address;
-
+    /**
+     * The files that storage server has.
+     */
     private List<String> files;
 
+    /**
+     * The duplicate number of file.
+     */
     private int duplicate;
 
+    /**
+     * Construction method.
+     * 
+     * @param tid
+     * @param call
+     * @param connector
+     * @param duplicate
+     */
     public SyncTask(long tid, Call call, Connector connector, int duplicate)
     {
         super(tid, call, connector);
         SyncCallS2N c = (SyncCallS2N) call;
-        this.address = c.getAddress();
         this.files = c.getFiles();
         this.duplicate = duplicate;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -58,7 +84,7 @@ public class SyncTask
                             removeList.add(id);
                         else
                             file.addLocation(Status.getInstance().getStorage(
-                                address));
+                                getInitiator()));
                     }
                 }
                 sendResponseCall(removeList);
@@ -67,22 +93,38 @@ public class SyncTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {
         setDead();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {
     }
 
+    /**
+     * Test whether the storage is existed.
+     * 
+     * @return
+     */
     private boolean storageExists()
     {
-        return Status.getInstance().contains(address);
+        return Status.getInstance().contains(getInitiator());
     }
 
+    /**
+     * Send response call back to storage server.
+     * 
+     * @param removeList
+     */
     private void sendResponseCall(List<String> removeList)
     {
         Call back = new SyncCallN2S(removeList);

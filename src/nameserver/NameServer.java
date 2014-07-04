@@ -40,10 +40,21 @@ import common.util.Logger;
 public class NameServer
     implements TaskEventListener, CallListener
 {
+    // FIXME: It's not very suitable to use single pattern for name server, I
+    // should change it.
+    /**
+     * Single pattern instance.
+     */
     private static NameServer instance = null;
 
+    /**
+     * Logger.
+     */
     private static final Logger logger = Logger.getLogger(NameServer.class);
 
+    /**
+     * 
+     */
     private TaskMonitor monitor = new TaskMonitor();
 
     private ServerConnector connector = ServerConnector.getInstance();
@@ -119,7 +130,7 @@ public class NameServer
             task = TaskFactory.createTask(call);
             tasks.put(task.getTaskId(), task);
             executor.executeTask(task);
-            monitor.monitor(task);
+            monitor.addTask(task);
         }
     }
 

@@ -42,7 +42,7 @@ public class Client
 	}
 	
 	public void addTask(Task task){
-		taskMonitor.monitor(task);
+		taskMonitor.addTask(task);
         new Thread(task).start();
         tasks.put(task.getTaskId(), task);
 	}
