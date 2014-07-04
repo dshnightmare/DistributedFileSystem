@@ -64,7 +64,7 @@ public class ClientGUI
 				String subdir = JOptionPane.showInputDialog("请输入子目录名称");
 				if(null == subdir)
 					return;
-				
+				client.createDirectorySync(subdir);
 			}
 		});
 		
@@ -82,7 +82,6 @@ public class ClientGUI
 				}
 		    }
 		});
-		topPanel.add(addButton);
 		
 		//refresh
 		JButton refreshButton = new JButton("刷新");
@@ -91,9 +90,13 @@ public class ClientGUI
 				showDirectory(currentDirectory);
 			}
 		});
+		
+		//add buttons 
+		topPanel.add(createDirButton);
+		topPanel.add(addButton);
 		topPanel.add(refreshButton);
 		
-		//bottom -- add file
+		// TODO bottom panel
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 10));
 		
 		

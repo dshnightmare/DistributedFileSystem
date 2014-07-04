@@ -29,7 +29,11 @@ public class CCreateDirTask 	extends Task{
 		if (getTaskId() != call.getToTaskId()) {
 			return;
 		}
-		k
+		if(call.getType() == Call.Type.FINISH){
+			synchronized (netWaitor) {
+				netWaitor.notify();
+			}
+		}
 		
 	}
 
@@ -48,6 +52,9 @@ public class CCreateDirTask 	extends Task{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		synchronized (taskWaitor) {
+			taskWaitor.notify();
 		}
 	}
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import client.task.CAddFileTask;
+import client.task.CCreateDirTask;
 import client.task.CGetDirectoryTask;
 
 import common.call.Call;
@@ -86,7 +87,19 @@ public class Client
 	 * @param dir full path of new directory
 	 */
 	public void createDirectorySync(String dir){
-		
+		CCreateDirTask task = new CCreateDirTask(IdGenerator.getInstance().getLongId()
+				, dir, taskWaitor);
+		new Thread(task).start();
+		taskMonitor.addTask(task);
+
+		synchronized (taskWaitor) {
+			try {
+				taskWaitor.wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override
