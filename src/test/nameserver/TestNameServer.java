@@ -16,11 +16,13 @@ public class TestNameServer
     extends TestCase
 {
     private static ClientConnector CConnector;
+    private static NameServer ns;
 
     @Override
     protected void setUp()
     {
-        NameServer.getInstance();
+        ns = new NameServer();
+        ns.initilize();
         
         try
         {
