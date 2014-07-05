@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import nameserver.meta.File;
 import nameserver.meta.Status;
@@ -89,7 +91,7 @@ public class NameServer
     /**
      * When name server is pausing, it won't response for any new call.
      */
-    private boolean pausing = false;
+    private Lock pauseLock = null;
 
     /**
      * Determine whether name server has initiated.
@@ -143,6 +145,8 @@ public class NameServer
                     "Initiation failed, couldn't create server connector.");
             }
 
+            pauseLock = new ReentrantLock();
+
             taskExecutor = Executors.newFixedThreadPool(MAX_THREADS);
 
             snapshotExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -165,7 +169,7 @@ public class NameServer
      * {@inheritDoc}
      */
     @Override
-    public synchronized void handleCall(Call call)
+    public void handleCall(Call call)
     {
         logger.info("NameServer received a call: " + call.getType());
 
@@ -175,22 +179,31 @@ public class NameServer
 
         if (isNewCall(call))
         {
-            if (pausing)
+            boolean permitted = pauseLock.tryLock();
+
+            try
             {
-                Call back =
-                    new AbortCall(
-                        "Nameserver is maintaining, please try later.");
-                back.setFromTaskId(localTaskId);
-                back.setToTaskId(remoteTaskId);
-                connector.sendCall(back);
-                return;
+                if (!permitted)
+                {
+                    Call back =
+                        new AbortCall(
+                            "Nameserver is maintaining, please try later.");
+                    back.setFromTaskId(localTaskId);
+                    back.setToTaskId(remoteTaskId);
+                    connector.sendCall(back);
+                }
+                else
+                {
+                    task = TaskFactory.createTask(call);
+                    tasks.put(task.getTaskId(), task);
+                    taskExecutor.execute(task);
+                    taskMonitor.addTask(task);
+                }
             }
-            else
+            finally
             {
-                task = TaskFactory.createTask(call);
-                tasks.put(task.getTaskId(), task);
-                taskExecutor.execute(task);
-                taskMonitor.addTask(task);
+                if (permitted)
+                    pauseLock.unlock();
             }
         }
         else
@@ -311,28 +324,34 @@ public class NameServer
          */
         private void makeSnapshot()
         {
-            pausing = true;
-            final BackupUtil backup = BackupUtil.getInstance();
+            pauseLock.lock();
 
-            boolean hasRunningTask = !tasks.isEmpty();
-
-            while (hasRunningTask)
+            try
             {
-                try
+                final BackupUtil backup = BackupUtil.getInstance();
+
+                boolean hasRunningTask = !tasks.isEmpty();
+
+                while (hasRunningTask)
                 {
-                    TimeUnit.SECONDS.sleep(1);
-                    hasRunningTask = !tasks.isEmpty();
+                    try
+                    {
+                        TimeUnit.SECONDS.sleep(1);
+                        hasRunningTask = !tasks.isEmpty();
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
+
+                backup.writeBackupImage();
+                backup.readBackupLog();
             }
-
-            backup.writeBackupImage();
-            backup.readBackupLog();
-
-            pausing = false;
+            finally
+            {
+                pauseLock.unlock();
+            }
         }
     }
 }
