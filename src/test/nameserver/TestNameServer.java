@@ -67,7 +67,7 @@ public class TestNameServer
         call = new AddFileCallC2N("/", "b");
         CConnector.sendCall(call);
 
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 15; i++)
         {
             try
             {

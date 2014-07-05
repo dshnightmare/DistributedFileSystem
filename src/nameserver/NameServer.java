@@ -25,7 +25,6 @@ import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.Logger;
 
-// TODO: Snapshot hasn't been added.
 /**
  * Name server implementation.
  * <p>

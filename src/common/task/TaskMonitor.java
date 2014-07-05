@@ -122,8 +122,11 @@ public class TaskMonitor
 
         synchronized (tasks)
         {
-            tasks.remove(event.getTaskThread());
-            logger.debug("TASK_FINISHED");
+            System.out.println(":::" + tasks.size());
+            Task task = tasks.remove(event.getTaskThread().getTaskId());
+            System.out.println(":::" + tasks.size());
+            logger.info("Task " + task.getTaskId()
+                + " has finished, removed from TaskMonitor.");
         }
     }
 
