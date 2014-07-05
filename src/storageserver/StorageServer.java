@@ -9,7 +9,9 @@ import java.util.concurrent.Executors;
 
 import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 
+import storageserver.task.HeartbeatResponseEvent;
 import storageserver.task.HeartbeatTask;
+import storageserver.task.MigrateFileTask;
 import storageserver.task.RegisterTask;
 import common.call.Call;
 import common.call.CallListener;
@@ -137,10 +139,53 @@ public class StorageServer implements TaskEventListener, CallListener {
 				registered = true;
 				logger.info("RegisterTask: " + task.getTaskId() + " "
 						+ event.getType());
+				startHeartbeat();
+				startSyncTask();
+
 			} else if (task instanceof HeartbeatTask) {
 				logger.info("HeartbeatTask: " + task.getTaskId() + " "
 						+ event.getType());
 			}
+		} else if (event.getType() == TaskEvent.Type.HEARTBEAT_RESPONSE) {
+			if (task instanceof HeartbeatTask) {
+				Map<String, List<String>> working = ((HeartbeatResponseEvent) event)
+						.getWorking();
+				for (String key : working.keySet()) {
+					if (working.get(key).isEmpty() == false) {
+						Task workingTask = null;
+						synchronized (taskIDCount) {
+							workingTask = new MigrateFileTask(taskIDCount++, key, working.get(key));
+						}
+						tasks.put(workingTask.getTaskId(), workingTask);
+						taskExecutor.execute(workingTask);
+						taskMonitor.addTask(workingTask);
+					}
+				}
+			}
+		} else {
+
 		}
+	}
+
+	public void startHeartbeat() {
+		Task task = null;
+		int id;
+		synchronized (taskIDCount) {
+			id = taskIDCount++;
+		}
+		task = new HeartbeatTask(id, overMigrateFile, onMigrateFile);
+		tasks.put(task.getTaskId(), task);
+		taskExecutor.execute(task);
+		taskMonitor.addTask(task);
+	}
+
+	public void startSyncTask() {
+		// Task task = null;
+		// synchronized (taskIDCount) {
+		// task = new SyncTask(taskIDCount++, address);
+		// }
+		// tasks.put(task.getTaskId(), task);
+		// taskExecutor.execute(task);
+		// taskMonitor.addTask(task);
 	}
 }

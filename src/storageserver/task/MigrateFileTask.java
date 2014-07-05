@@ -1,13 +1,18 @@
 package storageserver.task;
 
+import java.util.List;
+
 import common.call.Call;
 import common.task.Task;
 
 public class MigrateFileTask extends StorageServerTask {
+	private String address;
+	private List<String> filenames;
 
-	public MigrateFileTask(long tid) {
+	public MigrateFileTask(long tid, String address, List<String> filenames) {
 		super(tid);
-		// TODO Auto-generated constructor stub
+		this.address = address;
+		this.filenames = filenames;
 	}
 
 	@Override

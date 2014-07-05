@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit;
 
 import common.call.Call;
 import common.call.Call.Type;
-import common.call.n2s.MigrateFileCallN2S;
 import common.call.s2n.RegistrationCallS2N;
 import common.util.Logger;
 

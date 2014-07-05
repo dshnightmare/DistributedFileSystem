@@ -44,7 +44,9 @@ public class TaskEvent
         /**
          * 
          */
-        INVALID("INVALID");
+        INVALID("INVALID"),
+        
+        HEARTBEAT_RESPONSE("HEARTBEAT_RESPONSE");
 
         private String name;
 
