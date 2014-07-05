@@ -6,19 +6,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import storageserver.event.HeartbeatResponseEvent;
 import common.call.Call;
 import common.call.n2s.MigrateFileCallN2S;
 import common.call.s2n.HeartbeatCallS2N;
 
 public class HeartbeatTask extends StorageServerTask {
+	private long NStid;
 	private Map<String, List<String>> overMigrateFile;
 	private Map<String, List<String>> onMigrateFile;
+	private Boolean alive = true;
 
 	public HeartbeatTask(long tid, Map<String, List<String>> overMigrateFile,
-			Map<String, List<String>> onMigrateFile) {
+			Map<String, List<String>> onMigrateFile, long NStid) {
 		super(tid);
 		this.overMigrateFile = overMigrateFile;
 		this.onMigrateFile = onMigrateFile;
+		this.NStid = NStid;
 	}
 
 	@Override
@@ -55,28 +59,33 @@ public class HeartbeatTask extends StorageServerTask {
 			}
 			fireEvent(new HeartbeatResponseEvent(this, working));
 		}
+		else if (call.getType() == Call.Type.ABORT){
+			//TODO 可能需要加锁
+			alive = false;
+		}
 
 	}
 
 	@Override
 	public void run() {
 		Map<String, List<String>> migratefile = new HashMap<String, List<String>>();
-		while (true) {
+		while (alive) {
 			synchronized (overMigrateFile) {
 				migratefile.clear();
 				migratefile.putAll(overMigrateFile);
 				overMigrateFile.clear();
 			}
 			HeartbeatCallS2N call = new HeartbeatCallS2N(migratefile);
+			call.setToTaskId(NStid);
 			call.setFromTaskId(getTaskId());
 			connector.sendCall(call);
 			try {
 				TimeUnit.SECONDS.sleep(5);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		setFinish();
 	}
 
 	@Override

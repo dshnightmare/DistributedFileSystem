@@ -46,7 +46,9 @@ public class TaskEvent
          */
         INVALID("INVALID"),
         
-        HEARTBEAT_RESPONSE("HEARTBEAT_RESPONSE");
+        HEARTBEAT_RESPONSE("HEARTBEAT_RESPONSE"),
+        
+        REG_FINISHED("REG_FINISHED");
 
         private String name;
 

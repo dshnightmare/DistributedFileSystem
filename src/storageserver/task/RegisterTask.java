@@ -2,6 +2,7 @@ package storageserver.task;
 
 import java.util.concurrent.TimeUnit;
 
+import storageserver.event.BeforeRegFinishEvent;
 import common.call.Call;
 import common.call.Call.Type;
 import common.call.s2n.RegistrationCallS2N;
@@ -25,6 +26,7 @@ public class RegisterTask extends StorageServerTask {
 				{
 					finished = true;
 					logger.info("StorageServer" + address + " finish registeration.");
+					fireEvent(new BeforeRegFinishEvent(this, call.getFromTaskId()));
 				}
 			}
 		}
@@ -52,7 +54,6 @@ public class RegisterTask extends StorageServerTask {
 		}
 		setFinish();
 	}
-
 	@Override
 	public void release() {
 		// TODO Auto-generated method stub

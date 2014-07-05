@@ -9,7 +9,8 @@ import java.util.concurrent.Executors;
 
 import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 
-import storageserver.task.HeartbeatResponseEvent;
+import storageserver.event.BeforeRegFinishEvent;
+import storageserver.event.HeartbeatResponseEvent;
 import storageserver.task.HeartbeatTask;
 import storageserver.task.MigrateFileTask;
 import storageserver.task.RegisterTask;
@@ -39,6 +40,7 @@ public class StorageServer implements TaskEventListener, CallListener {
 	private boolean initialized = false;
 	private Boolean registered = false;
 	private Integer taskIDCount = 0;
+	private long NStid = -1;
 
 	public StorageServer(String location) {
 		storage = new Storage(location);
@@ -82,13 +84,7 @@ public class StorageServer implements TaskEventListener, CallListener {
 
 			// start the registration task, if registration success, then start
 			// heartbeat task
-			Task task = null;
-			synchronized (taskIDCount) {
-				task = new RegisterTask(taskIDCount++, address);
-			}
-			tasks.put(task.getTaskId(), task);
-			taskExecutor.execute(task);
-			taskMonitor.addTask(task);
+			startRegister();
 
 			logger.info("StorageServer" + connector.getLocalAddress()
 					+ " initialization finished.");
@@ -118,7 +114,7 @@ public class StorageServer implements TaskEventListener, CallListener {
 		// default:
 		// break;
 		// }
-		logger.info(call.getToTaskId());
+		logger.info("dispatch to task: " + call.getToTaskId());
 		final Task task = tasks.get(call.getToTaskId());
 		if (null == task)
 			logger.error("StorageServer" + address
@@ -145,7 +141,12 @@ public class StorageServer implements TaskEventListener, CallListener {
 			} else if (task instanceof HeartbeatTask) {
 				logger.info("HeartbeatTask: " + task.getTaskId() + " "
 						+ event.getType());
+				// 需要重新注册
+				NStid = -1;
+				startRegister();
 			}
+		} else if (event.getType() == TaskEvent.Type.REG_FINISHED) {
+			NStid = ((BeforeRegFinishEvent) event).getNStid();
 		} else if (event.getType() == TaskEvent.Type.HEARTBEAT_RESPONSE) {
 			if (task instanceof HeartbeatTask) {
 				Map<String, List<String>> working = ((HeartbeatResponseEvent) event)
@@ -154,7 +155,8 @@ public class StorageServer implements TaskEventListener, CallListener {
 					if (working.get(key).isEmpty() == false) {
 						Task workingTask = null;
 						synchronized (taskIDCount) {
-							workingTask = new MigrateFileTask(taskIDCount++, key, working.get(key));
+							workingTask = new MigrateFileTask(taskIDCount++,
+									key, working.get(key));
 						}
 						tasks.put(workingTask.getTaskId(), workingTask);
 						taskExecutor.execute(workingTask);
@@ -167,13 +169,23 @@ public class StorageServer implements TaskEventListener, CallListener {
 		}
 	}
 
+	public void startRegister() {
+		Task task = null;
+		synchronized (taskIDCount) {
+			task = new RegisterTask(taskIDCount++, address);
+		}
+		tasks.put(task.getTaskId(), task);
+		taskExecutor.execute(task);
+		taskMonitor.addTask(task);
+	}
+
 	public void startHeartbeat() {
 		Task task = null;
 		int id;
 		synchronized (taskIDCount) {
 			id = taskIDCount++;
 		}
-		task = new HeartbeatTask(id, overMigrateFile, onMigrateFile);
+		task = new HeartbeatTask(id, overMigrateFile, onMigrateFile, NStid);
 		tasks.put(task.getTaskId(), task);
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
