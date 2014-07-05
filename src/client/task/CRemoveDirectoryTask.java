@@ -1,45 +1,41 @@
 package client.task;
 
-import java.util.List;
-
 import common.call.Call;
-import common.call.c2n.AddDirectoryCallC2N;
-import common.call.n2c.GetDirectoryCallN2C;
+import common.call.c2n.RemoveDirectoryCallC2N;
+import common.call.c2n.RemoveFileCallC2N;
 import common.network.ClientConnector;
 import common.task.Task;
+import common.util.Log;
 
-public class CCreateDirTask
+public class CRemoveDirectoryTask 
 	extends Task{
-	
-	private String direct;
+	private String dir;
 	private Object netWaitor = new Object();
-	
-	
-	public CCreateDirTask(long tid, String direct) {
-		super(tid);
-		this.direct = direct;
-	}
+	private long toTaskId;
 
+	public CRemoveDirectoryTask(long tid, String dir) {
+		super(tid);
+		this.dir = dir;
+		// TODO Auto-generated constructor stub
+	}
 
 	@Override
 	public void handleCall(Call call) {
 		if (getTaskId() != call.getToTaskId()) {
 			return;
 		}
-		if(call.getType() == Call.Type.FINISH
+		if(call.getType() == Call.Type.FINISH 
 				||call.getType() == Call.Type.ABORT){
 			synchronized (netWaitor) {
 				netWaitor.notify();
 			}
 		}
-		
 	}
-
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		AddDirectoryCallC2N callC2N = new AddDirectoryCallC2N(direct);
+		Log.debug("DeleteDirectory:"+dir);
+		RemoveDirectoryCallC2N callC2N = new RemoveDirectoryCallC2N(dir);
 		callC2N.setFromTaskId(getTaskId());
 		ClientConnector.getInstance().sendCall(callC2N);
 		ClientConnector.getInstance().addListener(this);
@@ -54,10 +50,10 @@ public class CCreateDirTask
 		setFinish();
 	}
 
-
 	@Override
 	public void release() {
 		// TODO Auto-generated method stub
 		
 	}
+
 }

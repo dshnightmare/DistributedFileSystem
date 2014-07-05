@@ -8,6 +8,9 @@ import java.util.Map;
 import client.task.CAddFileTask;
 import client.task.CCreateDirTask;
 import client.task.CGetDirectoryTask;
+import client.task.CMoveDirectoryTask;
+import client.task.CMoveFileTask;
+import client.task.CRemoveDirectoryTask;
 import client.task.CRemoveFileTask;
 
 import common.call.Call;
@@ -60,6 +63,7 @@ public class Client
 	 * @return
 	 */
 	public List<String> getDirectorySync(String direct){
+		Log.info("getDirectorySync - direct="+direct);
 		List<String> ret = new ArrayList<String>();
 		CGetDirectoryTask task = new CGetDirectoryTask(IdGenerator.getInstance().getLongId()
 				, direct, ret, taskWaitor);
@@ -99,9 +103,36 @@ public class Client
 		taskMonitor.addTask(task);
 	}
 	
-	public void removeFileASync(String dir, String name){
-		CRemoveFileTask task = new CRemoveFileTask(IdGenerator.getInstance().getLongId()
+	/**
+	 * remome a file or directory
+	 * @param dir
+	 * @param name if ends with "/", make dir+name a directory
+	 */
+	public void removeFileDirectASync(String dir, String name){
+		Task task = null;
+		if(!name.contains("/")){	//file
+			task = new CRemoveFileTask(IdGenerator.getInstance().getLongId()
 				, dir, name);
+		}
+		else {	//directory
+			task = new CRemoveDirectoryTask(IdGenerator.getInstance().getLongId()
+					, dir+name);
+		}
+		new Thread(task).start();
+		taskMonitor.addTask(task);
+	}
+	
+	public void moveFileDirectASync(String oldDir, String oldName
+			,String newDir, String newName){
+		Task task = null;
+		if(!oldName.contains("/")){	//file
+			task = new CMoveFileTask(IdGenerator.getInstance().getLongId()
+					, oldDir, oldName, newDir, newName);
+		}
+		else {
+			task = new CMoveDirectoryTask(IdGenerator.getInstance().getLongId()
+					, oldDir+oldName, newDir+newName);
+		}
 		new Thread(task).start();
 		taskMonitor.addTask(task);
 	}

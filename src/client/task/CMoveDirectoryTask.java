@@ -3,21 +3,23 @@ package client.task;
 import java.util.List;
 
 import common.call.Call;
-import common.call.c2n.AddDirectoryCallC2N;
-import common.call.n2c.GetDirectoryCallN2C;
+import common.call.c2n.MoveDirectoryCallC2N;
+import common.call.c2n.MoveFileCallC2N;
 import common.network.ClientConnector;
 import common.task.Task;
 
-public class CCreateDirTask
+public class CMoveDirectoryTask 	
 	extends Task{
 	
-	private String direct;
 	private Object netWaitor = new Object();
+	private String oldDir;
+	private String newDir;
 	
 	
-	public CCreateDirTask(long tid, String direct) {
+	public CMoveDirectoryTask(long tid, String oldDir, String newDir) {
 		super(tid);
-		this.direct = direct;
+		this.oldDir = oldDir;
+		this.newDir = newDir;
 	}
 
 
@@ -39,7 +41,7 @@ public class CCreateDirTask
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		AddDirectoryCallC2N callC2N = new AddDirectoryCallC2N(direct);
+		MoveDirectoryCallC2N callC2N = new MoveDirectoryCallC2N(oldDir, newDir);
 		callC2N.setFromTaskId(getTaskId());
 		ClientConnector.getInstance().sendCall(callC2N);
 		ClientConnector.getInstance().addListener(this);

@@ -70,10 +70,20 @@ public class ClientGUI
 		frame.setLayout(new BorderLayout());
 		filePanel = new JPanel();
 		filePanel.setLayout(new WrapLayout(FlowLayout.LEFT, 10, 15));
-		
+
 		menuRefresh.addActionListener(new ActionListener() {     
 	           public void actionPerformed(ActionEvent e) {
 	        	   showDirectory(currentDirectory);
+	           }
+	        });
+		menuPaste.addActionListener(new ActionListener() {     
+	           public void actionPerformed(ActionEvent e) {
+					client.addListener(ClientGUI.this);
+					Log.debug("To move from:"+cutDir+cutName
+							+" to:"+currentDirectory+cutName);
+					client.moveFileDirectASync(cutDir, cutName, currentDirectory, cutName);
+					cutDir = null;
+					cutName = null;
 	           }
 	        });
 		mainRightClickPop.add(menuRefresh);
@@ -104,7 +114,7 @@ public class ClientGUI
            public void actionPerformed(ActionEvent e) {  
 				client.addListener(ClientGUI.this);
 				Log.debug("To delete:"+currentDirectory+selectedItem);
-				client.removeFileASync(currentDirectory, selectedItem);
+				client.removeFileDirectASync(currentDirectory, selectedItem);
 				selectedItem = null;
            }
         });
@@ -114,6 +124,16 @@ public class ClientGUI
         	   cutName = selectedItem;
            }
         });
+		menuPaste1.addActionListener(new ActionListener() {     
+	           public void actionPerformed(ActionEvent e) {
+					client.addListener(ClientGUI.this);
+					Log.debug("To move from:"+cutDir+cutName
+							+" to:"+currentDirectory+cutName);
+					client.moveFileDirectASync(cutDir, cutName, currentDirectory, cutName);
+					cutDir = null;
+					cutName = null;
+	           }
+	        });
 		
 		rightClickPop.add(menuDelete);
 		rightClickPop.add(menuCut);
