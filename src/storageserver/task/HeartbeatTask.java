@@ -10,6 +10,7 @@ import storageserver.event.HeartbeatResponseEvent;
 import common.call.Call;
 import common.call.n2s.MigrateFileCallN2S;
 import common.call.s2n.HeartbeatCallS2N;
+import common.util.Configuration;
 import common.util.Logger;
 
 public class HeartbeatTask extends StorageServerTask {
@@ -83,7 +84,7 @@ public class HeartbeatTask extends StorageServerTask {
 			call.setFromTaskId(getTaskId());
 			connector.sendCall(call);
 			try {
-				TimeUnit.SECONDS.sleep(5);
+				TimeUnit.SECONDS.sleep(Configuration.getInstance().getInteger(Configuration.SS_HB_INTERVAL));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

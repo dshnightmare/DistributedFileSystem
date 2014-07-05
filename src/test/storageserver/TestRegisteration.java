@@ -26,8 +26,8 @@ public class TestRegisteration extends TestCase {
 	}
 	
 	public void testReg() {
-		ss = new StorageServer("storage");
 		try {
+			ss = new StorageServer("E://storage5555");
 			ss.initAndstart(5555);
 		} catch (Exception e) {
 			// TODO: handle exception

@@ -1,5 +1,6 @@
 package storageserver;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import storageserver.event.HeartbeatResponseEvent;
 import storageserver.task.HeartbeatTask;
 import storageserver.task.MigrateFileTask;
 import storageserver.task.RegisterTask;
+import storageserver.task.SyncTask;
 import common.call.Call;
 import common.call.CallListener;
 import common.event.TaskEvent;
@@ -42,7 +44,7 @@ public class StorageServer implements TaskEventListener, CallListener {
 	private Integer taskIDCount = 0;
 	private long NStid = -1;
 
-	public StorageServer(String location) {
+	public StorageServer(String location) throws IOException {
 		storage = new Storage(location);
 	}
 
@@ -171,9 +173,11 @@ public class StorageServer implements TaskEventListener, CallListener {
 
 	public void startRegister() {
 		Task task = null;
+		int id;
 		synchronized (taskIDCount) {
-			task = new RegisterTask(taskIDCount++, address);
+			id = taskIDCount++;
 		}
+		task = new RegisterTask(id, address);
 		tasks.put(task.getTaskId(), task);
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
@@ -192,12 +196,14 @@ public class StorageServer implements TaskEventListener, CallListener {
 	}
 
 	public void startSyncTask() {
-		// Task task = null;
-		// synchronized (taskIDCount) {
-		// task = new SyncTask(taskIDCount++, address);
-		// }
-		// tasks.put(task.getTaskId(), task);
-		// taskExecutor.execute(task);
-		// taskMonitor.addTask(task);
+		Task task = null;
+		int id;
+		synchronized (taskIDCount) {
+			id = taskIDCount++;
+		}
+		task = new SyncTask(id, storage);
+		tasks.put(task.getTaskId(), task);
+		taskExecutor.execute(task);
+		taskMonitor.addTask(task);
 	}
 }
