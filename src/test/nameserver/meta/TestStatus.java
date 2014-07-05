@@ -2,8 +2,8 @@ package test.nameserver.meta;
 
 import java.util.List;
 
-import nameserver.meta.Status;
-import nameserver.meta.Storage;
+import nameserver.status.Status;
+import nameserver.status.Storage;
 import junit.framework.TestCase;
 
 public class TestStatus

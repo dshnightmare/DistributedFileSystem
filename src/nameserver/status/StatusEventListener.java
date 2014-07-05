@@ -1,4 +1,4 @@
-package nameserver.meta;
+package nameserver.status;
 
 public interface StatusEventListener
 {

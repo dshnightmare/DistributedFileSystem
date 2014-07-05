@@ -2,9 +2,9 @@ package test.nameserver.ui;
 
 import java.util.concurrent.TimeUnit;
 
-import nameserver.meta.StatusEvent;
-import nameserver.meta.Storage;
-import nameserver.meta.StatusEvent.Type;
+import nameserver.status.StatusEvent;
+import nameserver.status.Storage;
+import nameserver.status.StatusEvent.Type;
 import nameserver.ui.NameServerGUI;
 import junit.framework.TestCase;
 

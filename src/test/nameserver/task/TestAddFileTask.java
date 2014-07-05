@@ -4,8 +4,8 @@ import java.util.concurrent.TimeUnit;
 
 import nameserver.meta.Directory;
 import nameserver.meta.Meta;
-import nameserver.meta.Status;
-import nameserver.meta.Storage;
+import nameserver.status.Status;
+import nameserver.status.Storage;
 import nameserver.task.AddFileTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;

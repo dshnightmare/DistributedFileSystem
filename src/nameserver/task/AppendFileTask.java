@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 import nameserver.BackupUtil;
 import nameserver.meta.File;
 import nameserver.meta.Meta;
-import nameserver.meta.Storage;
+import nameserver.status.Storage;
 import common.network.Connector;
 import common.call.Call;
 import common.call.c2n.AppendFileCallC2N;

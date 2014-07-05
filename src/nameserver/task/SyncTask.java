@@ -5,7 +5,7 @@ import java.util.List;
 
 import nameserver.meta.File;
 import nameserver.meta.Meta;
-import nameserver.meta.Status;
+import nameserver.status.Status;
 import common.network.Connector;
 import common.call.Call;
 import common.call.n2s.SyncCallN2S;

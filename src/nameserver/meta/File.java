@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import nameserver.status.Storage;
+
 /**
  * File meta structure, holds file information such as file id, version, name,
  * read&write lock.

@@ -1,11 +1,11 @@
-package nameserver.meta;
+package nameserver.status;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import nameserver.meta.StatusEvent.Type;
+import nameserver.status.StatusEvent.Type;
 
 /**
  * Status of storage servers.

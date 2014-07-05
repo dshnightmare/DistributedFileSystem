@@ -7,11 +7,12 @@ import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
-import nameserver.meta.StatusEvent;
-import nameserver.meta.StatusEventListener;
-import nameserver.meta.Storage;
+import nameserver.status.StatusEvent;
+import nameserver.status.StatusEventListener;
+import nameserver.status.Storage;
 
 public class NameServerGUI
     implements StatusEventListener
@@ -20,7 +21,12 @@ public class NameServerGUI
 
     private JFrame frame = new JFrame("Test");
 
-    private JPanel panel = new JPanel();
+    private JTabbedPane tab = new JTabbedPane(JTabbedPane.TOP,
+        JTabbedPane.WRAP_TAB_LAYOUT);
+
+    private JPanel storagePanel = new JPanel();
+
+    private JPanel directoryPanel = new JPanel();
 
     private Map<Storage, StorageInfo> storages =
         new HashMap<Storage, StorageInfo>();
@@ -38,8 +44,14 @@ public class NameServerGUI
     {
         frame.setBounds(100, 100, 450, 300);
         frame.setLayout(new BorderLayout());
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 5));
-        frame.add(panel);
+
+        storagePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 5));
+
+        tab.addTab("Storages", storagePanel);
+        tab.addTab("Directory", directoryPanel);
+        tab.setSelectedIndex(0);
+        frame.add(tab, BorderLayout.CENTER);
+
         frame.setVisible(true);
     }
 
@@ -64,7 +76,7 @@ public class NameServerGUI
         info.updateId(storage.getId());
         info.updateLoad(storage.getLoad());
         storages.put(storage, info);
-        panel.add(info.getPanel());
+        storagePanel.add(info.getPanel());
 
         frame.validate();
     }

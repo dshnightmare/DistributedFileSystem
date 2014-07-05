@@ -12,8 +12,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import nameserver.meta.File;
-import nameserver.meta.Status;
-import nameserver.meta.Storage;
+import nameserver.status.Status;
+import nameserver.status.Storage;
 import nameserver.task.HeartbeatTask;
 import nameserver.task.TaskFactory;
 import nameserver.ui.NameServerGUI;
@@ -189,7 +189,9 @@ public class NameServer
     @Override
     public void handleCall(Call call)
     {
-        logger.info("NameServer received a call: " + call.getType());
+        logger.info("NameServer received a call: " + call.getType()
+            + " fromTaskId: " + call.getFromTaskId() + ", toTaskId: "
+            + call.getToTaskId());
 
         Task task = null;
 
@@ -267,6 +269,7 @@ public class NameServer
         }
         else if (event.getType() == TaskEvent.Type.HEARTBEAT_FATAL)
         {
+            logger.info("Heartbeat fatal");
             heartbeatTasks.remove(task);
             handleHeartbeatFatal(event);
         }

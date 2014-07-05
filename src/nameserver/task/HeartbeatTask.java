@@ -8,8 +8,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import nameserver.meta.File;
-import nameserver.meta.Status;
-import nameserver.meta.Storage;
+import nameserver.status.Status;
+import nameserver.status.Storage;
 import common.network.Connector;
 import common.call.Call;
 import common.call.n2s.MigrateFileCallN2S;
@@ -45,7 +45,7 @@ public class HeartbeatTask
      * Heartbeat check period.(second)
      */
     private final long period;
-    
+
     private String address;
 
     /**
@@ -62,6 +62,7 @@ public class HeartbeatTask
         RegistrationCallS2N c = (RegistrationCallS2N) call;
         this.address = c.getAddress();
         this.period = period;
+        System.out.println("------" + getTaskId());
     }
 
     /**

@@ -1,6 +1,11 @@
 package nameserver.ui;
 
+import java.awt.BorderLayout;
+
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
 
 public class StorageInfo
@@ -9,16 +14,27 @@ public class StorageInfo
 
     private JTextArea id;
 
-    private JTextArea load;
+    private JProgressBar load;
+
+    private static final ImageIcon serverIcon = new ImageIcon("ico/server.png");
 
     public StorageInfo()
     {
         panel = new JPanel();
-        id = new JTextArea();
-        load = new JTextArea();
+        panel.setLayout(new BorderLayout());
 
-        panel.add(id);
-        panel.add(load);
+        id = new JTextArea();
+        load = new JProgressBar();
+        load.setMinimum(0);
+        load.setMaximum(100);
+
+        JLabel icon = new JLabel();
+        icon.setIcon(serverIcon);
+        icon.setHorizontalAlignment(JLabel.CENTER);
+        panel.add(icon, BorderLayout.CENTER);
+
+        panel.add(id, BorderLayout.NORTH);
+        panel.add(load, BorderLayout.SOUTH);
     }
 
     public void updateId(String id)
@@ -31,7 +47,7 @@ public class StorageInfo
     public void updateLoad(int load)
     {
         System.out.println("Update Load");
-        this.load.setText(String.valueOf(load));
+        this.load.setValue(load);
         panel.updateUI();
     }
 

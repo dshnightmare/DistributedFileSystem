@@ -6,8 +6,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
-import nameserver.meta.Status;
-import nameserver.meta.Storage;
+import nameserver.status.Status;
+import nameserver.status.Storage;
 import nameserver.task.HeartbeatTask;
 import common.network.ClientConnector;
 import common.network.ServerConnector;
