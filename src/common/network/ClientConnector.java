@@ -109,6 +109,15 @@ public class ClientConnector implements Connector, CallDispatcher{
 	}
 	
 	/**
+	 * return local address of socket used.
+	 * format: "/X.X.X.X:X"
+	 * @return
+	 */
+	public String getLocalAddress(){
+		return socket.getLocalSocketAddress().toString();
+	}
+	
+	/**
 	 * setup connection with server, and create two threads to send and recv respectively
 	 */
 	public void setupSocket(){
@@ -134,7 +143,7 @@ public class ClientConnector implements Connector, CallDispatcher{
 			}
 			break;
 		}
-		Log.info("Connection established with server.");
+		Log.info("Connection established with:"+socket.getRemoteSocketAddress().toString());
 		try {
 			ClientSender cs = new ClientSender(this, socket.getOutputStream());
 			cs.start();

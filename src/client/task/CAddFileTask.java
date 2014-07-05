@@ -7,6 +7,7 @@ import java.net.Socket;
 import common.network.ClientConnector;
 import common.network.XConnector;
 import common.call.Call;
+import common.call.all.AbortCall;
 import common.call.all.FinishCall;
 import common.call.c2n.AddFileCallC2N;
 import common.call.n2c.AddFileCallN2C;
@@ -14,6 +15,11 @@ import common.task.Task;
 import common.util.IdGenerator;
 import common.util.Log;
 
+/**
+ * 
+ * @author gengyufeng
+ *
+ */
 public class CAddFileTask
     extends Task
 {
@@ -37,6 +43,7 @@ public class CAddFileTask
     private String filename;
     
     private long toTaskId;
+    private Call.Type type;
 
     public CAddFileTask(long tid, String _path, String _name)
     {
@@ -57,11 +64,16 @@ public class CAddFileTask
         {
             this.call = (AddFileCallN2C) call;
             this.toTaskId = call.getFromTaskId();
+			type = call.getType();
             synchronized (waitor)
             {
                 waitor.notify();
             }
         }
+        if (call.getType() == Call.Type.ABORT) {
+			Log.error(((AbortCall)call).getReason());
+			type = call.getType();
+		}
         else
         {
             Log.error("Fatal error: call type dismatch.");
@@ -90,6 +102,10 @@ public class CAddFileTask
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
+        
+        if (type == Call.Type.ABORT) {
+			return;
+		}
         
         if (call.getLocations().size() == 0)
         {

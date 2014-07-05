@@ -25,7 +25,8 @@ public class CCreateDirTask 	extends Task{
 		if (getTaskId() != call.getToTaskId()) {
 			return;
 		}
-		if(call.getType() == Call.Type.FINISH){
+		if(call.getType() == Call.Type.FINISH
+				||call.getType() == Call.Type.ABORT){
 			synchronized (netWaitor) {
 				netWaitor.notify();
 			}

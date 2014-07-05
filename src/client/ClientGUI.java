@@ -6,6 +6,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -20,6 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -46,11 +49,19 @@ public class ClientGUI
 	public JPanel fileItem;
 	//goback button
 	JButton backButton;
-	JButton removeButton;
+	//right click
+	JPopupMenu rightClickPop = new JPopupMenu();
+	JPopupMenu mainRightClickPop = new JPopupMenu();
+	JMenuItem menuDelete = new JMenuItem("删除");
+	JMenuItem menuCut = new JMenuItem("剪切");
+	JMenuItem menuPaste = new JMenuItem("粘贴");
+	JMenuItem menuPaste1 = new JMenuItem("粘贴");
+	JMenuItem menuRefresh = new JMenuItem("刷新");
 	
 	//current directory
 	private String currentDirectory = "/";
-	private String selectedItem = "";
+	private String selectedItem = null;
+	private String cutDir = null, cutName = null;
 	
 	private Client client = Client.getInstance();
 	
@@ -59,11 +70,54 @@ public class ClientGUI
 		frame.setLayout(new BorderLayout());
 		filePanel = new JPanel();
 		filePanel.setLayout(new WrapLayout(FlowLayout.LEFT, 10, 15));
+		
+		menuRefresh.addActionListener(new ActionListener() {     
+	           public void actionPerformed(ActionEvent e) {
+	        	   showDirectory(currentDirectory);
+	           }
+	        });
+		mainRightClickPop.add(menuRefresh);
+		mainRightClickPop.add(menuPaste);
+		filePanel.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if (e.getButton() != MouseEvent.BUTTON3) {
+					return;
+				}
+				JPanel item = (JPanel)e.getSource();
+				if (null == cutDir) {
+					menuPaste.setEnabled(false);
+				}
+				else {
+					menuPaste.setEnabled(true);
+				}
+				mainRightClickPop.show(e.getComponent(), e.getX(), e.getY());
+			}
+		});
 			
 		sp = new JScrollPane(filePanel);
 		frame.add(sp, BorderLayout.CENTER);
 		
 		showDirectory(currentDirectory);
+		
+		//right click popup menu
+		menuDelete.addActionListener(new ActionListener() {     
+           public void actionPerformed(ActionEvent e) {  
+				client.addListener(ClientGUI.this);
+				Log.debug("To delete:"+currentDirectory+selectedItem);
+				client.removeFileASync(currentDirectory, selectedItem);
+				selectedItem = null;
+           }
+        });
+		menuCut.addActionListener(new ActionListener() {     
+           public void actionPerformed(ActionEvent e) {
+        	   cutDir = currentDirectory;
+        	   cutName = selectedItem;
+           }
+        });
+		
+		rightClickPop.add(menuDelete);
+		rightClickPop.add(menuCut);
+		rightClickPop.add(menuPaste1);
 		
 		//top 
 		topPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 20));
@@ -96,13 +150,6 @@ public class ClientGUI
 		    }
 		});
 		
-		//refresh
-		JButton refreshButton = new JButton("刷新");
-		refreshButton.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e){
-				showDirectory(currentDirectory);
-			}
-		});
 		
 		//goback
 		backButton = new JButton("返回上层");
@@ -120,23 +167,10 @@ public class ClientGUI
 		});
 		backButton.setEnabled(false);
 		
-		//delete file/directory
-		removeButton = new JButton("删除");
-		removeButton.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e){
-				client.addListener(ClientGUI.this);
-				Log.debug("To delete:"+currentDirectory+selectedItem);
-				client.removeFileASync(currentDirectory, selectedItem);
-			}
-		});
-		removeButton.setEnabled(false);
-		
 		//add buttons 
 		topPanel.add(createDirButton);
 		topPanel.add(addButton);
-		topPanel.add(refreshButton);
 		topPanel.add(backButton);
-		topPanel.add(removeButton);
 		
 		
 		frame.add(topPanel, BorderLayout.NORTH);
@@ -167,12 +201,32 @@ public class ClientGUI
 			
 			fileItem.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
-					// TODO double click: open directory
+					JPanel item = (JPanel)e.getSource();
+					//right click
+					if(e.getButton() == MouseEvent.BUTTON3){
+						for(int i=0; i<filePanel.getComponents().length; i++){
+							((JPanel)filePanel.getComponent(i)).setBackground(null);
+						}
+						item.setBackground(Color.cyan);
+						selectedItem = ((JLabel)item.getComponent(1)).getText();
+						if (((ImageIcon)((JLabel)item.getComponent(0))
+							.getIcon()).getDescription().equals("dir")) {
+							selectedItem += "/";
+						}
+						if (null == cutDir) {
+							menuPaste.setEnabled(false);
+						}
+						else {
+							menuPaste.setEnabled(true);
+						}
+						rightClickPop.show(e.getComponent(), e.getX(), e.getY());
+						return;
+					}
 					if(e.getClickCount() == 2){
-						JPanel item = (JPanel)e.getSource();
-						String pathString = currentDirectory+((JLabel)item.getComponent(1)).getText()+"/";
+						//directory
 						if( ((ImageIcon)((JLabel)item.getComponent(0))
 								.getIcon()).getDescription().equals("dir")){
+							String pathString = currentDirectory+((JLabel)item.getComponent(1)).getText()+"/";
 							currentDirectory = pathString;
 							backButton.setEnabled(true);
 							showDirectory(pathString);
@@ -186,14 +240,16 @@ public class ClientGUI
 							((JPanel)filePanel.getComponent(i)).setBackground(null);
 						}
 						if(origin == Color.cyan){
-							((JPanel)e.getSource()).setBackground(null);
-							selectedItem = "";
-							removeButton.setEnabled(false);
+							item.setBackground(null);
+							selectedItem = null;
 						}
 						else {
-							((JPanel)e.getSource()).setBackground(Color.cyan);
+							item.setBackground(Color.cyan);
 							selectedItem = ((JLabel)((JPanel)e.getSource()).getComponent(1)).getText();
-							removeButton.setEnabled(true);
+							if (((ImageIcon)((JLabel)item.getComponent(0))
+								.getIcon()).getDescription().equals("dir")) {
+								selectedItem += "/";
+							}
 						}
 					}
 				}
@@ -215,7 +271,7 @@ public class ClientGUI
 		private static final ImageIcon dirIcon = new ImageIcon("ico/folder.png");
 		private static final ImageIcon txtIcon = new ImageIcon("ico/txt.png");
 		private static final ImageIcon videoIcon = new ImageIcon("ico/avi.png");
-		private static final ImageIcon imgIcon = new ImageIcon("ico/pict.png");
+		private static final ImageIcon imgIcon = new ImageIcon("ico/pic.png");
 		private static final ImageIcon otherIcon = new ImageIcon("ico/pict.png");
 		public static ImageIcon getIcon(String filename){
 			int lasts = filename.lastIndexOf("/");
@@ -234,6 +290,9 @@ public class ClientGUI
 			}
 			else if (suffix.equals("txt")) {
 				return txtIcon;
+			}
+			else if (suffix.equals("png") || suffix.equals("jpg")) {
+				return imgIcon;
 			}
 			return otherIcon;
 		}

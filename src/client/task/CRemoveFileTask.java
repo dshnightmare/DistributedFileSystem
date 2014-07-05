@@ -4,6 +4,7 @@ import common.call.Call;
 import common.call.c2n.RemoveFileCallC2N;
 import common.network.ClientConnector;
 import common.task.Task;
+import common.util.Log;
 
 public class CRemoveFileTask 
 	extends Task{
@@ -23,7 +24,8 @@ public class CRemoveFileTask
 		if (getTaskId() != call.getToTaskId()) {
 			return;
 		}
-		if(call.getType() == Call.Type.FINISH){
+		if(call.getType() == Call.Type.FINISH 
+				||call.getType() == Call.Type.ABORT){
 			synchronized (netWaitor) {
 				netWaitor.notify();
 			}
@@ -32,6 +34,7 @@ public class CRemoveFileTask
 
 	@Override
 	public void run() {
+		Log.debug("DeleteFile:"+dir+name);
 		RemoveFileCallC2N callC2N = new RemoveFileCallC2N(dir, name);
 		callC2N.setFromTaskId(getTaskId());
 		ClientConnector.getInstance().sendCall(callC2N);
