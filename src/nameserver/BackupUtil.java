@@ -24,6 +24,7 @@ import java.util.Set;
 import common.call.Call;
 import common.util.Configuration;
 import common.util.Logger;
+import nameserver.meta.Directory;
 import nameserver.meta.Meta;
 
 public class BackupUtil
@@ -204,10 +205,19 @@ public class BackupUtil
                     // |directory name |file number |
                     // +---------------+------------+
                     if (dirInfo.length != 2)
+                    {
+                        logger.info("Failed to read image file line, damaged line.");
                         break;
-
+                    }
+                    
                     final String dirName = dirInfo[0];
                     final int numFiles = Integer.valueOf(dirInfo[1]);
+                    if (0 == numFiles)
+                    {
+                        nameserver.meta.Directory d = new nameserver.meta.Directory(dirName);
+                        meta.addDirectory(d);
+                        meta.setDirectoryValid(dirName, true);
+                    }
                     for (int i = 0; i < numFiles; i++)
                     {
                         String fileLine = reader.readLine();
@@ -224,7 +234,7 @@ public class BackupUtil
                                 .warn("Some files couldn't be restored, information was lost.");
                             continue;
                         }
-
+                        
                         final String fileName = fileInfo[1];
                         final String fileId = fileInfo[2];
                         final long bareFileId =
@@ -234,8 +244,9 @@ public class BackupUtil
                         final nameserver.meta.File file =
                             new nameserver.meta.File(fileName, bareFileId);
                         file.setVersion(fileVersion);
-
                         meta.addFile(dirName, file);
+                        meta.setFileValid(dirName, fileName, true);
+
                     }
                 }
             }
@@ -433,14 +444,19 @@ public class BackupUtil
                         final long bareFileId =
                             nameserver.meta.File.getBareIdFromFileId(fileId);
 
-                        meta.addFile(dirName, new nameserver.meta.File(
-                            fileName, bareFileId));
+                        final nameserver.meta.File f = new nameserver.meta.File(fileName, bareFileId);
+                        meta.setFileValid(dirName, fileName, true);
+                        
+                        meta.addFile(dirName, f);
                     }
                     else if (callEqual(callType, Call.Type.ADD_DIRECTORY_C2N))
                     {
                         final String dirName = tokens[3];
 
-                        meta.addDirectory(new nameserver.meta.Directory(dirName));
+                        final nameserver.meta.Directory dir = new nameserver.meta.Directory(dirName);
+                        
+                        meta.addDirectory(dir);
+                        meta.setDirectoryValid(dirName, true);
                     }
                     else if (callEqual(callType, Call.Type.MOVE_FILE_C2N))
                     {

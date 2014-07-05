@@ -78,6 +78,7 @@ public class AddDirectoryTask
 
                 sendFinishCall();
                 meta.addDirectory(dir);
+                meta.setDirectoryValid(dirName, true);
             }
 
             setFinish();

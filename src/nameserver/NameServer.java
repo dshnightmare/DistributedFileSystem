@@ -372,7 +372,7 @@ public class NameServer
                 }
 
                 backup.writeBackupImage();
-                backup.readBackupLog();
+                backup.deleteBackLog();
             }
             finally
             {

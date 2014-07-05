@@ -83,7 +83,7 @@ public class Meta
         {
             dir = new Directory(dirName);
             // We assume that the directory is valid.
-            dir.setValid(true);
+            // dir.setValid(true);
             directories.put(dirName, dir);
         }
 
@@ -292,6 +292,14 @@ public class Meta
      */
     public void setFileValid(String dirName, String fileName, boolean valid)
     {
+        for (Directory dir : directories.values())
+        {
+            if (dirName.contains(dir.getName()))
+            {
+                dir.setValid(true);
+            }
+        }
+        
         File file = getFile(dirName, fileName);
         if (null == file)
             return;

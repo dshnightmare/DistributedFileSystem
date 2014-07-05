@@ -270,7 +270,6 @@ public class AddFileTask
         Directory dir = Meta.getInstance().getDirectory(dirName);
         if (null == dir)
             return;
-        dir.setValid(true);
-        file.setValid(true);
+        Meta.getInstance().setFileValid(dirName, fileName, true);
     }
 }
