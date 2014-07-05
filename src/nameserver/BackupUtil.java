@@ -34,7 +34,7 @@ public class BackupUtil
     private final static String imageFileName = "IMAGE";
 
     private final static DateFormat timeFormat = new SimpleDateFormat(
-        "yyyy-MM-dd HH:mm:ss");
+        "yyyyMMddHHmmss");
 
     private final static String SEPERATOR = " ";
 
@@ -104,7 +104,7 @@ public class BackupUtil
         {
             logger.info("Write backup image file.");
             final String imageFilePath =
-                imageDirName + imageFileName + "-"
+                imageDirName + imageFileName + "_"
                     + timeFormat.format(new Date());
             BufferedWriter writer = null;
 

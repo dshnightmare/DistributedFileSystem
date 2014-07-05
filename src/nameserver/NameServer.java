@@ -382,8 +382,6 @@ public class NameServer
 
         private boolean hasRunningTask()
         {
-            System.out.println("PPPP " + tasks.size() + " "
-                + Status.getInstance().getStorageNum());
             return 0 == tasks.size();
         }
     }
