@@ -1,5 +1,7 @@
 package storageserver.task;
 
+import java.util.concurrent.TimeUnit;
+
 import common.call.Call;
 import common.call.Call.Type;
 import common.call.n2s.MigrateFileCallN2S;
@@ -8,42 +10,48 @@ import common.util.Logger;
 
 public class RegisterTask extends StorageServerTask {
 	private final static Logger logger = Logger.getLogger(RegisterTask.class);
+	private String address;
+	private Boolean finished = false;
 
-	public RegisterTask(long tid) {
+	public RegisterTask(long tid, String address) {
 		super(tid);
-		// TODO Auto-generated constructor stub
+		this.address = address;
 	}
 
 	@Override
 	public void handleCall(Call call) {
-		// TODO Auto-generated method stub
-		if (call.getType() == Type.MIGRATE_FILE_N2S) {
+		if (call.getType() == Type.FINISH) {
 			synchronized (finished) {
-				finished = true;
+				if(false == finished)
+				{
+					finished = true;
+					logger.info("StorageServer" + address + " finish registeration.");
+				}
 			}
-			logger.info("StorageServer recieve registration answer");
 		}
 	}
 
 	@Override
 	public void run() {
-		// TODO 需要处理异常情况：如果一直没有收到回复需要重新
 		boolean isNSanswer = false;
 		while (isNSanswer == false) {
 			synchronized (finished) {
 				if (false == finished) {
-					RegistrationCallS2N call = new RegistrationCallS2N();
+					RegistrationCallS2N call = new RegistrationCallS2N(address);
+					call.setFromTaskId(getTaskId());
 					connector.sendCall(call);
+					logger.info("StorageServer" + address + " send a registerationCall.");
 				} else
 					isNSanswer = true;
 			}
 			try {
-				Thread.sleep(1000);
+				TimeUnit.SECONDS.sleep(2);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		setFinish();
 	}
 
 	@Override

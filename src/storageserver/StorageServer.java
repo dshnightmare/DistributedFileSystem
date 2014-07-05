@@ -1,64 +1,146 @@
 package storageserver;
 
-
+import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
+
+import storageserver.task.HeartbeatTask;
+import storageserver.task.RegisterTask;
 import common.call.Call;
 import common.call.CallListener;
-import common.call.n2s.MigrateFileCallN2S;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.network.ClientConnector;
+import common.network.XConnector;
 import common.task.Task;
+import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.Logger;
 
 public class StorageServer implements TaskEventListener, CallListener {
 	private static final Logger logger = Logger.getLogger(StorageServer.class);
+	private static final int MAX_THREADS = 20;
+	private String address;
 	private final Storage storage;
-	private ClientConnector connector;
+	private ClientConnector connector = null;
+	private XConnector xConnector = null;
 	private Map<Long, Task> tasks = new HashMap<Long, Task>();
-	private int taskIDCount;
+	private Map<String, List<String>> onMigrateFile = new HashMap<String, List<String>>();
+	private Map<String, List<String>> overMigrateFile = new HashMap<String, List<String>>();
+	private TaskMonitor taskMonitor = null;
+	private ExecutorService taskExecutor = null;
+	private boolean initialized = false;
+	private Boolean registered = false;
+	private Integer taskIDCount = 0;
 
-	StorageServer(String location) {
-		Configuration conf = Configuration.getInstance();
+	public StorageServer(String location) {
 		storage = new Storage(location);
-		taskIDCount = 0;
-		connector = ClientConnector.getInstance();
-		connector.addListener(this);
-		
 	}
-	
-	public void initAndstart(){
-		
+
+	public void initAndstart(int port) throws Exception {
+		if (initialized) {
+			logger.warn("StorgeServer has been initialized before, you can't do it twice.");
+			return;
+		} else {
+			// check configuration
+			if (null == Configuration.getInstance()) {
+				throw new Exception(
+						"Initiation failed, couldn't load configuration file.");
+			}
+			// check connector
+			if (null == ClientConnector.getInstance()) {
+				throw new Exception(
+						"Initiation failed, couldn't create storage connector.");
+			}
+			// check xconnector
+			// if (null == XConnector.getInstance()) {
+			// throw new Exception(
+			// "Initiation failed, couldn't create storage xconnector.");
+			// }
+
+			Configuration conf = Configuration.getInstance();
+
+			taskExecutor = Executors.newFixedThreadPool(MAX_THREADS);
+
+			taskMonitor = new TaskMonitor();
+			taskMonitor.addListener(this);
+
+			connector = ClientConnector.getInstance();
+			connector.addListener(this);
+
+			// xConnector = XConnector.getInstance();
+			// xConnector.addListener(this);
+			xConnector = new XConnector(port);
+			address = InetAddress.getLocalHost().getHostAddress() + ":" + port;
+
+			// start the registration task, if registration success, then start
+			// heartbeat task
+			Task task = null;
+			synchronized (taskIDCount) {
+				task = new RegisterTask(taskIDCount++, address);
+			}
+			tasks.put(task.getTaskId(), task);
+			taskExecutor.execute(task);
+			taskMonitor.addTask(task);
+
+			logger.info("StorageServer" + connector.getLocalAddress()
+					+ " initialization finished.");
+
+			initialized = true;
+		}
 	}
+
 	@Override
 	public void handleCall(Call call) {
-		// TODO Auto-generated method stub
-		switch (call.getType()) 
-		{
-		// TODO 需要添加注册成功之后的处理
-		case MIGRATE_FILE_N2S:
-		{
-			MigrateFileCallN2S handlecall = (MigrateFileCallN2S)call;
-			for (String key: handlecall.getFiles().keySet()) {
-			}
+		logger.info("StorageServer" + connector.getLocalAddress()
+				+ " recievced a call: " + call.getType());
+		// switch (call.getType()) {
+		// // TODO 需要添加注册成功之后的处理
+		// case FINISH:{
+		// tasks.get(key)
+		// break;
+		// }
+		// case MIGRATE_FILE_N2S: {
+		// MigrateFileCallN2S handlecall = (MigrateFileCallN2S) call;
+		// for (String key : handlecall.getFiles().keySet()) {
+		// }
+		// break;
+		// }
+		// case SYNC_N2S:
+		// break;
+		// default:
+		// break;
+		// }
+		logger.info(call.getToTaskId());
+		final Task task = tasks.get(call.getToTaskId());
+		if (null == task)
+			logger.error("StorageServer" + address
+					+ " couldn't find a task to handle the call.");
+		else {
+			logger.info("StorageServer" + address + " start handle the call.");
+			task.handleCall(call);
 		}
-		case SYNC_N2S:
-			break;
-		default:
-			break;
-		}
-		StorageTaskThread task = new StorageTaskThread(taskIDCount++);
-		task.init(call, storage);
-		// add listener
-		task.run();
 	}
 
 	@Override
 	public void handle(TaskEvent event) {
 		// TODO Auto-generated method stub
+		final Task task = event.getTaskThread();
 
+		if (event.getType() == TaskEvent.Type.TASK_FINISHED) {
+			if (task instanceof RegisterTask) {
+				registered = true;
+				logger.info("RegisterTask: " + task.getTaskId() + " "
+						+ event.getType());
+			} else if (task instanceof HeartbeatTask) {
+				logger.info("HeartbeatTask: " + task.getTaskId() + " "
+						+ event.getType());
+			}
+		}
 	}
 }
