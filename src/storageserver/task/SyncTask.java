@@ -13,11 +13,13 @@ import common.util.Logger;
 public class SyncTask extends StorageServerTask {
 	private final static Logger logger = Logger.getLogger(SyncTask.class);
 	private Boolean alive = true;
+	private String address;
 	private Storage storage;
 
-	public SyncTask(long tid, Storage storage) {
+	public SyncTask(long tid, Storage storage, String address) {
 		super(tid);
 		this.storage = storage;
+		this.address = address;
 	}
 
 	@Override
@@ -34,7 +36,7 @@ public class SyncTask extends StorageServerTask {
 	@Override
 	public void run() {
 		while (alive) {
-			SyncCallS2N call = new SyncCallS2N(storage.analyzeCurrentFiles());
+			SyncCallS2N call = new SyncCallS2N(address, storage.analyzeCurrentFiles());
 			call.setFromTaskId(getTaskId());
 			connector.sendCall(call);
 			try {

@@ -1,13 +1,16 @@
 package storageserver.task;
 
+import java.net.Socket;
+
 import common.call.Call;
 import common.task.Task;
 
 public class AddFileTask extends StorageServerTask {
+	Socket socket;
 
-	public AddFileTask(long tid) {
+	public AddFileTask(long tid, Socket socket) {
 		super(tid);
-		// TODO Auto-generated constructor stub
+		this.socket = socket;
 	}
 
 	@Override
