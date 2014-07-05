@@ -25,6 +25,7 @@ import common.event.TaskEventListener;
 import common.task.Task;
 import common.task.TaskMonitor;
 import common.util.Configuration;
+import common.util.Log;
 import common.util.Logger;
 
 /**
@@ -202,8 +203,9 @@ public class NameServer
             }
             finally
             {
-                if (permitted)
+                if (permitted){
                     pauseLock.unlock();
+                }
             }
         }
         else
@@ -291,7 +293,7 @@ public class NameServer
      * @param call
      * @return
      */
-    private synchronized boolean isNewCall(Call call)
+    private boolean isNewCall(Call call)
     {
         return call.getToTaskId() < 0;
     }
@@ -313,10 +315,7 @@ public class NameServer
         @Override
         public void run()
         {
-            synchronized (NameServer.this)
-            {
-                makeSnapshot();
-            }
+            makeSnapshot();
         }
 
         /**

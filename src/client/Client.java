@@ -8,10 +8,12 @@ import java.util.Map;
 import client.task.CAddFileTask;
 import client.task.CCreateDirTask;
 import client.task.CGetDirectoryTask;
+import client.task.CRemoveFileTask;
 
 import common.call.Call;
 import common.call.CallListener;
 import common.event.TaskEvent;
+import common.event.TaskEventDispatcher;
 import common.event.TaskEventListener;
 import common.task.Task;
 import common.task.TaskMonitor;
@@ -25,13 +27,18 @@ import common.util.Log;
  *
  */
 public class Client
-	implements TaskEventListener, CallListener{
+	implements TaskEventListener, TaskEventDispatcher, CallListener{
 
 	private volatile static Client instance;
 	
 	private TaskMonitor taskMonitor;
 	private Map<Long, Task> tasks = new HashMap<Long, Task>();
 	private Object taskWaitor = new Object();
+    /**
+     * List of <tt>TaskEventListener</tt>
+     */
+    private List<TaskEventListener> listeners =
+        new ArrayList<TaskEventListener>();
 	
 	public Client(){
 		taskMonitor = new TaskMonitor();
@@ -63,7 +70,6 @@ public class Client
 			try {
 				taskWaitor.wait();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -86,20 +92,18 @@ public class Client
 	 * create directory
 	 * @param dir full path of new directory
 	 */
-	public void createDirectorySync(String dir){
+	public void createDirectoryASync(String dir){
 		CCreateDirTask task = new CCreateDirTask(IdGenerator.getInstance().getLongId()
-				, dir, taskWaitor);
+				, dir);
 		new Thread(task).start();
 		taskMonitor.addTask(task);
-
-		synchronized (taskWaitor) {
-			try {
-				taskWaitor.wait();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+	}
+	
+	public void removeFileASync(String dir, String name){
+		CRemoveFileTask task = new CRemoveFileTask(IdGenerator.getInstance().getLongId()
+				, dir, name);
+		new Thread(task).start();
+		taskMonitor.addTask(task);
 	}
 
 	@Override
@@ -132,6 +136,37 @@ public class Client
 
 	@Override
 	public void handle(TaskEvent event) {
+		// TODO Auto-generated method stub
+		if(!(event.getTaskThread() instanceof CAddFileTask)
+				&&!(event.getTaskThread() instanceof CCreateDirTask)
+				&&!(event.getTaskThread() instanceof CRemoveFileTask)){
+			Log.debug("TaskEvent "+event.getTaskThread().getClass().getName());
+			return;
+		}
+		Log.debug("TaskEvent addfile");
+		synchronized(listeners){
+			if (listeners.size() != 0) {
+				Log.debug("listeners size:"+listeners.size());
+				listeners.get(0).handle(event);
+				listeners.remove(0);
+			}
+		}
+	}
+
+	@Override
+	public void addListener(TaskEventListener listener) {
+		// TODO Auto-generated method stub
+		listeners.add(listener);
+	}
+
+	@Override
+	public void removeListener(TaskEventListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void fireEvent(TaskEvent event) {
 		// TODO Auto-generated method stub
 		
 	}

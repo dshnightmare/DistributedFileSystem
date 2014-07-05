@@ -104,6 +104,7 @@ public class CGetFileTask
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		setFinish();
 	}
 
 	@Override

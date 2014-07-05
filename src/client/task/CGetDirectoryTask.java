@@ -3,6 +3,7 @@ package client.task;
 import java.util.List;
 
 import common.call.Call;
+import common.call.all.AbortCall;
 import common.call.c2n.GetDirectoryCallC2N;
 import common.call.n2c.GetDirectoryCallN2C;
 import common.network.ClientConnector;
@@ -40,6 +41,7 @@ public class CGetDirectoryTask
 		}
 		else if (call.getType() == Call.Type.ABORT) {
 			synchronized (taskWaitor) {
+				Log.info(((AbortCall)call).getReason());
 				taskWaitor.notify();
 			}
 		}
@@ -50,7 +52,6 @@ public class CGetDirectoryTask
 
 	@Override
 	public void run() {
-		Log.debug("Query directory: "+direct);
 		GetDirectoryCallC2N callC2N = new GetDirectoryCallC2N(direct);
 		callC2N.setFromTaskId(getTaskId());
 		ClientConnector.getInstance().sendCall(callC2N);
@@ -66,16 +67,14 @@ public class CGetDirectoryTask
 		
 		//ret = callN2C.getDirectoryList();
 		// make sure the same ret location
-		List<String> retu = callN2C.getFilesAndDirectories();
-		retu.size();
-		Log.debug("Query directory returned:");
 		for(String item : callN2C.getFilesAndDirectories()){
-			ret.add(item);
 			Log.debug(" - "+item);
+			ret.add(item);
 		}
 		synchronized (taskWaitor) {
 			taskWaitor.notify();
 		}
+		setFinish();
 	}
 
 	@Override
