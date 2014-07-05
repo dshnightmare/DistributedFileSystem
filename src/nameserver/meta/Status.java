@@ -1,7 +1,11 @@
 package nameserver.meta;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import nameserver.meta.StatusEvent.Type;
 
 /**
  * Status of storage servers.
@@ -10,7 +14,7 @@ import java.util.List;
  * @see Storage
  * 
  */
-public class Status
+public class Status implements StatusEventListener
 {
     /**
      * Single pattern instance.
@@ -20,7 +24,10 @@ public class Status
     /**
      * Storage status.
      */
-    private List<Storage> status = new ArrayList<Storage>();
+    private Set<Storage> status = new HashSet<Storage>();
+
+    private List<StatusEventListener> listeners =
+        new ArrayList<StatusEventListener>();
 
     /**
      * Construction method.
@@ -46,7 +53,10 @@ public class Status
      */
     public synchronized void addStorage(Storage storage)
     {
+        storage.addEventListener(this);
         status.add(storage);
+
+        fireEvent(new StatusEvent(Type.STORAGE_REGISTERED, storage));
     }
 
     /**
@@ -76,7 +86,12 @@ public class Status
      */
     public synchronized void removeStorage(Storage storage)
     {
-        status.remove(storage);
+        final boolean remove = status.remove(storage);
+
+        if (remove)
+        {
+            fireEvent(new StatusEvent(Type.STORAGE_DEAD, storage));
+        }
     }
 
     /**
@@ -130,5 +145,27 @@ public class Status
     public synchronized int getStorageNum()
     {
         return status.size();
+    }
+    
+    public void addEventListener(StatusEventListener listener)
+    {
+        listeners.add(listener);
+    }
+
+    public void removeEventListener(StatusEventListener listener)
+    {
+        listeners.remove(listener);
+    }
+
+    public void fireEvent(StatusEvent event)
+    {
+        for (StatusEventListener l : listeners)
+            l.handle(event);
+    }
+
+    @Override
+    public void handle(StatusEvent event)
+    {
+        fireEvent(event);
     }
 }

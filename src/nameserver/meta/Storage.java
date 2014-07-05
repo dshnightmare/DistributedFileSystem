@@ -41,6 +41,9 @@ public class Storage
     private Map<Storage, List<File>> migrateFiles =
         new HashMap<Storage, List<File>>();
 
+    private List<StatusEventListener> listeners =
+        new ArrayList<StatusEventListener>();
+
     /**
      * Construction method.
      * 
@@ -185,5 +188,21 @@ public class Storage
                 }
             }
         }
+    }
+
+    public void addEventListener(StatusEventListener listener)
+    {
+        listeners.add(listener);
+    }
+
+    public void removeEventListener(StatusEventListener listener)
+    {
+        listeners.remove(listener);
+    }
+
+    public void fireEvent(StatusEvent event)
+    {
+        for (StatusEventListener l : listeners)
+            l.handle(event);
     }
 }

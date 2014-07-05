@@ -16,6 +16,7 @@ import nameserver.meta.Status;
 import nameserver.meta.Storage;
 import nameserver.task.HeartbeatTask;
 import nameserver.task.TaskFactory;
+import nameserver.ui.NameServerGUI;
 import common.network.ServerConnector;
 import common.call.Call;
 import common.call.CallListener;
@@ -66,7 +67,7 @@ public class NameServer
      * server.
      */
     private ServerConnector connector = null;
-    
+
     private BackupUtil backup = null;
 
     /**
@@ -171,8 +172,13 @@ public class NameServer
             heartbeatMonitor = new TaskMonitor();
             heartbeatMonitor.addListener(this);
 
+            // GUI
+            NameServerGUI gui = NameServerGUI.getInstance();
+            Status.getInstance().addEventListener(gui);
+            gui.init();
+
             logger.info("NameServer initialization finished.");
-            
+
             initialized = true;
         }
     }
@@ -234,7 +240,8 @@ public class NameServer
             }
             else
             {
-                // Shall we send an abort call? Maybe not.
+                sendAbortCall(call, "Failed to recognize " + call.getType()
+                    + ". Homeless call.");
             }
         }
     }
