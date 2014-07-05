@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="DistributedFileSystem" default="run_client" basedir=".">
+
+	<property name="src" value="src" />
+	<property name="dest" value="classes" />
+	<property name="jar" value="dfs.jar" />
+
+	<target name="init">
+		<mkdir dir="${dest}" />
+	</target>
+
+	<target name="make" depends="init">
+		<javac srcdir="${src}" destdir="${dest}" />
+	</target>
+
+	<target name="build" depends="make">
+		<jar jarfile="${jar}" basedir="${dest}" />
+	</target>
+
+	<target name="rebuild" depends="clean, make" />
+
+	<target name="run_nameserver">
+		<java classname="nameserver.NameServerLauncher" classpath="${jar}" fork="true" />
+	</target>
+
+	<target name="run_storageserver">
+		<java classname="" classpath="${jar}" fork="true" />
+	</target>
+
+	<target name="run_client">
+		<java classname="" classpath="${jar}" fork="true" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${dest}" />
+		<delete file="${jar}" />
+	</target>
+
+</project>
