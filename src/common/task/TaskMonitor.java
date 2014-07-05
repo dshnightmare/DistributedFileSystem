@@ -120,11 +120,15 @@ public class TaskMonitor
     {
         fireEvent(event);
 
-        synchronized (tasks)
+        if (TaskEvent.Type.TASK_FINISHED == event.getType()
+            || TaskEvent.Type.TASK_DUE == event.getType())
         {
-            Task task = tasks.remove(event.getTaskThread().getTaskId());
-            logger.info("Task: " + task.getClass()
-                + " has finished, " + event.getType() + " removed from TaskMonitor.");
+            synchronized (tasks)
+            {
+                Task task = tasks.remove(event.getTaskThread().getTaskId());
+                logger.info("Task: " + task.getClass() + " has finished, "
+                    + event.getType() + " removed from TaskMonitor.");
+            }
         }
     }
 
