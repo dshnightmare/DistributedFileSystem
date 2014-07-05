@@ -65,6 +65,10 @@ public class TaskFactory
         case REMOVE_DIRECTORY_C2N:
             task = new RemoveDirectoryTask(taskId, call, connector);
             break;
+        case REGISTRATION_S2N:
+            task =
+                new HeartbeatTask(taskId, call, connector,
+                    conf.getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
         default:
             break;
         }
@@ -73,10 +77,14 @@ public class TaskFactory
         {
             logger.info("Failed to create task, unknown call type: "
                 + call.getType());
+            return null;
         }
 
-        task.setLease(new TaskLease(conf
-            .getLong(Configuration.LEASE_PERIOD_KEY)));
+        if (Call.Type.REGISTRATION_S2N != call.getType())
+        {
+            task.setLease(new TaskLease(conf
+                .getLong(Configuration.LEASE_PERIOD_KEY)));
+        }
 
         return task;
     }
