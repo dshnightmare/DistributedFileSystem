@@ -8,7 +8,7 @@ public class BeforeRegFinishEvent extends TaskEvent {
 
 	public BeforeRegFinishEvent(Task thread, long NStid) {
 		super(Type.REG_FINISHED, thread);
-		// TODO Auto-generated constructor stub
+		this.NStid = NStid;
 	}
 
 	public long getNStid() {

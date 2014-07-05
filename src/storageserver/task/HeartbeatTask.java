@@ -10,8 +10,10 @@ import storageserver.event.HeartbeatResponseEvent;
 import common.call.Call;
 import common.call.n2s.MigrateFileCallN2S;
 import common.call.s2n.HeartbeatCallS2N;
+import common.util.Logger;
 
 public class HeartbeatTask extends StorageServerTask {
+	private final static Logger logger = Logger.getLogger(HeartbeatTask.class);
 	private long NStid;
 	private Map<String, List<String>> overMigrateFile;
 	private Map<String, List<String>> onMigrateFile;
@@ -77,6 +79,7 @@ public class HeartbeatTask extends StorageServerTask {
 			}
 			HeartbeatCallS2N call = new HeartbeatCallS2N(migratefile);
 			call.setToTaskId(NStid);
+			logger.info("---------->"+NStid);
 			call.setFromTaskId(getTaskId());
 			connector.sendCall(call);
 			try {

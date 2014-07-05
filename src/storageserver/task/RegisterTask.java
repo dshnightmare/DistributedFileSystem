@@ -26,6 +26,7 @@ public class RegisterTask extends StorageServerTask {
 				{
 					finished = true;
 					logger.info("StorageServer" + address + " finish registeration.");
+					logger.info("------------------->" + call.getFromTaskId());
 					fireEvent(new BeforeRegFinishEvent(this, call.getFromTaskId()));
 				}
 			}
