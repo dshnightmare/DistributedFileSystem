@@ -2,6 +2,8 @@ package test.nameserver.ui;
 
 import java.util.concurrent.TimeUnit;
 
+import nameserver.meta.File;
+import nameserver.meta.Meta;
 import nameserver.status.StatusEvent;
 import nameserver.status.Storage;
 import nameserver.status.StatusEvent.Type;
@@ -14,6 +16,9 @@ public class TestGUI
     public void testGUI()
     {
         NameServerGUI gui = NameServerGUI.getInstance();
+        
+        Meta.getInstance().addFile("/123/456/789/", new File("111", 222));
+        Meta.getInstance().setFileValid("/123/456/789/", "111", true);
 
         gui.init();
 
@@ -36,7 +41,7 @@ public class TestGUI
 
         try
         {
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.SECONDS.sleep(30);
         }
         catch (InterruptedException e)
         {

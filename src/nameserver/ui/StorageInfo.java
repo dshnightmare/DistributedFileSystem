@@ -39,14 +39,12 @@ public class StorageInfo
 
     public void updateId(String id)
     {
-        System.out.println("Update Id");
         this.id.setText(id);
         panel.updateUI();
     }
 
     public void updateLoad(int load)
     {
-        System.out.println("Update Load");
         this.load.setValue(load);
         panel.updateUI();
     }

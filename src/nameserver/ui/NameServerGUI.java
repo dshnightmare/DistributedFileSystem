@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
+import nameserver.meta.Meta;
 import nameserver.meta.MetaEvent;
 import nameserver.meta.MetaEventListener;
 import nameserver.status.StatusEvent;
@@ -17,7 +18,7 @@ import nameserver.status.StatusEventListener;
 import nameserver.status.Storage;
 
 public class NameServerGUI
-    implements StatusEventListener, MetaEventListener
+    implements StatusEventListener
 {
     private static NameServerGUI instance = new NameServerGUI();
 
@@ -53,6 +54,9 @@ public class NameServerGUI
         tab.addTab("Directory", directoryPanel);
         tab.setSelectedIndex(0);
         frame.add(tab, BorderLayout.CENTER);
+
+        final MetaInfo metaInfo = new MetaInfo(Meta.getInstance());
+        directoryPanel.add(metaInfo.getPanel());
 
         frame.setVisible(true);
     }
@@ -90,12 +94,5 @@ public class NameServerGUI
         frame.remove(panel.getPanel());
 
         frame.validate();
-    }
-
-    @Override
-    public void handle(MetaEvent event)
-    {
-        // TODO Auto-generated method stub
-        
     }
 }
