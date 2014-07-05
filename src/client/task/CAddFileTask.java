@@ -99,6 +99,7 @@ public class CAddFileTask
             finishCall.setToTaskId(toTaskId);
             finishCall.setFromTaskId(getTaskId());
             ClientConnector.getInstance().sendCall(finishCall);
+            setFinish();
             return;
         }
 
@@ -118,6 +119,7 @@ public class CAddFileTask
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        setFinish();
     }
 
     @Override

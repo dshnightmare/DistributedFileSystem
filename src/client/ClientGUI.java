@@ -1,7 +1,9 @@
 package client;
 
 import java.awt.BorderLayout;
+import java.awt.Button;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
@@ -14,19 +16,24 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.text.FlowView;
 import javax.swing.text.View;
 
+import common.event.TaskEvent;
+import common.event.TaskEventListener;
 import common.util.Log;
 import common.util.WrapLayout;
 
 public class ClientGUI
+	implements TaskEventListener
 {
 	
 	JFrame frame = new JFrame("DFS");
@@ -39,9 +46,11 @@ public class ClientGUI
 	public JPanel fileItem;
 	//goback button
 	JButton backButton;
+	JButton removeButton;
 	
 	//current directory
 	private String currentDirectory = "/";
+	private String selectedItem = "";
 	
 	private Client client = Client.getInstance();
 	
@@ -66,7 +75,8 @@ public class ClientGUI
 				String subdir = JOptionPane.showInputDialog("请输入子目录名称");
 				if(null == subdir || subdir.equals(""))
 					return;
-				client.createDirectorySync(currentDirectory+subdir+"/");
+				client.addListener(ClientGUI.this);
+				client.createDirectoryASync(currentDirectory+subdir+"/");
 			}
 		});
 		
@@ -80,6 +90,7 @@ public class ClientGUI
 				if (ret == JFileChooser.APPROVE_OPTION) {
 					File file = fChooser.getSelectedFile();
 					//TODO feed file to task
+					client.addListener(ClientGUI.this);
 					client.addFileAsync(currentDirectory, file.getName());
 				}
 		    }
@@ -109,14 +120,23 @@ public class ClientGUI
 		});
 		backButton.setEnabled(false);
 		
+		//delete file/directory
+		removeButton = new JButton("删除");
+		removeButton.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e){
+				client.addListener(ClientGUI.this);
+				Log.debug("To delete:"+currentDirectory+selectedItem);
+				client.removeFileASync(currentDirectory, selectedItem);
+			}
+		});
+		removeButton.setEnabled(false);
+		
 		//add buttons 
 		topPanel.add(createDirButton);
 		topPanel.add(addButton);
 		topPanel.add(refreshButton);
 		topPanel.add(backButton);
-		
-		// TODO bottom panel
-		bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 10));
+		topPanel.add(removeButton);
 		
 		
 		frame.add(topPanel, BorderLayout.NORTH);
@@ -159,16 +179,26 @@ public class ClientGUI
 							frame.setTitle("DFS -- "+currentDirectory);
 						}
 					}
+					//one click for choosing
 					else if (e.getClickCount() == 1) {
-						if(((JPanel)e.getSource()).getBackground() == Color.cyan){
+						Color origin = ((JPanel)e.getSource()).getBackground();
+						for(int i=0; i<filePanel.getComponents().length; i++){
+							((JPanel)filePanel.getComponent(i)).setBackground(null);
+						}
+						if(origin == Color.cyan){
 							((JPanel)e.getSource()).setBackground(null);
+							selectedItem = "";
+							removeButton.setEnabled(false);
 						}
 						else {
 							((JPanel)e.getSource()).setBackground(Color.cyan);
+							selectedItem = ((JLabel)((JPanel)e.getSource()).getComponent(1)).getText();
+							removeButton.setEnabled(true);
 						}
 					}
 				}
 			});
+			
 			fileItem.setToolTipText(text.getText());
 			fileItem.setPreferredSize(new Dimension(45, 55));
 			filePanel.add(fileItem);
@@ -207,5 +237,11 @@ public class ClientGUI
 			}
 			return otherIcon;
 		}
+	}
+
+	@Override
+	public void handle(TaskEvent event) {
+		// TODO Auto-generated method stub
+		showDirectory(currentDirectory);
 	}
 }
