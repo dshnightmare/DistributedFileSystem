@@ -6,6 +6,7 @@ import common.network.ServerConnector;
 import common.task.TaskLease;
 import common.util.Configuration;
 import common.util.IdGenerator;
+import common.util.Logger;
 
 /**
  * A task factory.
@@ -15,6 +16,8 @@ import common.util.IdGenerator;
  */
 public class TaskFactory
 {
+    private static Logger logger = Logger.getLogger(TaskFactory.class);
+
     /**
      * Create <tt>NameServerTask</tt>.
      * <p>
@@ -51,13 +54,25 @@ public class TaskFactory
             task = new GetFileTask(taskId, call, connector);
             break;
         case MOVE_FILE_C2N:
-            task = new GetFileTask(taskId, call, connector);
+            task = new MoveFileTask(taskId, call, connector);
+            break;
+        case MOVE_DIRECTORY_C2N:
+            task = new MoveDirectoryTask(taskId, call, connector);
             break;
         case REMOVE_FILE_C2N:
             task = new RemoveFileTask(taskId, call, connector);
             break;
+        case REMOVE_DIRECTORY_C2N:
+            task = new RemoveDirectoryTask(taskId, call, connector);
+            break;
         default:
             break;
+        }
+
+        if (null == task)
+        {
+            logger.info("Failed to create task, unknown call type: "
+                + call.getType());
         }
 
         task.setLease(new TaskLease(conf
