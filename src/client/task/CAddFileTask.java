@@ -48,7 +48,6 @@ public class CAddFileTask
     public CAddFileTask(long tid, String _path, String _name)
     {
         super(tid);
-        xConnector = XConnector.getInstance();
         filepath = _path;
         filename = _name;
     }
@@ -120,7 +119,7 @@ public class CAddFileTask
         }
 
         String location = call.getLocations().get(0);
-        storageSocket = xConnector.getSocket(location);
+        //storageSocket = xConnector.getSocket(location);
 
         try
         {

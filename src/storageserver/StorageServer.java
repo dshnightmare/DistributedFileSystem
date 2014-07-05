@@ -2,6 +2,7 @@ package storageserver;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,13 +22,15 @@ import common.call.CallListener;
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
 import common.network.ClientConnector;
+import common.network.SocketListener;
 import common.network.XConnector;
 import common.task.Task;
 import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.Logger;
 
-public class StorageServer implements TaskEventListener, CallListener {
+public class StorageServer implements TaskEventListener, CallListener,
+		SocketListener {
 	private static final Logger logger = Logger.getLogger(StorageServer.class);
 	private static final int MAX_THREADS = 20;
 	private String address;
@@ -82,6 +85,7 @@ public class StorageServer implements TaskEventListener, CallListener {
 			// xConnector = XConnector.getInstance();
 			// xConnector.addListener(this);
 			xConnector = new XConnector(port);
+			xConnector.addSocketListener(this);
 			address = InetAddress.getLocalHost().getHostAddress() + ":" + port;
 
 			// start the registration task, if registration success, then start
@@ -171,6 +175,11 @@ public class StorageServer implements TaskEventListener, CallListener {
 		}
 	}
 
+	@Override
+	public void handleSocket(Socket s) {
+		// TODO Auto-generated method stub
+	}
+
 	public void startRegister() {
 		Task task = null;
 		int id;
@@ -205,5 +214,10 @@ public class StorageServer implements TaskEventListener, CallListener {
 		tasks.put(task.getTaskId(), task);
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
+	}
+	
+	public void startAddFileTask()
+	{
+		
 	}
 }

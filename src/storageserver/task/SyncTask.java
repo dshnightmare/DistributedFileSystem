@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import storageserver.Storage;
 import common.call.Call;
+import common.call.all.AbortCall;
 import common.call.n2s.SyncCallN2S;
 import common.call.s2n.SyncCallS2N;
 import common.util.Configuration;
@@ -25,6 +26,7 @@ public class SyncTask extends StorageServerTask {
 			SyncCallN2S mycall = (SyncCallN2S)call;
 			storage.removefiles(mycall.getFiles());
 		} else if (call.getType() == Call.Type.ABORT) {
+			logger.info(((AbortCall)call).getReason());
 			alive = false;
 		}
 	}

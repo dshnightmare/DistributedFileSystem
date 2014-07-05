@@ -38,7 +38,6 @@ public class CGetFileTask
 
 	public CGetFileTask(long tid, String _path, String _name) {
 		super(tid);
-		xConnector = XConnector.getInstance();
 		filepath = _path;
 		filename = _name;
 	}
@@ -91,7 +90,7 @@ public class CGetFileTask
 		}
 		
 		String location = call.getLocations().get(0);
-		storageSocket = xConnector.getSocket(location);
+		//storageSocket = xConnector.getSocket(location);
 		
 		try {
 			out = new DataOutputStream(storageSocket.getOutputStream());
