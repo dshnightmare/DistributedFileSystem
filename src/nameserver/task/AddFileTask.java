@@ -255,7 +255,7 @@ public class AddFileTask
         for (Storage s : storages)
             locations.add(s.getId());
 
-        String fileId = file.getId() + "-" + file.getVersion();
+        String fileId = file.getId();
         Call back = new AddFileCallN2C(fileId, locations);
         sendCall(back);
     }

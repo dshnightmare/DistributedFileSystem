@@ -170,7 +170,7 @@ public class GetFileTask
         for (Storage s : file.getLocations())
             locations.add(s.getId());
 
-        String fileId = file.getId() + "-" + file.getVersion();
+        String fileId = file.getId();
 
         Call back = new GetFileCallN2C(fileId, locations);
         sendCall(back);

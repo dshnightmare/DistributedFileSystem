@@ -52,7 +52,7 @@ public class TestHeartbeatTask
     {
         Status status = Status.getInstance();
 
-        RegistrationCallS2N rcall = new RegistrationCallS2N();
+        RegistrationCallS2N rcall = new RegistrationCallS2N("localhost");
         SConnector.sendCall(rcall);
 
         try

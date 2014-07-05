@@ -14,6 +14,7 @@ import common.network.Connector;
 import common.call.Call;
 import common.call.n2s.MigrateFileCallN2S;
 import common.call.s2n.HeartbeatCallS2N;
+import common.call.s2n.RegistrationCallS2N;
 import common.event.TaskEvent;
 import common.util.Logger;
 
@@ -44,6 +45,8 @@ public class HeartbeatTask
      * Heartbeat check period.(second)
      */
     private final long period;
+    
+    private String address;
 
     /**
      * Construction method.
@@ -56,7 +59,8 @@ public class HeartbeatTask
     public HeartbeatTask(long tid, Call call, Connector connector, long period)
     {
         super(tid, call, connector);
-        // Notice that the type is RegistrationCall.
+        RegistrationCallS2N c = (RegistrationCallS2N) call;
+        this.address = c.getAddress();
         this.period = period;
     }
 
@@ -70,7 +74,7 @@ public class HeartbeatTask
 
         synchronized (status)
         {
-            this.storage = new Storage(getInitiator());
+            this.storage = new Storage(address);
             Status.getInstance().addStorage(storage);
         }
 
