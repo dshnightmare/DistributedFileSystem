@@ -26,7 +26,7 @@ public class SyncTask extends StorageServerTask {
 			SyncCallN2S mycall = (SyncCallN2S)call;
 			storage.removefiles(mycall.getFiles());
 		} else if (call.getType() == Call.Type.ABORT) {
-			logger.info(((AbortCall)call).getReason());
+			logger.info("Reason: " + ((AbortCall)call).getReason());
 			alive = false;
 		}
 	}

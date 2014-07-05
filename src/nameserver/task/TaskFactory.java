@@ -69,6 +69,12 @@ public class TaskFactory
             task =
                 new HeartbeatTask(taskId, call, connector,
                     conf.getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
+            break;
+        case SYNC_S2N:
+            task =
+                new SyncTask(taskId, call, connector,
+                    conf.getInteger(Configuration.DUPLICATE_KEY));
+            break;
         default:
             break;
         }
@@ -80,7 +86,8 @@ public class TaskFactory
             return null;
         }
 
-        if (Call.Type.REGISTRATION_S2N != call.getType())
+        if (Call.Type.REGISTRATION_S2N != call.getType()
+            && Call.Type.SYNC_S2N != call.getType())
         {
             task.setLease(new TaskLease(conf
                 .getLong(Configuration.LEASE_PERIOD_KEY)));

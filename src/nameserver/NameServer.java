@@ -163,8 +163,11 @@ public class NameServer
             taskExecutor = Executors.newFixedThreadPool(MAX_THREADS);
 
             snapshotExecutor = Executors.newSingleThreadScheduledExecutor();
+            long backupInterval =
+                Configuration.getInstance().getLong(
+                    Configuration.META_BACKUP_INTERVAL_KEY);
             snapshotExecutor.scheduleAtFixedRate(new SnapshotMaker(),
-                SNAPSHOT_PERIOD, SNAPSHOT_PERIOD, TimeUnit.SECONDS);
+                backupInterval, backupInterval, TimeUnit.SECONDS);
 
             taskMonitor = new TaskMonitor();
             taskMonitor.addListener(this);
@@ -195,29 +198,36 @@ public class NameServer
 
         Task task = null;
 
+        System.out.println("XXXXX 0 " + call.getType());
+
         if (isNewCall(call))
         {
             boolean permitted = pauseLock.tryLock();
 
             try
             {
+                System.out.println("XXXXX 1");
                 if (!permitted)
                 {
+                    System.out.println("XXXXX 2");
                     sendAbortCall(call,
                         "Nameserver is maintaining, please try later.");
                 }
                 else
                 {
+                    System.out.println("XXXXX 3");
                     task = TaskFactory.createTask(call);
 
                     if (task instanceof HeartbeatTask)
                     {
+                        System.out.println("XXXXX 4");
                         heartbeatTasks.put(task.getTaskId(), task);
                         taskExecutor.execute(task);
                         heartbeatMonitor.addTask(task);
                     }
                     else
                     {
+                        System.out.println("XXXXX 5");
                         tasks.put(task.getTaskId(), task);
                         taskExecutor.execute(task);
                         taskMonitor.addTask(task);
@@ -234,6 +244,7 @@ public class NameServer
         }
         else
         {
+            System.out.println("XXXXX 6");
             task = getRelatedTask(call.getType(), call.getToTaskId());
 
             if (null != task)
