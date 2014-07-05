@@ -1,6 +1,5 @@
 package nameserver.task;
 
-
 import nameserver.BackupUtil;
 import nameserver.meta.Directory;
 import nameserver.meta.Meta;
@@ -71,8 +70,8 @@ public class AddDirectoryTask
                 Directory dir = new Directory(dirName);
 
                 logger.info("AddDirectoryTask " + getTaskId() + " started.");
-                backup.writeLogIssue(getTaskId(), Call.Type.ADD_FILE_C2N,
-                    dirName + " " + dirName);
+                backup.writeLogIssue(getTaskId(), Call.Type.ADD_DIRECTORY_C2N,
+                    dirName);
 
                 logger.info("AddDirectoryTask " + getTaskId() + " commit.");
                 backup.writeLogCommit(getTaskId());

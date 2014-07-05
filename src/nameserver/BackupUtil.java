@@ -195,19 +195,28 @@ public class BackupUtil
                     if (null == line)
                         break;
 
-                    String[] tokens = line.split(SEPERATOR);
+                    String[] dirInfo = line.split(SEPERATOR);
 
-                    // [directory name, file count]
-                    if (tokens.length != 2)
+                    // +---------------+------------+
+                    // |0              |1           |
+                    // +---------------+------------+
+                    // |directory name |file number |
+                    // +---------------+------------+
+                    if (dirInfo.length != 2)
                         break;
 
-                    final int numFiles = Integer.valueOf(tokens[1]);
+                    final String dirName = dirInfo[0];
+                    final int numFiles = Integer.valueOf(dirInfo[1]);
                     for (int i = 0; i < numFiles; i++)
                     {
                         String fileLine = reader.readLine();
                         String[] fileInfo = fileLine.split(SEPERATOR);
 
-                        // [, file name, file id]
+                        // +--+----------+--------+
+                        // |0 |1         |2       |
+                        // +--+----------+--------+
+                        // |  |file name |file id |
+                        // +--+----------+--------+
                         if (fileInfo.length != 3)
                         {
                             logger
@@ -215,10 +224,17 @@ public class BackupUtil
                             continue;
                         }
 
+                        final String fileName = fileInfo[1];
+                        final String fileId = fileInfo[2];
+                        final long bareFileId =
+                            nameserver.meta.File.getBareIdFromFileId(fileId);
+                        final long fileVersion =
+                            nameserver.meta.File.getVersionFromFileId(fileId);
                         final nameserver.meta.File file =
-                            new nameserver.meta.File(fileInfo[1],
-                                Long.valueOf(fileInfo[2]));
-                        meta.addFile(tokens[0], file);
+                            new nameserver.meta.File(fileName, bareFileId);
+                        file.setVersion(fileVersion);
+
+                        meta.addFile(dirName, file);
                     }
                 }
             }
@@ -371,29 +387,66 @@ public class BackupUtil
                 while (!committedTasks.isEmpty())
                 {
                     tokens = committedTasks.poll();
+                    String logCall = tokens[2];
 
-                    if (0 == tokens[2].compareTo(Call.Type.ADD_FILE_C2N
-                        .toString()))
+                    if (callEqual(logCall, Call.Type.ADD_FILE_C2N))
                     {
-                        meta.addFile(tokens[3], new nameserver.meta.File(
-                            tokens[4], Long.valueOf(tokens[5])));
+                        final String dirName = tokens[3];
+                        final String fileName = tokens[4];
+                        final String fileId = tokens[5];
+                        final long bareFileId =
+                            nameserver.meta.File.getBareIdFromFileId(fileId);
+
+                        meta.addFile(dirName, new nameserver.meta.File(
+                            fileName, bareFileId));
                     }
-                    else if (0 == tokens[2].compareTo(Call.Type.MOVE_FILE_C2N
-                        .toString()))
+                    else if (callEqual(logCall, Call.Type.ADD_DIRECTORY_C2N))
                     {
-                        meta.renameFile(tokens[3], tokens[4], tokens[5],
-                            tokens[6]);
+                        final String dirName = tokens[3];
+
+                        meta.addDirectory(new nameserver.meta.Directory(dirName));
                     }
-                    else if (0 == tokens[2].compareTo(Call.Type.REMOVE_FILE_C2N
-                        .toString()))
+                    else if (callEqual(logCall, Call.Type.MOVE_FILE_C2N))
                     {
-                        meta.removeFile(tokens[3], tokens[4]);
+                        final String oldDirName = tokens[3];
+                        final String oldfileName = tokens[4];
+                        final String newDirName = tokens[5];
+                        final String newfileName = tokens[6];
+
+                        meta.renameFile(oldDirName, oldfileName, newDirName,
+                            newfileName);
                     }
-                    else if (0 == tokens[2].compareTo(Call.Type.APPEND_FILE_C2N
-                        .toString()))
+                    else if (callEqual(logCall, Call.Type.MOVE_DIRECTORY_C2N))
                     {
-                        // Update file version.
-                        // TODO.
+                        final String oldDirName = tokens[3];
+                        final String newDirName = tokens[4];
+
+                        meta.renameDirectory(oldDirName, newDirName);
+                    }
+                    else if (callEqual(logCall, Call.Type.REMOVE_FILE_C2N))
+                    {
+                        final String dirName = tokens[3];
+                        final String fileName = tokens[4];
+
+                        meta.removeFile(dirName, fileName);
+                    }
+                    else if (callEqual(logCall, Call.Type.REMOVE_DIRECTORY_C2N))
+                    {
+                        final String dirName = tokens[3];
+
+                        meta.removeDirectory(dirName);
+                    }
+                    else if (callEqual(logCall, Call.Type.APPEND_FILE_C2N))
+                    {
+                        final String dirName = tokens[3];
+                        final String fileName = tokens[4];
+
+                        meta.getFile(dirName, fileName).updateVersion();
+                    }
+                    else
+                    {
+                        logger
+                            .info("BackupUtil, unknown operation: " + logCall);
                     }
                 }
             }
@@ -420,5 +473,10 @@ public class BackupUtil
                 }
             }
         }
+    }
+
+    private boolean callEqual(String logCall, Call.Type call)
+    {
+        return logCall.compareTo(call.toString()) == 0;
     }
 }

@@ -88,23 +88,31 @@ public class TestBackupUtil extends TestCase
         
         util.deleteBackLog();
         
-        util.writeLogIssue(1, Call.Type.ADD_FILE_C2N, "/1/a/b/c/ d 1");
-        util.writeLogIssue(2, Call.Type.ADD_FILE_C2N, "/1/c/d/ a 2");
-        util.writeLogIssue(3, Call.Type.ADD_FILE_C2N, "/1/e/ x 3");
+        util.writeLogIssue(1, Call.Type.ADD_FILE_C2N, "/1/a/b/c/ d 1_0");
+        util.writeLogIssue(2, Call.Type.ADD_FILE_C2N, "/1/c/d/ a 2_0");
+        util.writeLogIssue(3, Call.Type.ADD_FILE_C2N, "/1/e/ x 3_0");
         util.writeLogCommit(1);
         util.writeLogCommit(2);
-        util.writeLogIssue(4, Call.Type.REMOVE_FILE_C2N, "/1/c/d/ a");
+        util.writeLogIssue(4, Call.Type.REMOVE_FILE_C2N, "/1/c/d/ a 2_0");
         util.writeLogCommit(4);
         util.writeLogIssue(5, Call.Type.MOVE_FILE_C2N, "/1/a/b/c/ d /1/a/ y");
         util.writeLogCommit(3);
-        util.writeLogIssue(6, Call.Type.ADD_FILE_C2N, "/1/p/ z 4");
+        util.writeLogIssue(6, Call.Type.ADD_FILE_C2N, "/1/p/ z 4_0");
         util.writeLogCommit(5);
+        util.writeLogIssue(7, Call.Type.REMOVE_DIRECTORY_C2N, "/1/e/");
+        util.writeLogIssue(8, Call.Type.MOVE_DIRECTORY_C2N, "/1/ /2/");
+        util.writeLogCommit(7);
+        util.writeLogCommit(8);
         
         util.readBackupLog();
         
         assertFalse(meta.containFile("/1/a/b/c/", "d"));
-        assertTrue(meta.containFile("/1/a/", "y"));
-        assertFalse(meta.containFile("/1/c/d/", "a"));
-        assertFalse(meta.containFile("/1/p/", "z"));
+        assertFalse(meta.containFile("/2/a/b/c/", "d"));
+        assertFalse(meta.containFile("/1/a/", "y"));
+        assertTrue(meta.containFile("/2/a/", "y"));
+        assertFalse(meta.containFile("/2/c/d/", "a"));
+        assertFalse(meta.containFile("/2/p/", "z"));
+        assertFalse(meta.containDirectory("/1/e/"));
+        assertFalse(meta.containDirectory("/2/e/"));
     }
 }

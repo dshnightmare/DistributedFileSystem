@@ -55,6 +55,26 @@ public class File
      */
     private List<Storage> locations = new ArrayList<Storage>();
 
+    public static long getBareIdFromFileId(String fileId)
+    {
+        String[] tokens = fileId.split(SEPARATOR);
+
+        if (tokens.length < 2)
+            return -1;
+
+        return Long.valueOf(tokens[0]);
+    }
+
+    public static long getVersionFromFileId(String fileId)
+    {
+        String[] tokens = fileId.split(SEPARATOR);
+
+        if (tokens.length < 2)
+            return -1;
+
+        return Long.valueOf(tokens[1]);
+    }
+
     /**
      * Construction method.
      * 
@@ -174,6 +194,11 @@ public class File
     public void updateVersion()
     {
         version++;
+    }
+
+    public void setVersion(long version)
+    {
+        this.version = version;
     }
 
     /**
