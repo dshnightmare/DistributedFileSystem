@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.omg.CORBA.PUBLIC_MEMBER;
@@ -16,29 +18,19 @@ import common.call.CallListener;
 import common.util.Configuration;
 import common.util.Logger;
 
-public class XConnector extends Thread implements Connector, CallDispatcher{
+public class XConnector 
+	extends Thread
+	implements SocketDispatcher{
 
-	private volatile static XConnector instance;
-
-	private int port;
+	private int port = 0;
 	private Configuration cf;
 	private ServerSocket ss;
 	
-	private Map<String, Socket> socketMap;
+	private List<SocketListener> socketListeners = new ArrayList<SocketListener>();
 
-	public XConnector() {
+	public XConnector(int port) {
 		cf = Configuration.getInstance();
-		port = cf.getInteger("xconnector_port");
-	}
-
-	public static XConnector getInstance(){
-		if(null == instance){
-			synchronized (XConnector.class) {
-				instance = new XConnector();
-				instance.start();
-			}
-		}
-		return instance;
+		this.port = port;
 	}
 	
 	@Override
@@ -49,10 +41,11 @@ public class XConnector extends Thread implements Connector, CallDispatcher{
 
 			while (true) {
 				Socket client = ss.accept();
-				putSocket(client.getRemoteSocketAddress().toString(), client);
-				XConnHandler connHandler = new XConnHandler(
-						client);
-				connHandler.start();
+				for(SocketListener listener:socketListeners){
+					listener.handleSocket(client);
+				}
+//				XConnHandler connHandler = new XConnHandler(client);
+//				connHandler.start();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -60,60 +53,26 @@ public class XConnector extends Thread implements Connector, CallDispatcher{
 		}
 	}
 	
-	public synchronized void putSocket(String id, Socket socket){
-		socketMap.put(id, socket);
-	}
-	
 	/**
-	 * @TODO synchronized may have problem here!
-	 * @param id SO.getRemoteSocketAddress().toString()[/127.0.0.1:5356]
+	 * create socket
+	 * @param ip	ip
+	 * @param port	port
 	 * @return
 	 */
-	public synchronized Socket getSocket(String id){
+	public Socket getSocket(String ip, int port){
 		Socket socket = null;
-		if(socketMap.containsKey(id))
-			socket = socketMap.get(id);
-		else {
-			if (id.substring(0, 1).equals("/")) {
-				id = id.substring(1);
-			}
-			String host = id.split(":")[0];
-			int port = Integer.parseInt(id.split(":")[1]);
-			try {
-				socket = new Socket(host, port);
-				System.out.println("XConnector connected to"+id);
-				//@TODO dead lock?
-				putSocket(id, socket);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		try {
+			socket = new Socket(ip, port);
+			System.out.println("XConnector connected to"
+			+socket.getRemoteSocketAddress().toString());
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return socket;
-	}
-
-	@Override
-	public void addListener(CallListener listener) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void removeListener(CallListener listener) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	/**
-	 * may not be used by storage server
-	 */
-	public void sendCall(Call command) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	/*
@@ -132,5 +91,21 @@ public class XConnector extends Thread implements Connector, CallDispatcher{
 		 * load balance
 		 */
 		public static final byte OP_REPLACE_BLOCK = 0;
+	}
+
+	@Override
+	public void addSocketListener(SocketListener listener) {
+		// TODO Auto-generated method stub
+		synchronized (socketListeners) {
+			socketListeners.add(listener);
+		}
+	}
+
+	@Override
+	public void removeSocketListener(SocketListener listener) {
+		// TODO Auto-generated method stub
+		synchronized (socketListeners) {
+			socketListeners.remove(listener);
+		}
 	}
 }

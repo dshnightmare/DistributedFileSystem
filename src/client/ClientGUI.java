@@ -234,10 +234,10 @@ public class ClientGUI
 							selectedItem += "/";
 						}
 						if (null == cutDir) {
-							menuPaste.setEnabled(false);
+							menuPaste1.setEnabled(false);
 						}
 						else {
-							menuPaste.setEnabled(true);
+							menuPaste1.setEnabled(true);
 						}
 						rightClickPop.show(e.getComponent(), e.getX(), e.getY());
 						return;
