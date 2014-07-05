@@ -10,14 +10,18 @@ public class Storage{
 	public static final Logger LOG = Logger.getLogger(Storage.class);
 
 	public static final String STORAGE_DIR_CURRENT = "current";
-	public static final String STORAGE_DIR_PREVIOUS = "previous";
+	public static final String STORAGE_DIR_TRANS = "trans";
 	public static final String STORAGE_TMP_REMOVE = "removed.tmp";
 
-	public enum StorageState {
-		NORMAL;
-	}
-
 	private StorageDirectory storageDir;
+	
+	public Storage(String location)
+	{
+		File rootFile = new File(location);
+		if(rootFile.exists() == false)
+			rootFile.mkdirs();
+		storageDir = new StorageDirectory(rootFile);
+	}
 
 	public static class StorageDirectory {
 		private File root;
@@ -46,23 +50,12 @@ public class Storage{
 			return new File(root, STORAGE_DIR_CURRENT);
 		}
 
-		public File getPreviousDir() {
-			return new File(root, STORAGE_DIR_PREVIOUS);
+		public File getTransDir() {
+			return new File(root, STORAGE_DIR_TRANS);
 		}
 
 		public File getRemoveTmp() {
 			return new File(root, STORAGE_TMP_REMOVE);
-		}
-
-		public StorageState analyzeStorage() throws IOException {
-			assert root != null;
-			String rootPath = root.getCanonicalPath();
-			// try{
-			// if(!root.exists()){
-			// LOG.warn("storage");
-			// }
-			// }
-			return StorageState.NORMAL;
 		}
 	}
 }
