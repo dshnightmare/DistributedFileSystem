@@ -5,10 +5,12 @@ import java.util.concurrent.TimeUnit;
 import common.network.ClientConnector;
 import common.call.Call;
 import common.call.CallListener;
+import common.call.all.AbortCall;
 import common.call.all.FinishCall;
 import common.call.c2n.AddFileCallC2N;
 import common.call.c2n.GetDirectoryCallC2N;
 import common.call.n2c.AddFileCallN2C;
+import common.call.s2n.RegistrationCallS2N;
 import nameserver.NameServer;
 import junit.framework.TestCase;
 
@@ -51,6 +53,9 @@ public class TestNameServer
     {
         Call call = null;
 
+        call = new RegistrationCallS2N("localhost");
+        CConnector.sendCall(call);
+
         CListener.setSleepTime(1);
         call = new AddFileCallC2N("/a/", "b");
         CConnector.sendCall(call);
@@ -84,7 +89,7 @@ public class TestNameServer
         CListener.setSleepTime(1);
         call = new GetDirectoryCallC2N("/a/");
         CConnector.sendCall(call);
-        
+
         for (int i = 0; i < 15; i++)
         {
             try
@@ -140,6 +145,10 @@ public class TestNameServer
                 FinishCall ack = new FinishCall();
                 ack.setToTaskId(call.getFromTaskId());
                 CConnector.sendCall(ack);
+            }
+            else if (Call.Type.ABORT == call.getType())
+            {
+                System.out.println("Reason: " + ((AbortCall) call).getReason());
             }
         }
     }
