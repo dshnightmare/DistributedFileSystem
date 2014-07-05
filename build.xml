@@ -1,40 +1,47 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<project name="DistributedFileSystem" default="run_client" basedir=".">
+<project name="DistributedFileSystem" default="run_nameserver" basedir=".">
 
-	<property name="src" value="src" />
-	<property name="dest" value="classes" />
-	<property name="jar" value="dfs.jar" />
+	<property name="src.dir" value="src" />
+	<property name="dst.dir" value="classes" />
+	<property name="jar.dir" value="jar" />
+	<property name="lib.dir" value="lib" />
+	<property name="nameserver.main-class" value="nameserver.NameServerLauncher" />
+	<property name="storageserver.main-class" value="" />
+	<property name="client.main-class" value="" />
+
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar" />
+	</path>
 
 	<target name="init">
-		<mkdir dir="${dest}" />
+		<mkdir dir="${dst.dir}" />
+		<mkdir dir="${jar.dir}" />
 	</target>
 
 	<target name="make" depends="init">
-		<javac srcdir="${src}" destdir="${dest}" />
+		<javac srcdir="${src.dir}" destdir="${dst.dir}" />
 	</target>
 
 	<target name="build" depends="make">
-		<jar jarfile="${jar}" basedir="${dest}" />
-	</target>
-
-	<target name="rebuild" depends="clean, make" />
-
-	<target name="run_nameserver">
-		<java classname="nameserver.NameServerLauncher" classpath="${jar}" fork="true" />
-	</target>
-
-	<target name="run_storageserver">
-		<java classname="" classpath="${jar}" fork="true" />
-	</target>
-
-	<target name="run_client">
-		<java classname="" classpath="${jar}" fork="true" />
+		<jar jarfile="${jar.dir}/${ant.project.name}.jar" basedir="${dst.dir}" />
 	</target>
 
 	<target name="clean">
-		<delete dir="${dest}" />
-		<delete file="${jar}" />
+		<delete dir="${dst.dir}" />
+		<delete dir="${jar.dir}" />
+		<!--<delete file="${jar.dir}/${ant.project.name}.jar" />-->
+	</target>
+
+	<target name="rebuild" depends="clean, build" />
+
+	<target name="run_nameserver">
+		<java classname="${nameserver.main-class}" fork="true">
+			<classpath>
+				<path refid="classpath" />
+				<path location="${jar.dir}/${ant.project.name}.jar" />
+			</classpath>
+		</java>
 	</target>
 
 </project>

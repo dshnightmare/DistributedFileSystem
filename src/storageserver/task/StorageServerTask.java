@@ -6,8 +6,8 @@ import common.task.Task;
 
 public abstract class StorageServerTask extends Task {
 	protected Connector connector;
-
-	protected boolean dead = false;
+	protected Boolean finished = false;
+	protected Boolean dead = false;
 
 	public StorageServerTask(long tid) {
 		super(tid);
@@ -18,8 +18,16 @@ public abstract class StorageServerTask extends Task {
 		this.dead = true;
 	}
 
-	protected boolean isDead() {
+	protected Boolean isDead() {
 		return dead;
+	}
+	
+	protected void setFinished() {
+		this.finished = true;
+	}
+
+	protected Boolean isFinished() {
+		return finished;
 	}
 
 }

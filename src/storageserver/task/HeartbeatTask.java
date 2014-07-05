@@ -1,10 +1,8 @@
 package storageserver.task;
 
-import java.util.concurrent.Semaphore;
 
 import common.call.Call;
-import common.call.s2n.RegistrationCallS2N;
-import common.task.Task;
+import common.call.s2n.HeartbeatCallS2N;
 
 public class HeartbeatTask extends StorageServerTask {
 
@@ -22,12 +20,13 @@ public class HeartbeatTask extends StorageServerTask {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		synchronized (syn) {
+		while(true)
+		{
+			// TODO 在heartbit
+			HeartbeatCallS2N call = new HeartbeatCallS2N(null);
+			connector.sendCall(call);
 			try {
-				RegistrationCallS2N call = new RegistrationCallS2N();
-				connector.sendCall(call);
-				syn.wait();
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
