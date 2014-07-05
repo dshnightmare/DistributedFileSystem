@@ -126,4 +126,9 @@ public class Status
 
         return result;
     }
+
+    public synchronized int getStorageNum()
+    {
+        return status.size();
+    }
 }

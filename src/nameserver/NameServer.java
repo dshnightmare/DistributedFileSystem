@@ -74,10 +74,14 @@ public class NameServer
      */
     private Map<Long, Task> tasks = new HashMap<Long, Task>();
 
+    private Map<Long, Task> heartbeatTasks = new HashMap<Long, Task>();
+
     /**
      * Task monitor, used to check task status.
      */
     private TaskMonitor taskMonitor = null;
+
+    private TaskMonitor heartbeatMonitor = null;
 
     /**
      * Task thread executor.
@@ -157,6 +161,9 @@ public class NameServer
             taskMonitor = new TaskMonitor();
             taskMonitor.addListener(this);
 
+            heartbeatMonitor = new TaskMonitor();
+            heartbeatMonitor.addListener(this);
+
             connector = ServerConnector.getInstance();
             connector.addListener(this);
 
@@ -190,14 +197,25 @@ public class NameServer
                 else
                 {
                     task = TaskFactory.createTask(call);
-                    tasks.put(task.getTaskId(), task);
-                    taskExecutor.execute(task);
-                    taskMonitor.addTask(task);
+
+                    if (task instanceof HeartbeatTask)
+                    {
+                        heartbeatTasks.put(task.getTaskId(), task);
+                        taskExecutor.execute(task);
+                        heartbeatMonitor.addTask(task);
+                    }
+                    else
+                    {
+                        tasks.put(task.getTaskId(), task);
+                        taskExecutor.execute(task);
+                        taskMonitor.addTask(task);
+                    }
                 }
             }
             finally
             {
-                if (permitted){
+                if (permitted)
+                {
                     pauseLock.unlock();
                 }
             }
@@ -225,19 +243,20 @@ public class NameServer
     {
         final Task task = event.getTaskThread();
 
-        tasks.remove(task);
-
         if (event.getType() == TaskEvent.Type.TASK_DUE)
         {
+            tasks.remove(task);
             task.release();
             logger.info("Task: " + task.getTaskId() + " " + event.getType());
         }
         else if (event.getType() == TaskEvent.Type.TASK_FINISHED)
         {
+            tasks.remove(task);
             logger.info("Task: " + task.getTaskId() + " " + event.getType());
         }
         else if (event.getType() == TaskEvent.Type.HEARTBEAT_FATAL)
         {
+            heartbeatTasks.remove(task);
             handleHeartbeatFatal(event);
         }
     }
@@ -330,20 +349,19 @@ public class NameServer
          */
         private void makeSnapshot()
         {
+            logger.info("Making snapshot.");
+
             pauseLock.lock();
 
             try
             {
                 final BackupUtil backup = BackupUtil.getInstance();
 
-                boolean hasRunningTask = !tasks.isEmpty();
-
-                while (hasRunningTask)
+                while (hasRunningTask())
                 {
                     try
                     {
                         TimeUnit.SECONDS.sleep(1);
-                        hasRunningTask = !tasks.isEmpty();
                     }
                     catch (InterruptedException e)
                     {
@@ -358,6 +376,15 @@ public class NameServer
             {
                 pauseLock.unlock();
             }
+
+            logger.info("Finish snapshot.");
+        }
+
+        private boolean hasRunningTask()
+        {
+            System.out.println("PPPP " + tasks.size() + " "
+                + Status.getInstance().getStorageNum());
+            return 0 == tasks.size();
         }
     }
 }

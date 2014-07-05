@@ -7,6 +7,7 @@ import common.call.Call;
 import common.call.CallListener;
 import common.call.all.FinishCall;
 import common.call.c2n.AddFileCallC2N;
+import common.call.c2n.GetDirectoryCallC2N;
 import common.call.n2c.AddFileCallN2C;
 import nameserver.NameServer;
 import junit.framework.TestCase;
@@ -67,6 +68,23 @@ public class TestNameServer
         call = new AddFileCallC2N("/", "b");
         CConnector.sendCall(call);
 
+        for (int i = 0; i < 15; i++)
+        {
+            try
+            {
+                System.out.println("Sleep " + i + "s.");
+                TimeUnit.SECONDS.sleep(1);
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        CListener.setSleepTime(1);
+        call = new GetDirectoryCallC2N("/a/");
+        CConnector.sendCall(call);
+        
         for (int i = 0; i < 15; i++)
         {
             try
