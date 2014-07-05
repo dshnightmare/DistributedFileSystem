@@ -66,6 +66,8 @@ public class NameServer
      * server.
      */
     private ServerConnector connector = null;
+    
+    private BackupUtil backup = null;
 
     /**
      * Task list.
@@ -137,18 +139,23 @@ public class NameServer
             }
 
             // Check backup util.
-            if (null == BackupUtil.getInstance())
+            backup = BackupUtil.getInstance();
+            if (null == backup)
             {
                 throw new Exception(
                     "Initiation failed, couldn't create backup directory.");
             }
+            backup.readBackupImage();
+            backup.readBackupLog();
 
             // Check connector.
-            if (null == ServerConnector.getInstance())
+            connector = ServerConnector.getInstance();
+            if (null == connector)
             {
                 throw new Exception(
                     "Initiation failed, couldn't create server connector.");
             }
+            connector.addListener(this);
 
             pauseLock = new ReentrantLock();
 
@@ -164,11 +171,8 @@ public class NameServer
             heartbeatMonitor = new TaskMonitor();
             heartbeatMonitor.addListener(this);
 
-            connector = ServerConnector.getInstance();
-            connector.addListener(this);
-
             logger.info("NameServer initialization finished.");
-
+            
             initialized = true;
         }
     }
@@ -355,8 +359,6 @@ public class NameServer
 
             try
             {
-                final BackupUtil backup = BackupUtil.getInstance();
-
                 while (hasRunningTask())
                 {
                     try

@@ -11,14 +11,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Map.Entry;
@@ -171,7 +168,7 @@ public class BackupUtil
             if (backups.length <= 0)
             {
                 logger
-                    .warn("Failed to restore meta, no image files were found.");
+                    .warn("Failed to read backup image file, file didn't exist.");
                 return;
             }
 
@@ -351,6 +348,13 @@ public class BackupUtil
         final Set<String> committedTaskIds = new HashSet<String>();
         final String logFilePath = logDirName + logFileName;
         BufferedReader reader = null;
+        
+        File file = new File(logFilePath);
+        if (!file.exists())
+        {
+            logger.info("Failed to read backup log, file didn't exist.");
+            return;
+        }
 
         synchronized (meta)
         {
