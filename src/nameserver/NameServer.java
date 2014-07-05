@@ -174,8 +174,6 @@ public class NameServer
         logger.info("NameServer received a call: " + call.getType());
 
         Task task = null;
-        long localTaskId = call.getToTaskId();
-        long remoteTaskId = call.getFromTaskId();
 
         if (isNewCall(call))
         {
@@ -185,12 +183,8 @@ public class NameServer
             {
                 if (!permitted)
                 {
-                    Call back =
-                        new AbortCall(
-                            "Nameserver is maintaining, please try later.");
-                    back.setFromTaskId(localTaskId);
-                    back.setToTaskId(remoteTaskId);
-                    connector.sendCall(back);
+                    sendAbortCall(call,
+                        "Nameserver is maintaining, please try later.");
                 }
                 else
                 {
@@ -307,16 +301,26 @@ public class NameServer
         return tasks.get(tid);
     }
 
+    private void sendAbortCall(Call call, String reason)
+    {
+        final long localTaskId = call.getToTaskId();
+        final long remoteTaskId = call.getFromTaskId();
+
+        Call back = new AbortCall(reason);
+
+        back.setFromTaskId(localTaskId);
+        back.setToTaskId(remoteTaskId);
+        back.setInitiator(call.getInitiator());
+        connector.sendCall(back);
+    }
+
     private class SnapshotMaker
         implements Runnable
     {
         @Override
         public void run()
         {
-            synchronized (NameServer.this)
-            {
-                makeSnapshot();
-            }
+            makeSnapshot();
         }
 
         /**
