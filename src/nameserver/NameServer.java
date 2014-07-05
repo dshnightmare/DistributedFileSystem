@@ -234,11 +234,11 @@ public class NameServer
         }
         else
         {
-            task = getRelatedTask(call.getToTaskId());
+            task = getRelatedTask(call.getType(), call.getToTaskId());
 
             if (null != task)
             {
-                tasks.get(call.getToTaskId()).handleCall(call);
+                task.handleCall(call);
             }
             else
             {
@@ -331,9 +331,12 @@ public class NameServer
      * @param tid
      * @return
      */
-    private synchronized Task getRelatedTask(long tid)
+    private synchronized Task getRelatedTask(Call.Type type, long tid)
     {
-        return tasks.get(tid);
+        if (Call.Type.HEARTBEAT_S2N == type)
+            return heartbeatTasks.get(tid);
+        else
+            return tasks.get(tid);
     }
 
     private void sendAbortCall(Call call, String reason)

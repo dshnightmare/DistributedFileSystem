@@ -62,7 +62,6 @@ public class HeartbeatTask
         RegistrationCallS2N c = (RegistrationCallS2N) call;
         this.address = c.getAddress();
         this.period = period;
-        System.out.println("------" + getTaskId());
     }
 
     /**

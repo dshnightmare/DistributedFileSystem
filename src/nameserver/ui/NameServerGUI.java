@@ -10,12 +10,14 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
+import nameserver.meta.MetaEvent;
+import nameserver.meta.MetaEventListener;
 import nameserver.status.StatusEvent;
 import nameserver.status.StatusEventListener;
 import nameserver.status.Storage;
 
 public class NameServerGUI
-    implements StatusEventListener
+    implements StatusEventListener, MetaEventListener
 {
     private static NameServerGUI instance = new NameServerGUI();
 
@@ -88,5 +90,12 @@ public class NameServerGUI
         frame.remove(panel.getPanel());
 
         frame.validate();
+    }
+
+    @Override
+    public void handle(MetaEvent event)
+    {
+        // TODO Auto-generated method stub
+        
     }
 }
