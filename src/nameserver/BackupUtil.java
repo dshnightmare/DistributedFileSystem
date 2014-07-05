@@ -11,14 +11,18 @@ import java.io.IOException;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import common.call.Call;
 import common.util.Configuration;
@@ -343,9 +347,8 @@ public class BackupUtil
     public synchronized void readBackupLog()
     {
         final Meta meta = Meta.getInstance();
-        final Queue<String[]> committedTasks = new LinkedList<String[]>();
-        final Map<String, String[]> suspendedTasks =
-            new HashMap<String, String[]>();
+        final Queue<String[]> suspendedTasks = new LinkedList<String[]>();
+        final Set<String> committedTaskIds = new HashSet<String>();
         final String logFilePath = logDirName + logFileName;
         BufferedReader reader = null;
 
@@ -367,29 +370,58 @@ public class BackupUtil
 
                     tokens = line.split(SEPERATOR);
 
-                    // Issue
-                    if (0 == tokens[0].compareTo(ISSUE)
-                        && 0 == tokens[tokens.length - 1].compareTo(ISSUE))
+                    // +------+--------+----+----+
+                    // |0     |1       |... |n-1 |
+                    // +------+--------+----+----+
+                    // |begin |task id |... |end |
+                    // +------+--------+----+----+
+                    if (tokens.length < 3)
                     {
-                        suspendedTasks.put(tokens[1], tokens);
+                        logger.info("BackupUtil: damaged log line, ignore it.");
+                        continue;
+                    }
+
+                    final String begin = tokens[0];
+                    final String end = tokens[tokens.length - 1];
+                    final String taskId = tokens[1];
+
+                    // Issue
+                    if (0 == begin.compareTo(ISSUE)
+                        && 0 == end.compareTo(ISSUE))
+                    {
+                        suspendedTasks.add(tokens);
                     }
                     // Commit
-                    else if (0 == tokens[0].compareTo(COMMIT)
-                        && 0 == tokens[tokens.length - 1].compareTo(COMMIT))
+                    else if (0 == begin.compareTo(COMMIT)
+                        && 0 == end.compareTo(COMMIT))
                     {
-                        String[] s = suspendedTasks.remove(tokens[1]);
-
-                        if (null != s)
-                            committedTasks.add(s);
+                        committedTaskIds.add(taskId);
                     }
                 }
 
-                while (!committedTasks.isEmpty())
+                while (!suspendedTasks.isEmpty())
                 {
-                    tokens = committedTasks.poll();
-                    String logCall = tokens[2];
+                    tokens = suspendedTasks.poll();
+                    
+                    // +------+--------+----------+----+----+
+                    // |0     |1       |2         |... |n-1 |
+                    // +------+--------+----------+----+----+
+                    // |begin |task id |call type |... |end |
+                    // +------+--------+----------+----+----+
+                    if (tokens.length < 4)
+                    {
+                        logger.info("BackupUtil: damaged log line, ignore it.");
+                        continue;
+                    }
+                    
+                    final String taskId = tokens[1];
+                    final String callType = tokens[2];
+                    
+                    // If the task is not committed, just ignore it.
+                    if (!committedTaskIds.contains(taskId))
+                        continue;
 
-                    if (callEqual(logCall, Call.Type.ADD_FILE_C2N))
+                    if (callEqual(callType, Call.Type.ADD_FILE_C2N))
                     {
                         final String dirName = tokens[3];
                         final String fileName = tokens[4];
@@ -400,13 +432,13 @@ public class BackupUtil
                         meta.addFile(dirName, new nameserver.meta.File(
                             fileName, bareFileId));
                     }
-                    else if (callEqual(logCall, Call.Type.ADD_DIRECTORY_C2N))
+                    else if (callEqual(callType, Call.Type.ADD_DIRECTORY_C2N))
                     {
                         final String dirName = tokens[3];
 
                         meta.addDirectory(new nameserver.meta.Directory(dirName));
                     }
-                    else if (callEqual(logCall, Call.Type.MOVE_FILE_C2N))
+                    else if (callEqual(callType, Call.Type.MOVE_FILE_C2N))
                     {
                         final String oldDirName = tokens[3];
                         final String oldfileName = tokens[4];
@@ -416,27 +448,27 @@ public class BackupUtil
                         meta.renameFile(oldDirName, oldfileName, newDirName,
                             newfileName);
                     }
-                    else if (callEqual(logCall, Call.Type.MOVE_DIRECTORY_C2N))
+                    else if (callEqual(callType, Call.Type.MOVE_DIRECTORY_C2N))
                     {
                         final String oldDirName = tokens[3];
                         final String newDirName = tokens[4];
 
                         meta.renameDirectory(oldDirName, newDirName);
                     }
-                    else if (callEqual(logCall, Call.Type.REMOVE_FILE_C2N))
+                    else if (callEqual(callType, Call.Type.REMOVE_FILE_C2N))
                     {
                         final String dirName = tokens[3];
                         final String fileName = tokens[4];
 
                         meta.removeFile(dirName, fileName);
                     }
-                    else if (callEqual(logCall, Call.Type.REMOVE_DIRECTORY_C2N))
+                    else if (callEqual(callType, Call.Type.REMOVE_DIRECTORY_C2N))
                     {
                         final String dirName = tokens[3];
 
                         meta.removeDirectory(dirName);
                     }
-                    else if (callEqual(logCall, Call.Type.APPEND_FILE_C2N))
+                    else if (callEqual(callType, Call.Type.APPEND_FILE_C2N))
                     {
                         final String dirName = tokens[3];
                         final String fileName = tokens[4];
@@ -446,7 +478,7 @@ public class BackupUtil
                     else
                     {
                         logger
-                            .info("BackupUtil, unknown operation: " + logCall);
+                            .info("BackupUtil, unknown operation: " + callType);
                     }
                 }
             }
