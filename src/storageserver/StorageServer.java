@@ -13,6 +13,7 @@ import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 
 import storageserver.event.BeforeRegFinishEvent;
 import storageserver.event.HeartbeatResponseEvent;
+import storageserver.task.AddFileTask;
 import storageserver.task.HeartbeatTask;
 import storageserver.task.MigrateFileTask;
 import storageserver.task.RegisterTask;
@@ -210,14 +211,22 @@ public class StorageServer implements TaskEventListener, CallListener,
 		synchronized (taskIDCount) {
 			id = taskIDCount++;
 		}
-		task = new SyncTask(id, storage);
+		task = new SyncTask(id, storage, address);
 		tasks.put(task.getTaskId(), task);
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
 	}
 	
-	public void startAddFileTask()
+	public void startAddFileTask(Socket socket)
 	{
-		
+		Task task = null;
+		int id;
+		synchronized (taskIDCount) {
+			id = taskIDCount++;
+		}
+		task = new AddFileTask(id, socket);
+		tasks.put(task.getTaskId(), task);
+		taskExecutor.execute(task);
+		taskMonitor.addTask(task);
 	}
 }

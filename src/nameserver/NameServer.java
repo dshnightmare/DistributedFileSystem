@@ -198,36 +198,29 @@ public class NameServer
 
         Task task = null;
 
-        System.out.println("XXXXX 0 " + call.getType());
-
         if (isNewCall(call))
         {
             boolean permitted = pauseLock.tryLock();
 
             try
             {
-                System.out.println("XXXXX 1");
                 if (!permitted)
                 {
-                    System.out.println("XXXXX 2");
                     sendAbortCall(call,
                         "Nameserver is maintaining, please try later.");
                 }
                 else
                 {
-                    System.out.println("XXXXX 3");
                     task = TaskFactory.createTask(call);
 
                     if (task instanceof HeartbeatTask)
                     {
-                        System.out.println("XXXXX 4");
                         heartbeatTasks.put(task.getTaskId(), task);
                         taskExecutor.execute(task);
                         heartbeatMonitor.addTask(task);
                     }
                     else
                     {
-                        System.out.println("XXXXX 5");
                         tasks.put(task.getTaskId(), task);
                         taskExecutor.execute(task);
                         taskMonitor.addTask(task);

@@ -38,6 +38,8 @@ public class SyncTask
      * The duplicate number of file.
      */
     private int duplicate;
+    
+    private String address;
 
     /**
      * Construction method.
@@ -53,6 +55,7 @@ public class SyncTask
         SyncCallS2N c = (SyncCallS2N) call;
         this.files = c.getFiles();
         this.duplicate = duplicate;
+        this.address = c.getAddress();
     }
 
     /**
@@ -117,7 +120,7 @@ public class SyncTask
      */
     private boolean storageExists()
     {
-        return Status.getInstance().contains(getInitiator());
+        return Status.getInstance().contains(address);
     }
 
     /**
