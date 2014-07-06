@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 
 import storageserver.event.BeforeRegFinishEvent;
 import storageserver.event.HeartbeatResponseEvent;

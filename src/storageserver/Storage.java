@@ -73,8 +73,10 @@ public class Storage {
 		File transDir = storageDir.getTransDir();
 		File dest = new File(curDir.getAbsolutePath() + "//" + name);
 		File src = new File(transDir.getAbsolutePath() + "//" + name);
-		if (src.exists())
-			src.renameTo(dest);
+		if (src.exists() && src.renameTo(dest))
+		{
+			
+		}
 		else
 			throw (new IOException("source file not exist."));
 	}

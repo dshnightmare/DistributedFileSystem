@@ -3,6 +3,7 @@ package storageserver.task;
 import java.util.List;
 
 import common.call.Call;
+import common.network.XConnector;
 import common.task.Task;
 
 public class MigrateFileTask extends StorageServerTask {
@@ -23,8 +24,12 @@ public class MigrateFileTask extends StorageServerTask {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-
+//		String[] string = address.split(":");
+//		for (String string2 : filenames) {
+//			
+//		}
+//		XConnector.getSocket(string[0], Integer.parseInt(string[1]));
+		
 	}
 
 	@Override
