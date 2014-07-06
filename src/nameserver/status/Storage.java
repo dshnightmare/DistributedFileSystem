@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import common.util.Log;
+
 import nameserver.meta.File;
 
 /**
@@ -66,6 +68,7 @@ public class Storage
      */
     public synchronized void setHeartbeatTime(long time)
     {
+    	Log.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         this.heartbeatTime = time;
         fireEvent(new StatusEvent(StatusEvent.Type.HEARTBEAT, this));
     }

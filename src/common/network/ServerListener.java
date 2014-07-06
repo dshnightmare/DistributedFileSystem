@@ -95,14 +95,14 @@ public class ServerListener extends Thread{
 			sc = (SocketChannel)key.channel();
 			r_buf.clear();
 			//read into r_bBuf
-			sc.read(r_buf);
+			int byteRead = sc.read(r_buf);
 			r_buf.flip();
 			try {
 				//establish a Call object and bind the socketchannel
 				Call rc = (Call)SwitchObjectAndByte.switchByteToObject(r_buf.array());
 				rc.setInitiator(sc.socket().getRemoteSocketAddress().toString());
 				connector.putCallQueue(rc);
-				Log.debug("NameServer received call: "+rc.getType());
+				Log.debug("NameServer received call: "+rc.getType()+" size:"+byteRead);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

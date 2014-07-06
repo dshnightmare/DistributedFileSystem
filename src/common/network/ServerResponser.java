@@ -34,11 +34,12 @@ public class ServerResponser extends Thread{
 			try {
 				w_buff.put(SwitchObjectAndByte.switchObjectToByte(resp));
 				w_buff.flip();
-				System.out.println("Server response sent: "+resp.getType());
-				sc.write(w_buff);
+				int byteWritten = sc.write(w_buff);
+				System.out.println("Server response sent: "+resp.getType()+" size:"+byteWritten);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				break;
 			}
 		}
 	}
