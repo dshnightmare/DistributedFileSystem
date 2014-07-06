@@ -35,7 +35,7 @@ public class StorageServerLauncher
         StorageServer storageServer;
         try
         {
-            storageServer = new StorageServer("baseDirectory");
+            storageServer = new StorageServer(base);
             storageServer.initAndstart(port);
         }
         catch (Exception e)

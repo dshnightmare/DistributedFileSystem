@@ -132,6 +132,12 @@ public class GetDirectoryTask
      */
     private void sendResponseCall()
     {
+        System.out.println("OOOOOOOOOOOOOOOOOOOOO");
+        for (String s : filesAndDirectories)
+        {
+            System.out.println("OOOOOOO " + s);
+        }
+        
         Call back = new GetDirectoryCallN2C(filesAndDirectories);
         sendCall(back);
     }

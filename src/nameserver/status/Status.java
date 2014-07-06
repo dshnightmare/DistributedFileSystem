@@ -96,6 +96,7 @@ public class Status implements StatusEventListener
     {
         final boolean remove = status.remove(storage);
 
+        System.out.println("@@@@@@@ " + remove);
         if (remove)
         {
             fireEvent(new StatusEvent(Type.STORAGE_DEAD, storage));
