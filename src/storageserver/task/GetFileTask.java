@@ -54,6 +54,8 @@ public class GetFileTask extends StorageServerTask {
 					dos.write(sendByte, 0, readlen);
 					dos.flush();
 				}
+				// client return finish status
+				dis.readByte();
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.info("GetFileTask failed");
