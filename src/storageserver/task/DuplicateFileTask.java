@@ -34,6 +34,7 @@ public class DuplicateFileTask extends StorageServerTask {
 
 	@Override
 	public void run() {
+	    System.out.println("YYYYYYYYYYYYY " + address);
 		String[] string = address.split(":");
 		int readlen;
 		byte status = XConnector.Type.OP_FINISH_FAIL;

@@ -227,7 +227,9 @@ public class ClientGUI
 			fileItem.add(text, BorderLayout.SOUTH);
 			
 			if (filename.lastIndexOf("/")!=filename.length()-1) {
-				File file = new File(currentDirectory+filename);
+				String pathString = Configuration.getInstance().getString("client_dir")+currentDirectory+filename;
+				pathString = pathString.replaceAll("\\\\", "////");
+				File file = new File(pathString);
 				if (file.exists()) {
 					fileItem.setBackground(Color.cyan);
 				}
