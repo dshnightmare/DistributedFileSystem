@@ -9,7 +9,7 @@
 	<property name="nameserver.main-class" value="nameserver.NameServerLauncher" />
 	<property name="storageserver.main-class" value="storageserver.StorageServerLauncher" />
 	<property name="client.main-class" value="client.ClientLauncher" />
-	<property name="base" value="----" />
+	<property name="base" value="-Dbase=----" />
 	<property name="port" value="-1" />
 
 	<path id="classpath">
@@ -47,13 +47,17 @@
 	</target>
 
 	<target name="run_storage">
-		<java classname="${storageserver.main-class}" fork="true">
-			<arg value="${base}" />
-			<arg value="${port}" />
+		<!--	<java classname="${storageserver.main-class}" fork="true">
+			<arg line="${base}" />
+			<arg line="${port}" />
 			<classpath>
 				<path refid="classpath" />
 				<path location="${jar.dir}/${ant.project.name}.jar" />
 			</classpath>
+		</java>-->
+		<java classname="${storageserver.main-class}" fork="true" executable="${jar.dir}/${ant.project.name}.jar">
+			<arg value="${base}" />
+			<arg value="${port}" />
 		</java>
 	</target>
 
