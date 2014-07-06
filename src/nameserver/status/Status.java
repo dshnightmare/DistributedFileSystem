@@ -1,6 +1,8 @@
 package nameserver.status;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +26,7 @@ public class Status implements StatusEventListener
     /**
      * Storage status.
      */
-    private Set<Storage> status = new HashSet<Storage>();
+    private List<Storage> status = new ArrayList<Storage>();
 
     private List<StatusEventListener> listeners =
         new ArrayList<StatusEventListener>();
@@ -67,6 +69,12 @@ public class Status implements StatusEventListener
      */
     public synchronized List<Storage> allocateStorage(int count)
     {
+        Collections.sort(status, new Comparator<Storage>(){   
+            public int compare(Storage s1, Storage s2) {   
+                return s1.getLoad() - s2.getLoad();   
+             }   
+         });   
+        
         List<Storage> result = new ArrayList<Storage>();
         for (Storage s : status)
         {

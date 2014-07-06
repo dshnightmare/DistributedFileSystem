@@ -54,13 +54,16 @@ public class MetaInfo
     public void updateList()
     {
         model.clear();
-        for (Entry<String, Map<String, String>> e : meta
-            .getValidDirectoryList().entrySet())
+        synchronized (meta)
         {
-            for (Entry<String, String> en : e.getValue().entrySet())
+            for (Entry<String, Map<String, String>> e : meta
+                .getValidDirectoryList().entrySet())
             {
-                model.addElement(e.getKey() + " " + en.getKey() + " "
-                    + en.getValue());
+                for (Entry<String, String> en : e.getValue().entrySet())
+                {
+                    model.addElement(e.getKey() + " " + en.getKey() + " "
+                        + en.getValue());
+                }
             }
         }
 
