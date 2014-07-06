@@ -8,7 +8,7 @@
 	<property name="lib.dir" value="lib" />
 	<property name="nameserver.main-class" value="nameserver.NameServerLauncher" />
 	<property name="storageserver.main-class" value="" />
-	<property name="client.main-class" value="" />
+	<property name="client.main-class" value="client.ClientLauncher" />
 
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar" />
@@ -43,5 +43,14 @@
 			</classpath>
 		</java>
 	</target>
+	
+	<target name="run_client">
+			<java classname="${client.main-class}" fork="true">
+				<classpath>
+					<path refid="classpath" />
+					<path location="${jar.dir}/${ant.project.name}.jar" />
+				</classpath>
+			</java>
+		</target>
 
 </project>

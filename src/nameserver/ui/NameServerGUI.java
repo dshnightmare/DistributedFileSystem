@@ -22,7 +22,7 @@ public class NameServerGUI
 {
     private static NameServerGUI instance = new NameServerGUI();
 
-    private JFrame frame = new JFrame("Test");
+    private JFrame frame = new JFrame("Name Server");
 
     private JTabbedPane tab = new JTabbedPane(JTabbedPane.TOP,
         JTabbedPane.WRAP_TAB_LAYOUT);
