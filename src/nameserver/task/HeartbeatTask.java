@@ -157,8 +157,9 @@ public class HeartbeatTask
     private boolean longTimeNoSee()
     {
         final long currentTime = System.currentTimeMillis();
-        if ((currentTime - storage.getHearbeatTime()) > (period * 2))
+        if ((currentTime - storage.getHearbeatTime()) > (period * 2 * 1000)){
             return true;
+        }
         return false;
     }
 

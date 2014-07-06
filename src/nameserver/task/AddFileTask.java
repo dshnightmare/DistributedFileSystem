@@ -251,6 +251,7 @@ public class AddFileTask
      */
     private void sendResponseCall()
     {
+    	logger.info("XXXXXXX" + Status.getInstance().getStorageNum());
         List<Storage> storages = file.getLocations();
         List<String> locations = new ArrayList<String>();
         for (Storage s : storages)

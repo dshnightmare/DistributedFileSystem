@@ -113,7 +113,8 @@ public class TaskMonitor implements TaskEventDispatcher, TaskEventListener {
 
 		if (TaskEvent.Type.TASK_FINISHED == event.getType()
 				|| TaskEvent.Type.TASK_DUE == event.getType()
-				|| TaskEvent.Type.MIGRATE_FINISHED == event.getType()) {
+				|| TaskEvent.Type.MIGRATE_FINISHED == event.getType()
+				|| TaskEvent.Type.DUPLICATE_FINISHED == event.getType()) {
 			synchronized (tasks) {
 				Task task = tasks.remove(event.getTaskThread().getTaskId());
 				logger.info("Task: " + task.getClass() + " has finished, "

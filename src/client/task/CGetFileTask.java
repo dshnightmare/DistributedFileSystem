@@ -102,6 +102,7 @@ public class CGetFileTask
 			fos = new FileOutputStream(file);
 			
 			out.writeByte(XConnector.Type.OP_READ_BLOCK);
+			out.writeUTF(call.getFileId());
 			long length = dis.readLong();
 			long totalLen = length;
 			byte[] inputByte = new byte[1024];
@@ -110,8 +111,8 @@ public class CGetFileTask
 			while(length > 0 && (readlen = dis.read(inputByte, 0, toreadlen)) > 0){
 				fos.write(inputByte, 0, readlen);
 				fos.flush();
-				Log.info("Data transfered："+(((double)(totalLen-length)/totalLen)*100)+"%");
 				length -=  readlen;
+				Log.info("Data transfered："+(((double)(totalLen-length)/totalLen)*100)+"%");
 				toreadlen = (length < inputByte.length) ? (int)length : inputByte.length;
 			}
 			out.writeByte(XConnector.Type.OP_FINISH_SUC);

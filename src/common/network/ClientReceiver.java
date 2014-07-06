@@ -29,13 +29,15 @@ public class ClientReceiver extends Thread{
 				int received = in.read(buffer);
 				Call response = (Call)SwitchObjectAndByte.switchByteToObject(buffer);
 				connector.addResponseCall(response);
-				Log.debug("Client received response: "+response.getType());
+				Log.debug("Client received response: "+response.getType()+" size:"+received);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				break;
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				break;
 			}
 		}
 	}

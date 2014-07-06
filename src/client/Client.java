@@ -89,7 +89,7 @@ public class Client
 	 * @param file
 	 */
 	public void getFileAsync(String path, String name, File file){
-		Log.info("getFileASync - direct:"+path+name);
+		Log.info("getFileASync - direct:"+path+name+" >>> "+file.getPath());
 		CGetFileTask task = new CGetFileTask(IdGenerator.getInstance().getLongId()
 				, path, name, file);
 		new Thread(task).start();

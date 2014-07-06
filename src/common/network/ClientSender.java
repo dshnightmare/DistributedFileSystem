@@ -31,10 +31,11 @@ public class ClientSender extends Thread{
 				Call cmd = connector.getCommandCall();
 				Log.debug("Client sending command: "+cmd.getType());
 				out.write(SwitchObjectAndByte.switchObjectToByte(cmd));
-				System.out.println("Command sent: "+cmd.getType()+", size="+SwitchObjectAndByte.switchObjectToByte(cmd).length);
+				System.out.println("Command sent: "+cmd.getType()+", size:"+SwitchObjectAndByte.switchObjectToByte(cmd).length);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				break;
 			}
 		}
 	}
