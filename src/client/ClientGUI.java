@@ -35,6 +35,12 @@ import common.event.TaskEventListener;
 import common.util.Log;
 import common.util.WrapLayout;
 
+/**
+ * GUI of the client
+ * accept user operation, call corresponding function in Client
+ * @author gengyufeng
+ *
+ */
 public class ClientGUI
 	implements TaskEventListener
 {

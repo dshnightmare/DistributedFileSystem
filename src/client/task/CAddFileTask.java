@@ -119,7 +119,8 @@ public class CAddFileTask
         }
 
         String location = call.getLocations().get(0);
-        //storageSocket = xConnector.getSocket(location);
+        String[] tmpStrings = location.split(":");
+        storageSocket = XConnector.getSocket(tmpStrings[0], Integer.parseInt(tmpStrings[1]));
 
         try
         {
