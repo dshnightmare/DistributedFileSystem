@@ -1,12 +1,16 @@
 package nameserver.ui;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextArea;
+
+import nameserver.status.Storage;
 
 public class StorageInfo
 {
@@ -15,6 +19,8 @@ public class StorageInfo
     private JTextArea id;
 
     private JProgressBar load;
+
+    private JTextArea taskSum;
 
     private static final ImageIcon serverIcon = new ImageIcon("ico/server.png");
 
@@ -28,25 +34,26 @@ public class StorageInfo
         load.setMinimum(0);
         load.setMaximum(100);
 
+        taskSum = new JTextArea();
+
         JLabel icon = new JLabel();
         icon.setIcon(serverIcon);
         icon.setHorizontalAlignment(JLabel.CENTER);
         panel.add(icon, BorderLayout.CENTER);
 
+        JPanel subPanel = new JPanel();
+        subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.Y_AXIS));
+        subPanel.add(load);
+        subPanel.add(taskSum);
         panel.add(id, BorderLayout.NORTH);
-        panel.add(load, BorderLayout.SOUTH);
+        panel.add(subPanel, BorderLayout.SOUTH);
     }
 
-    public void updateId(String id)
+    public void update(Storage storage)
     {
-        this.id.setText(id);
-        panel.updateUI();
-    }
-
-    public void updateLoad(int load)
-    {
-        this.load.setValue(load);
-        panel.updateUI();
+        this.id.setText(storage.getId());
+        this.load.setValue(storage.getStorageLoad());
+        this.taskSum.setText("Running task: " + storage.getTaskSum());
     }
 
     public JPanel getPanel()

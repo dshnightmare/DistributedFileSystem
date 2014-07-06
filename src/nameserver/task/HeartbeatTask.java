@@ -127,6 +127,8 @@ public class HeartbeatTask
             updateHeartbeatTimestamp();
             logger.info("Heartbeat update storage server " + storage.getId()
                 + " heartbeat timestamp: " + storage.getHearbeatTime());
+            
+            storage.setTaskSum(((HeartbeatCallS2N) call).getLoad());
 
             removeMigratedFilesFromMigrateList(((HeartbeatCallS2N) call)
                 .getMigratedFiles());

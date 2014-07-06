@@ -33,13 +33,13 @@ public class TestAddFileTask
     protected void setUp()
     {
         Storage storage = new Storage("s1");
-        storage.setLoad(60);
+        storage.setTaskSum(60);
         Status.getInstance().addStorage(storage);
         storage = new Storage("s2");
-        storage.setLoad(30);
+        storage.setTaskSum(30);
         Status.getInstance().addStorage(storage);
         storage = new Storage("s3");
-        storage.setLoad(10);
+        storage.setTaskSum(10);
         Status.getInstance().addStorage(storage);
         NConnector = ServerConnector.getInstance();
         try

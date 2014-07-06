@@ -71,7 +71,7 @@ public class Status implements StatusEventListener
     {
         Collections.sort(status, new Comparator<Storage>(){   
             public int compare(Storage s1, Storage s2) {   
-                return s1.getLoad() - s2.getLoad();   
+                return s1.getTaskSum() - s2.getTaskSum();   
              }   
          });   
         

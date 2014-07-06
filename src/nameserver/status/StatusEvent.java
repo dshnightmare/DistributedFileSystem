@@ -24,7 +24,11 @@ public class StatusEvent
 
     public static enum Type
     {
-        STORAGE_REGISTERED("STORAGE_REGISTERED"), STORAGE_DEAD("STORAGE_DEAD");
+        STORAGE_REGISTERED("STORAGE_REGISTERED"),
+        STORAGE_DEAD("STORAGE_DEAD"),
+        LOAD_CHANGED("LOAD_CHANGED"),
+        TASK_SUM_CHANGED("TASK_SUM_CHANGED"),
+        HEARTBEAT("HEARTBEAT");
 
         private String name;
 
