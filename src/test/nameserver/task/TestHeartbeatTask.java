@@ -64,7 +64,7 @@ public class TestHeartbeatTask
             e.printStackTrace();
         }
 
-        Call hcall = new HeartbeatCallS2N(new HashMap<String, List<String>>());
+        Call hcall = new HeartbeatCallS2N(new HashMap<String, List<String>>(), 2);
         hcall.setToTaskId(taskId);
         SConnector.sendCall(hcall);
 

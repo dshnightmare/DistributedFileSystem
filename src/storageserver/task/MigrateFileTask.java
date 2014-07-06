@@ -24,12 +24,10 @@ public class MigrateFileTask extends StorageServerTask {
 
 	@Override
 	public void run() {
-//		String[] string = address.split(":");
-//		for (String string2 : filenames) {
-//			
-//		}
-//		XConnector.getSocket(string[0], Integer.parseInt(string[1]));
-		
+		String[] string = address.split(":");
+		for (String filename : filenames) {
+			//XConnector.getSocket(string[0], Integer.parseInt(string[1]));
+		}
 	}
 
 	@Override

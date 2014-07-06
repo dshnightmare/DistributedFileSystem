@@ -36,7 +36,7 @@ public class SyncTask extends StorageServerTask {
 	@Override
 	public void run() {
 		while (alive) {
-			SyncCallS2N call = new SyncCallS2N(address, storage.analyzeCurrentFiles());
+			SyncCallS2N call = new SyncCallS2N(address, storage.analyzeCurrentFiles(), storage.analyzeStorageLoad());
 			call.setFromTaskId(getTaskId());
 			connector.sendCall(call);
 			try {

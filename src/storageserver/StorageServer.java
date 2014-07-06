@@ -219,7 +219,7 @@ public class StorageServer implements TaskEventListener, CallListener,
 		synchronized (taskIDCount) {
 			id = taskIDCount++;
 		}
-		task = new HeartbeatTask(id, overMigrateFile, onMigrateFile, NStid);
+		task = new HeartbeatTask(id, overMigrateFile, onMigrateFile, NStid, taskMonitor);
 		tasks.put(task.getTaskId(), task);
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);

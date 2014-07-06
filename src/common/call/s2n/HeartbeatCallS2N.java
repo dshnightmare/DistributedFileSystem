@@ -15,12 +15,14 @@ public class HeartbeatCallS2N
      * <p>
      * {storage id, list of file id}
      */
+    private final int load;
     private final Map<String, List<String>> migratedFiles;
 
-    public HeartbeatCallS2N(Map<String, List<String>> migratedFiles)
+    public HeartbeatCallS2N(Map<String, List<String>> migratedFiles, int load)
     {
         super(Call.Type.HEARTBEAT_S2N);
         this.migratedFiles = migratedFiles;
+        this.load = load;
     }
 
     public Map<String, List<String>> getMigratedFiles()
