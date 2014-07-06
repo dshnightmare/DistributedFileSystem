@@ -4,16 +4,21 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
+import storageserver.event.AddFileDuplicateEvent;
 import storageserver.event.BeforeRegFinishEvent;
+import storageserver.event.DuplicateFinishEvent;
 import storageserver.event.HeartbeatResponseEvent;
+import storageserver.event.MigrateFileFinishEvent;
 import storageserver.task.AddFileTask;
+import storageserver.task.DuplicateFileTask;
 import storageserver.task.GetFileTask;
 import storageserver.task.HeartbeatTask;
 import storageserver.task.MigrateFileTask;
@@ -74,8 +79,6 @@ public class StorageServer implements TaskEventListener, CallListener,
 			// "Initiation failed, couldn't create storage xconnector.");
 			// }
 
-			Configuration conf = Configuration.getInstance();
-
 			taskExecutor = Executors.newFixedThreadPool(MAX_THREADS);
 
 			taskMonitor = new TaskMonitor();
@@ -126,8 +129,8 @@ public class StorageServer implements TaskEventListener, CallListener,
 		logger.info("dispatch to task: " + call.getToTaskId());
 		final Task task = tasks.get(call.getToTaskId());
 		if (null == task)
-			logger.error("StorageServer" + address
-					+ " couldn't find a task "+ call.getToTaskId() + " to handle the call.");
+			logger.error("StorageServer" + address + " couldn't find a task "
+					+ call.getToTaskId() + " to handle the call.");
 		else {
 			logger.info("StorageServer" + address + " start handle the call.");
 			task.handleCall(call);
@@ -152,6 +155,7 @@ public class StorageServer implements TaskEventListener, CallListener,
 						+ event.getType());
 				// 需要重新注册
 				NStid = -1;
+				registered = false;
 				startRegister();
 			}
 		} else if (event.getType() == TaskEvent.Type.REG_FINISHED) {
@@ -165,6 +169,38 @@ public class StorageServer implements TaskEventListener, CallListener,
 						startMigrateFileTask(key, working.get(key));
 					}
 				}
+			}
+		} else if (event.getType() == TaskEvent.Type.MIGRATE_FINISHED) {
+			if (task instanceof MigrateFileTask) {
+				String key = ((MigrateFileFinishEvent) event).getAddress();
+				List<String> filenames = ((MigrateFileFinishEvent) event)
+						.getFiles();
+				synchronized (overMigrateFile) {
+					synchronized (onMigrateFile) {
+						onMigrateFile.get(key).removeAll(filenames);
+						if (overMigrateFile.get(key) == null)
+							overMigrateFile.put(key, new ArrayList<String>());
+						overMigrateFile.get(key).addAll(filenames);
+					}
+				}
+			}
+		} else if (event.getType() == TaskEvent.Type.ADDFILE_DUPLICATE) {
+			if (task instanceof AddFileTask) {
+
+				for (String address : ((AddFileDuplicateEvent) event).getTodo()) {
+					startDuplicateFileTask(address,
+							((AddFileDuplicateEvent) event).getFilename(),
+							task.getTaskId());
+				}
+			}
+		} else if (event.getType() == TaskEvent.Type.DUPLICATE_FINISHED) {
+			if (task instanceof DuplicateFileTask) {
+				tasks.get(((DuplicateFinishEvent) event).getParent())
+						.handleCall(null);
+//				if (((DuplicateFinishEvent) event).getStatus() == XConnector.Type.OP_FINISH_SUC) {
+//				} else {
+//
+//				}
 			}
 		} else {
 
@@ -219,7 +255,8 @@ public class StorageServer implements TaskEventListener, CallListener,
 		synchronized (taskIDCount) {
 			id = taskIDCount++;
 		}
-		task = new HeartbeatTask(id, overMigrateFile, onMigrateFile, NStid, taskMonitor);
+		task = new HeartbeatTask(id, overMigrateFile, onMigrateFile, NStid,
+				taskMonitor);
 		tasks.put(task.getTaskId(), task);
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
@@ -263,6 +300,19 @@ public class StorageServer implements TaskEventListener, CallListener,
 
 	public void startAppendFileTask() {
 
+	}
+
+	public void startDuplicateFileTask(String address, String filename,
+			long parent) {
+		Task task = null;
+		int id;
+		synchronized (taskIDCount) {
+			id = taskIDCount++;
+		}
+		task = new DuplicateFileTask(id, storage, address, filename, parent);
+		tasks.put(task.getTaskId(), task);
+		taskExecutor.execute(task);
+		taskMonitor.addTask(task);
 	}
 
 	public void startMigrateFileTask(String address, List<String> files) {
