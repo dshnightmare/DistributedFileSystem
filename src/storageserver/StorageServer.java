@@ -1,5 +1,6 @@
 package storageserver;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -178,7 +179,33 @@ public class StorageServer implements TaskEventListener, CallListener,
 
 	@Override
 	public void handleSocket(Socket s) {
-		// TODO Auto-generated method stub
+		byte op;
+		DataInputStream dis = null;
+		try {
+			dis = new DataInputStream(s.getInputStream());
+			op = dis.readByte();
+			switch (op) {
+			case XConnector.Type.OP_WRITE_BLOCK:
+				logger.info("Storage " + address + " start a addFileTask.");
+				startAddFileTask(s, dis);
+				break;
+			case XConnector.Type.OP_READ_BLOCK:
+				logger.info("Storage " + address + " start a getFileTask.");
+				startGetFileTask(s, dis);
+				break;
+			case XConnector.Type.OP_APPEND_BLOCK:
+				logger.info("Storage " + address + " start a appendFileTask.");
+				startAppendFileTask();
+				break;
+			default:
+				break;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally{
+			
+		}
 	}
 
 	public void startRegister() {
@@ -217,16 +244,32 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskMonitor.addTask(task);
 	}
 	
-	public void startAddFileTask(Socket socket)
+	public void startAddFileTask(Socket socket, DataInputStream dis)
 	{
 		Task task = null;
 		int id;
 		synchronized (taskIDCount) {
 			id = taskIDCount++;
 		}
-		task = new AddFileTask(id, socket);
+		task = new AddFileTask(id, socket, dis, storage);
 		tasks.put(task.getTaskId(), task);
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
+	}
+	
+	public void startGetFileTask(Socket socket, DataInputStream dis){
+		Task task = null;
+		int id;
+		synchronized (taskIDCount) {
+			id = taskIDCount++;
+		}
+		task = new GetFileTask(id, socket, dis, storage);
+		tasks.put(task.getTaskId(), task);
+		taskExecutor.execute(task);
+		taskMonitor.addTask(task);
+	}
+	
+	public void startAppendFileTask(){
+		
 	}
 }

@@ -24,7 +24,7 @@ public class Storage {
 		if (rootFile.exists() == false)
 			rootFile.mkdirs();
 		else {
-			if(rootFile.isFile()){
+			if (rootFile.isFile()) {
 				rootFile.delete();
 				rootFile.mkdir();
 			}
@@ -47,41 +47,66 @@ public class Storage {
 		for (String filename : files) {
 			File src = new File(curDir.getAbsolutePath() + "//" + filename);
 			File dest = new File(removeDir.getAbsolutePath() + "//" + filename);
-			if(src.exists())
+			if (src.exists())
 				src.renameTo(dest);
 		}
+	}
+
+	public File getTransFile(String name) {
+		File file = new File(storageDir.getTransDir().getAbsolutePath() + "//"
+				+ name);
+		if (file.exists())
+			file.delete();
+		return file;
+	}
+
+	public File getFile(String name) throws IOException{
+		File file = new File(storageDir.getCurrentDir().getAbsoluteFile()
+				+ "//" + name);
+		if(file.exists() == false || file.isFile() == false)
+			throw(new IOException("GetFile: file not exist."));
+		return file;
+	}
+
+	public void transSuccess(String name) throws IOException {
+		File curDir = storageDir.getCurrentDir();
+		File transDir = storageDir.getTransDir();
+		File dest = new File(curDir.getAbsolutePath() + "//" + name);
+		File src = new File(transDir.getAbsolutePath() + "//" + name);
+		if (src.exists())
+			src.renameTo(dest);
+		else
+			throw (new IOException("source file not exist."));
 	}
 
 	public static class StorageDirectory {
 		private File root;
 		FileLock lock;
 
-		public StorageDirectory(File dir) throws IOException{
+		public StorageDirectory(File dir) throws IOException {
 			root = dir;
 			File curDir = getCurrentDir();
 			File transDir = getTransDir();
 			File removeDir = getRemoveDir();
-			if(curDir.exists() == false)
+			if (curDir.exists() == false)
 				curDir.mkdir();
-			else if(curDir.isFile()){
+			else if (curDir.isFile()) {
 				curDir.delete();
 				curDir.mkdir();
 			}
-			if(transDir.exists() == false)
+			if (transDir.exists() == false)
 				transDir.mkdir();
-			else if(transDir.isFile()){
+			else if (transDir.isFile()) {
 				transDir.delete();
 				transDir.mkdir();
-			}
-			else
+			} else
 				clearDirectory(transDir);
-			if(removeDir.exists() == false)
+			if (removeDir.exists() == false)
 				removeDir.mkdir();
-			else if(removeDir.isFile()){
+			else if (removeDir.isFile()) {
 				removeDir.delete();
 				removeDir.mkdir();
-			}
-			else
+			} else
 				clearDirectory(removeDir);
 			lock = null;
 		}
@@ -91,13 +116,13 @@ public class Storage {
 		}
 
 		public void clearDirectory(File dir) throws IOException {
-//			File curDir = this.getCurrentDir();
-//			if (curDir.exists()) {
-//				// TODO 删除目录中所有文件
-//				// throw new IOException("Cannot remove current directory " +
-//				// curDir);
-//			} else if (!curDir.mkdir())
-//				throw new IOException("Cannot create directory " + curDir);
+			// File curDir = this.getCurrentDir();
+			// if (curDir.exists()) {
+			// // TODO 删除目录中所有文件
+			// // throw new IOException("Cannot remove current directory " +
+			// // curDir);
+			// } else if (!curDir.mkdir())
+			// throw new IOException("Cannot create directory " + curDir);
 			FileUtil.fullyDeleteContent(dir);
 		}
 

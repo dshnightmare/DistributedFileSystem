@@ -90,7 +90,11 @@ public class XConnector
 		/*
 		 * load balance
 		 */
-		public static final byte OP_REPLACE_BLOCK = 0;
+		public static final byte OP_APPEND_BLOCK = 2;
+		
+		public static final byte OP_FINISH_SUC = 3;
+		
+		public static final byte OP_FINISH_FAIL = 4;
 	}
 
 	@Override
