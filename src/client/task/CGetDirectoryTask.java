@@ -10,16 +10,39 @@ import common.network.ClientConnector;
 import common.task.Task;
 import common.util.Log;
 
+/**
+ * task to get contents of target directory
+ * @author gengyufeng
+ *
+ */
 public class CGetDirectoryTask 
 	extends Task{
-	
+	/**
+	 * target directory
+	 */
 	private String direct;
+	/**
+	 * contents of the target directory, globally used
+	 */
 	private List<String> ret;
+	/**
+	 * getDirectory operation is Sync, the method blocks on this object
+	 */
 	private Object taskWaitor;
+	/**
+	 * wait on this object for NS to response
+	 */
 	private Object netWaitor = new Object();
 	private long toTaskId;
 	private GetDirectoryCallN2C callN2C;
 
+	/**
+	 * This task will BLOCK untill finished!
+	 * @param tid	globally unique task id
+	 * @param direct	target directory
+	 * @param ret	contents returned
+	 * @param waitor	blocking object
+	 */
 	public CGetDirectoryTask(long tid, String direct, List<String> ret, Object waitor) {
 		super(tid);
 		this.direct = direct;

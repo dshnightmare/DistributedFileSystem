@@ -9,6 +9,11 @@ import common.call.n2c.GetDirectoryCallN2C;
 import common.network.ClientConnector;
 import common.task.Task;
 
+/**
+ * move is same with rename, just rename a file on NS
+ * @author gengyufeng
+ *
+ */
 public class CMoveFileTask 	
 	extends Task{
 	
@@ -17,7 +22,14 @@ public class CMoveFileTask
 	private String oldDir, oldName;
 	private String newDir, newName;
 	
-	
+	/**
+	 * rename a file
+	 * @param tid
+	 * @param oldDir old directory
+	 * @param oldName	old name
+	 * @param newDir	new ..
+	 * @param newName	new ..
+	 */
 	public CMoveFileTask(long tid, String oldDir, String oldName
 			, String newDir, String newName) {
 		super(tid);

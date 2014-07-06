@@ -6,12 +6,22 @@ import common.network.ClientConnector;
 import common.task.Task;
 import common.util.Log;
 
+/**
+ * remove a file(this operation only affect NSs, affection on SS with
+ * happen after a sync operation between NS and SS)
+ */
 public class CRemoveFileTask 
 	extends Task{
 	private String dir, name;
 	private Object netWaitor = new Object();
 	private long toTaskId;
 
+	/**
+	 * remove the file:dir+name
+	 * @param tid
+	 * @param dir
+	 * @param name
+	 */
 	public CRemoveFileTask(long tid, String dir, String name) {
 		super(tid);
 		this.dir = dir;

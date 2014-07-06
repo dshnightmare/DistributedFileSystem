@@ -15,11 +15,20 @@ import common.task.Task;
  */
 public class CCreateDirTask
 	extends Task{
-	
+	/**
+	 * directory to be created
+	 */
 	private String direct;
+	/**
+	 * wait on this object for NS to response
+	 */
 	private Object netWaitor = new Object();
 	
-	
+	/**
+	 * should call new Thread(task).start()
+	 * @param tid	globally unique task id
+	 * @param direct	target directory
+	 */
 	public CCreateDirTask(long tid, String direct) {
 		super(tid);
 		this.direct = direct;

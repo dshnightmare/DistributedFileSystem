@@ -13,6 +13,11 @@ import common.util.Configuration;
 import common.util.IdGenerator;
 import common.util.Log;
 
+/**
+ * test part of functions of Client by cmdline
+ * @author gengyufeng
+ *
+ */
 public class ClientCMD 
 	extends Thread{
 
