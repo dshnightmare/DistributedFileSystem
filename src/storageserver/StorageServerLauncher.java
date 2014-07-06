@@ -9,22 +9,26 @@ public class StorageServerLauncher
     private final static Logger logger = Logger
         .getLogger(StorageServerLauncher.class);
 
-    public static final String USAGE =
-        "USAGE:\tant run_storage -Dbase=<base directory> -Dport=<storage port>";
+    private static final String BASE_ARG_NAME = "--base=";
+
+    private static final String PORT_ARG_NAME = "--port=";
 
     public static void main(String[] args)
     {
+        String base = "";
+        int port = -1;
 
-        final String baseDirectory = System.getProperty("base", "");
-        final int port = Integer.valueOf(System.getProperty("port", "-1"));
-        
-        System.out.println(baseDirectory);
-        System.out.println(port);
+        for (String arg : args)
+        {
+            if (arg.startsWith(BASE_ARG_NAME))
+                base = arg.substring(BASE_ARG_NAME.length());
+            else if (arg.startsWith(PORT_ARG_NAME))
+                port = Integer.valueOf(arg.substring(PORT_ARG_NAME.length()));
+        }
 
-        if (baseDirectory.isEmpty() || port < 0)
+        if (base.isEmpty() || port < 0)
         {
             System.out.println("Failed to start StorageServer, bad parameter.");
-            System.out.println(USAGE);
             return;
         }
 

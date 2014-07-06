@@ -129,8 +129,6 @@ public class AddFileTask
 
             sendFinishCall();
             
-            System.out.println("?????? " + file.getLocationsCount());
-            
             setFinish();
         }
     }

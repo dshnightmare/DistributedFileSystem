@@ -194,7 +194,7 @@ public class NameServer
     {
         logger.info("NameServer received a call: " + call.getType()
             + " fromTaskId: " + call.getFromTaskId() + ", toTaskId: "
-            + call.getToTaskId());
+            + call.getToTaskId() + ", initiator: " + call.getInitiator());
 
         Task task = null;
 

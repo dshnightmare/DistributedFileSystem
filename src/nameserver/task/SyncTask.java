@@ -77,7 +77,6 @@ public class SyncTask
                 List<String> removeList = new ArrayList<String>();
                 for (String id : files)
                 {
-                    System.out.println("{{{{{ id: " + id);
                     File file = Meta.getInstance().getFile(id);
                     if (null == file)
                     {
