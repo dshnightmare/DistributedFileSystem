@@ -10,6 +10,11 @@ import storageserver.Storage;
 import common.call.Call;
 import common.util.Logger;
 
+/**
+ * 
+ * @author dengshihong
+ * 
+ */
 public class GetFileTask extends StorageServerTask {
 	private final static Logger logger = Logger.getLogger(GetFileTask.class);
 	private final Socket socket;

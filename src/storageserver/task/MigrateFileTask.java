@@ -12,13 +12,20 @@ import common.call.Call;
 import common.network.XConnector;
 import common.util.Logger;
 
+/**
+ * 
+ * @author dengshihong
+ * 
+ */
 public class MigrateFileTask extends StorageServerTask {
-	private final static Logger logger = Logger.getLogger(MigrateFileTask.class);
+	private final static Logger logger = Logger
+			.getLogger(MigrateFileTask.class);
 	private final Storage storage;
 	private final String address;
 	private List<String> filenames;
 
-	public MigrateFileTask(long tid, String address, List<String> filenames, Storage storage) {
+	public MigrateFileTask(long tid, String address, List<String> filenames,
+			Storage storage) {
 		super(tid);
 		this.address = address;
 		this.filenames = filenames;
@@ -42,7 +49,8 @@ public class MigrateFileTask extends StorageServerTask {
 		FileOutputStream fos = null;
 		for (String filename : filenames) {
 			try {
-				Socket socket = XConnector.getSocket(string[0], Integer.parseInt(string[1]));
+				Socket socket = XConnector.getSocket(string[0],
+						Integer.parseInt(string[1]));
 				try {
 					dos = new DataOutputStream(socket.getOutputStream());
 					dis = new DataInputStream(socket.getInputStream());
@@ -50,32 +58,35 @@ public class MigrateFileTask extends StorageServerTask {
 					dos.writeByte(XConnector.Type.OP_READ_BLOCK);
 					dos.writeUTF(filename);
 					length = dis.readLong();
-					toreadlen = (length < inputByte.length) ? (int)length : inputByte.length;
-					while(length > 0 && (readlen = dis.read(inputByte, 0, toreadlen)) > 0){
+					toreadlen = (length < inputByte.length) ? (int) length
+							: inputByte.length;
+					while (length > 0
+							&& (readlen = dis.read(inputByte, 0, toreadlen)) > 0) {
 						fos.write(inputByte, 0, readlen);
 						fos.flush();
-						length -=  readlen;
-						toreadlen = (length < inputByte.length) ? (int)length : inputByte.length;
+						length -= readlen;
+						toreadlen = (length < inputByte.length) ? (int) length
+								: inputByte.length;
 					}
-					if(length < 0)
-						throw(new Exception("MigrateFileTask: filelength errors."));
+					if (length < 0)
+						throw (new Exception(
+								"MigrateFileTask: filelength errors."));
 					fos.close();
 					storage.transSuccess(filename);
 					dos.writeByte(XConnector.Type.OP_FINISH_SUC);
 				} catch (Exception e) {
 					e.printStackTrace();
 					logger.info("MigrateFileTask for " + filename + " failed");
-					if(dos != null)
+					if (dos != null)
 						dos.writeByte(XConnector.Type.OP_FINISH_FAIL);
-				}
-				finally{
-					if(fos != null)
+				} finally {
+					if (fos != null)
 						fos.close();
-					if(dis != null)
+					if (dis != null)
 						dis.close();
-					if(dos != null)
+					if (dos != null)
 						dos.close();
-					if(socket != null)
+					if (socket != null)
 						socket.close();
 				}
 			} catch (Exception e) {

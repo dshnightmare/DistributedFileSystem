@@ -9,6 +9,11 @@ import common.call.s2n.RegistrationCallS2N;
 import common.util.Configuration;
 import common.util.Logger;
 
+/**
+ * 
+ * @author dengshihong
+ *
+ */
 public class RegisterTask extends StorageServerTask {
 	private final static Logger logger = Logger.getLogger(RegisterTask.class);
 	private String address;

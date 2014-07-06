@@ -1,8 +1,12 @@
 package storageserver.task;
 
 import common.call.Call;
-import common.task.Task;
 
+/**
+ * 
+ * @author dengshihong
+ * 
+ */
 public class AppendFileTask extends StorageServerTask {
 
 	public AppendFileTask(long tid) {

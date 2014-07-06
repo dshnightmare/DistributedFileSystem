@@ -3,6 +3,11 @@ package storageserver.event;
 import common.event.TaskEvent;
 import common.task.Task;
 
+/**
+ * 
+ * @author dengshihong
+ * 
+ */
 public class DuplicateFinishEvent extends TaskEvent {
 	private final long parent;
 	private final byte status;

@@ -10,10 +10,27 @@ import common.call.s2n.SyncCallS2N;
 import common.util.Configuration;
 import common.util.Logger;
 
+/**
+ * 
+ * @author dengshihong
+ * 
+ */
 public class SyncTask extends StorageServerTask {
+	/**
+	 * Logger
+	 */
 	private final static Logger logger = Logger.getLogger(SyncTask.class);
+	/**
+	 * 
+	 */
 	private Boolean alive = true;
+	/**
+	 * 
+	 */
 	private String address;
+	/**
+	 * 
+	 */
 	private Storage storage;
 
 	public SyncTask(long tid, Storage storage, String address) {

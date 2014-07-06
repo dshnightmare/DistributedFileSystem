@@ -13,17 +13,31 @@ import common.util.Logger;
 
 /**
  * Duplicate file from the transDir of the Storage
+ * 
  * @author dengshihong
- *
+ * 
  */
 public class DuplicateFileTask extends StorageServerTask {
 	/**
 	 * Logger
 	 */
-	private final static Logger logger = Logger.getLogger(DuplicateFileTask.class);
+	private final static Logger logger = Logger
+			.getLogger(DuplicateFileTask.class);
+	/**
+	 * 
+	 */
 	private final Storage storage;
+	/**
+	 * 
+	 */
 	private final String address;
+	/**
+	 * 
+	 */
 	private final String filename;
+	/**
+	 * 
+	 */
 	private final long parent;
 
 	public DuplicateFileTask(long tid, Storage storage, String address,
