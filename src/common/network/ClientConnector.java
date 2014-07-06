@@ -14,6 +14,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import common.call.Call;
 import common.call.CallDispatcher;
 import common.call.CallListener;
+import common.call.all.AbortCall;
 import common.util.Configuration;
 import common.util.Constant;
 import common.util.Log;
@@ -87,6 +88,9 @@ public class ClientConnector implements Connector, CallDispatcher{
 	public void addResponseCall(Call resp){
 		try {
 			responses.put(resp);
+			if (resp.getType() == Call.Type.ABORT) {
+				Log.error(((AbortCall)resp).getReason());
+			}
 			for(CallListener listener : responseListeners){
 				listener.handleCall(resp);
 			}

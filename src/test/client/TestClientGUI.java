@@ -20,7 +20,7 @@ public class TestClientGUI extends TestCase{
         }
 
 		try {
-			StorageServer ss = new StorageServer("D:");
+			StorageServer ss = new StorageServer("D:/dshsb");
 			ss.initAndstart(5555);
 		} catch (Exception e) {
 			// TODO: handle exception

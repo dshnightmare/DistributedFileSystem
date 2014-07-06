@@ -171,7 +171,7 @@ public class ClientGUI
 					File file = fChooser.getSelectedFile();
 					//TODO feed file to task
 					client.addListener(ClientGUI.this);
-					client.addFileAsync(currentDirectory, file.getName());
+					client.addFileAsync(currentDirectory, file.getName(), file);
 				}
 		    }
 		});

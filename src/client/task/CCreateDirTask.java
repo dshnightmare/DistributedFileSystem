@@ -8,6 +8,11 @@ import common.call.n2c.GetDirectoryCallN2C;
 import common.network.ClientConnector;
 import common.task.Task;
 
+/**
+ * Send Call to NS and finish
+ * @author gengyufeng
+ *
+ */
 public class CCreateDirTask
 	extends Task{
 	

@@ -86,8 +86,8 @@ public class CGetFileTask
 			Log.print("Fatal error! No storage server returned");
 			Log.debug(""+call.getFromTaskId()+" "+call.getToTaskId());
 			FinishCall finishCall = new FinishCall();
-			call.setToTaskId(toTaskId);
-			call.setFromTaskId(getTaskId());
+			finishCall.setToTaskId(toTaskId);
+			finishCall.setFromTaskId(getTaskId());
 			ClientConnector.getInstance().sendCall(finishCall);
 			return;
 		}
@@ -107,6 +107,7 @@ public class CGetFileTask
 			e.printStackTrace();
 		}
 		setFinish();
+		leaseTask.interrupt();
 	}
 
 	@Override

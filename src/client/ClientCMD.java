@@ -1,6 +1,7 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ClientCMD
 						continue;
 					}
 					else {
-						client.addFileAsync(args[1], args[2]);
+						client.addFileAsync(args[1], args[2], new File(""));
 					}
 				}
 				else if(cmdString.toLowerCase().equals("getdir")){

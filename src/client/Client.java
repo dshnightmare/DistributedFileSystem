@@ -1,5 +1,6 @@
 package client;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,9 +86,9 @@ public class Client
 	 * @param dir
 	 * @param fileName
 	 */
-	public void addFileAsync(String dir, String fileName){
+	public void addFileAsync(String dir, String fileName, File file){
 		CAddFileTask task = new CAddFileTask(IdGenerator.getInstance().getLongId()
-				, dir, fileName);
+				, dir, fileName, file);
 		new Thread(task).start();
 		taskMonitor.addTask(task);
 	}
@@ -170,14 +171,12 @@ public class Client
 		// TODO Auto-generated method stub
 		if(!(event.getTaskThread() instanceof CAddFileTask)
 				&&!(event.getTaskThread() instanceof CCreateDirTask)
-				&&!(event.getTaskThread() instanceof CRemoveFileTask)){
-			Log.debug("TaskEvent "+event.getTaskThread().getClass().getName());
+				&&!(event.getTaskThread() instanceof CRemoveFileTask)
+				&&!(event.getTaskThread() instanceof CRemoveDirectoryTask)){
 			return;
 		}
-		Log.debug("TaskEvent addfile");
 		synchronized(listeners){
 			if (listeners.size() != 0) {
-				Log.debug("listeners size:"+listeners.size());
 				listeners.get(0).handle(event);
 				listeners.remove(0);
 			}
