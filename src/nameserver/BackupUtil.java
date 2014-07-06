@@ -366,7 +366,7 @@ public class BackupUtil
             logger.info("Failed to read backup log, file didn't exist.");
             return;
         }
-
+        
         synchronized (meta)
         {
             try
@@ -382,7 +382,7 @@ public class BackupUtil
                     // EOF
                     if (null == line)
                         break;
-
+                    
                     tokens = line.split(SEPERATOR);
 
                     // +------+--------+----+----+
@@ -412,7 +412,7 @@ public class BackupUtil
                     {
                         committedTaskIds.add(taskId);
                     }
-                }
+                    
 
                 while (!suspendedTasks.isEmpty())
                 {
@@ -448,6 +448,7 @@ public class BackupUtil
                         meta.setFileValid(dirName, fileName, true);
                         
                         meta.addFile(dirName, f);
+                        meta.setFileValid(dirName, fileName, true);
                     }
                     else if (callEqual(callType, Call.Type.ADD_DIRECTORY_C2N))
                     {

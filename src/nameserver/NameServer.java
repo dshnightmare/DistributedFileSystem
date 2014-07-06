@@ -237,7 +237,6 @@ public class NameServer
         }
         else
         {
-            System.out.println("XXXXX 6");
             task = getRelatedTask(call.getType(), call.getToTaskId());
 
             if (null != task)
