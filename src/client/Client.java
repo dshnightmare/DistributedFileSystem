@@ -64,7 +64,7 @@ public class Client
 	 * @return
 	 */
 	public List<String> getDirectorySync(String direct){
-		Log.info("getDirectorySync - direct="+direct);
+		Log.info("getDirectoryASync - direct:"+direct);
 		List<String> ret = new ArrayList<String>();
 		CGetDirectoryTask task = new CGetDirectoryTask(IdGenerator.getInstance().getLongId()
 				, direct, ret, taskWaitor);
@@ -79,6 +79,20 @@ public class Client
 			}
 		}
 		return ret;
+	}
+	
+	/**
+	 * get path+name file to local file
+	 * @param path
+	 * @param name
+	 * @param file
+	 */
+	public void getFileAsync(String path, String name, File file){
+		Log.info("getFileASync - direct:"+path+name);
+		CAddFileTask task = new CAddFileTask(IdGenerator.getInstance().getLongId()
+				, path, name, file);
+		new Thread(task).start();
+		taskMonitor.addTask(task);
 	}
 	
 	/**

@@ -69,6 +69,7 @@ public class AddFileTask extends StorageServerTask {
 //				synchronized (waitor) {
 //					waitor.wait();
 //				}
+				fos.close();
 				storage.transSuccess(filename);
 				dos.writeByte(XConnector.Type.OP_FINISH_SUC);
 					

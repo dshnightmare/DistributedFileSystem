@@ -127,7 +127,7 @@ public class CAddFileTask
         String location = call.getLocations().get(0);
         String[] locationStrings = location.split(":");
         storageSocket = XConnector.getSocket(locationStrings[0], Integer.parseInt(locationStrings[1]));
-
+        byte status = XConnector.Type.OP_FINISH_FAIL;
         try
         {
         	long fileLength = file.length();
@@ -148,12 +148,11 @@ public class CAddFileTask
             int length, sumL=0;
 			while ((length = fis.read(sendBytes, 0, sendBytes.length)) > 0) {
 				sumL += length;
-				Log.info("Data transfered："+((sumL/fileLength)*100)+"%");
+				Log.info("Data transfered："+(((double)sumL/fileLength)*100)+"%");
 				out.write(sendBytes, 0, length);
 				out.flush();
 			}
-			byte status = in.readByte();
-			Log.debug("Addfile status:"+status);
+			status = in.readByte();
 
         }
         catch (IOException e)
@@ -161,6 +160,10 @@ public class CAddFileTask
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        if (status == XConnector.Type.OP_FINISH_FAIL) {
+			Log.error("CAddFileTask Upload failed");
+			return;
+		}
 		FinishCall finishCall = new FinishCall();
 		finishCall.setToTaskId(toTaskId);
 		finishCall.setFromTaskId(getTaskId());

@@ -225,15 +225,18 @@ public class ClientGUI
 			fileItem.add(icon, BorderLayout.CENTER);
 			fileItem.add(text, BorderLayout.SOUTH);
 			
+			if (filename.lastIndexOf("/")!=filename.length()-1) {
+				File file = new File(currentDirectory+filename);
+				if (file.exists()) {
+					fileItem.setBackground(Color.cyan);
+				}
+			}
+			
 			fileItem.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					JPanel item = (JPanel)e.getSource();
 					//right click
 					if(e.getButton() == MouseEvent.BUTTON3){
-						for(int i=0; i<filePanel.getComponents().length; i++){
-							((JPanel)filePanel.getComponent(i)).setBackground(null);
-						}
-						item.setBackground(Color.cyan);
 						selectedItem = ((JLabel)item.getComponent(1)).getText();
 						if (((ImageIcon)((JLabel)item.getComponent(0))
 							.getIcon()).getDescription().equals("dir")) {
@@ -258,24 +261,14 @@ public class ClientGUI
 							showDirectory(pathString);
 							frame.setTitle("DFS -- "+currentDirectory);
 						}
-					}
-					//one click for choosing
-					else if (e.getClickCount() == 1) {
-						Color origin = ((JPanel)e.getSource()).getBackground();
-						for(int i=0; i<filePanel.getComponents().length; i++){
-							((JPanel)filePanel.getComponent(i)).setBackground(null);
-						}
-						if(origin == Color.cyan){
-							item.setBackground(null);
-							selectedItem = null;
-						}
-						else {
-							item.setBackground(Color.cyan);
-							selectedItem = ((JLabel)((JPanel)e.getSource()).getComponent(1)).getText();
-							if (((ImageIcon)((JLabel)item.getComponent(0))
-								.getIcon()).getDescription().equals("dir")) {
-								selectedItem += "/";
+						else {	//file
+							String fileString = currentDirectory+((JLabel)item.getComponent(1)).getText();
+							File file = new File(fileString);
+							if (file.exists()) {
+								file.delete();
+								fileItem.setBackground(null);
 							}
+							client.getFileAsync(currentDirectory, ((JLabel)item.getComponent(1)).getText(), file);
 						}
 					}
 				}
