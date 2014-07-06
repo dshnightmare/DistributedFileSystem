@@ -2,29 +2,59 @@ package storageserver;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Target;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.naming.spi.DirStateFactory.Result;
 import common.util.Configuration;
 import common.util.FileUtil;
-import common.util.Log;
 import common.util.Logger;
 
+/**
+ * Operate with file system for StorageServer
+ * 
+ * @author dengshihong
+ * 
+ */
 public class Storage {
+	/**
+	 * Logger
+	 */
 	public static final Logger LOG = Logger.getLogger(Storage.class);
-
-	public static final long MAXSTORAGE = Configuration.getInstance().getLong(Configuration.SS_MAX_STORAGE);
+	/**
+	 * Max Storage Size, configurable
+	 */
+	public static final long MAXSTORAGE = Configuration.getInstance().getLong(
+			Configuration.SS_MAX_STORAGE);
+	/**
+	 * StorageDir containing the current files
+	 */
 	public static final String STORAGE_DIR_CURRENT = "current";
+	/**
+	 * StorageDir containing the files on transport, moved to current when
+	 * transport finished
+	 */
 	public static final String STORAGE_DIR_TRANS = "trans";
+	/**
+	 * StorageDir containing the files removed, cleared when StorageServer reset
+	 */
 	public static final String STORAGE_DIR_REMOVE = "removed";
 
+	/**
+	 * Handle the Directory of the Storage
+	 */
 	private StorageDirectory storageDir;
 
+	/**
+	 * 
+	 * @param location
+	 *            Root directory
+	 * @throws IOException
+	 */
 	public Storage(String location) throws IOException {
 		File rootFile = new File(location);
+
+		// Make sure location is exist and is a directory
 		if (rootFile.exists() == false)
 			rootFile.mkdirs();
 		else {
@@ -36,19 +66,27 @@ public class Storage {
 		storageDir = new StorageDirectory(rootFile);
 	}
 
-	public int analyzeStorageLoad()
-	{
+	/**
+	 * 
+	 * @return Percentage of the Storage Used
+	 */
+	public int analyzeStorageLoad() {
 		long load = 0;
 		for (File file : storageDir.getCurrentDir().listFiles()) {
 			if (file.isFile())
 				load += file.length();
 		}
-		
-		int t = (int)(load / MAXSTORAGE) * 100;
-		if(t > 100)
+
+		int t = (int) (load / MAXSTORAGE) * 100;
+		if (t > 100)
 			t = 100;
 		return t;
 	}
+
+	/**
+	 * 
+	 * @return All existing files on the StorageServer
+	 */
 	public List<String> analyzeCurrentFiles() {
 		List<String> files = new ArrayList<String>();
 		for (File file : storageDir.getCurrentDir().listFiles()) {
@@ -58,6 +96,10 @@ public class Storage {
 		return files;
 	}
 
+	/**
+	 * 
+	 * @param files
+	 */
 	public void removefiles(List<String> files) {
 		File curDir = storageDir.getCurrentDir();
 		File removeDir = storageDir.getRemoveDir();
@@ -69,49 +111,85 @@ public class Storage {
 		}
 	}
 
-	public File getTransFile(String name) {
+	/**
+	 * Get the file in transport directory, delete the origin file if exists
+	 * 
+	 * @param filename
+	 * @return
+	 */
+	public File getTransFile(String filename) {
 		File file = new File(storageDir.getTransDir().getAbsolutePath() + "//"
-				+ name);
+				+ filename);
 		if (file.exists())
 			file.delete();
 		return file;
 	}
-	
-	public File getTransFileNotDelete(String name) {
+
+	/**
+	 * Get the file in transport directory, not delete the origin file
+	 * 
+	 * @param filename
+	 * @return
+	 */
+	public File getTransFileNotDelete(String filename) {
 		File file = new File(storageDir.getTransDir().getAbsolutePath() + "//"
-				+ name);
+				+ filename);
 		return file;
 	}
 
-	public File getFile(String name) throws IOException{
+	/**
+	 * Get the file in current directory
+	 * 
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	public File getFile(String name) throws IOException {
 		File file = new File(storageDir.getCurrentDir().getAbsoluteFile()
 				+ "//" + name);
-		if(file.exists() == false || file.isFile() == false)
-			throw(new IOException("GetFile: file not exist."));
+		if (file.exists() == false || file.isFile() == false)
+			throw (new IOException("GetFile: file not exist."));
 		return file;
 	}
 
+	/**
+	 * Move the file from transport directory to current directory when
+	 * transport finished
+	 * 
+	 * @param name
+	 * @throws IOException
+	 */
 	public void transSuccess(String name) throws IOException {
 		File curDir = storageDir.getCurrentDir();
 		File transDir = storageDir.getTransDir();
 		File dest = new File(curDir.getAbsolutePath() + "//" + name);
 		File src = new File(transDir.getAbsolutePath() + "//" + name);
-		if(dest.exists())
-		{
+		if (dest.exists()) {
 			dest.delete();
 		}
-		if (src.exists() && src.renameTo(dest))
-		{
-			
-		}
-		else
+		if (src.exists() && src.renameTo(dest)) {
+
+		} else
 			throw (new IOException("source file not exist."));
 	}
 
+	/**
+	 * Handle directory of the StorageServer
+	 * 
+	 * @author dengshihong
+	 * 
+	 */
 	public static class StorageDirectory {
+		/**
+		 * Root directory
+		 */
 		private File root;
-		FileLock lock;
 
+		/**
+		 * 
+		 * @param dir
+		 * @throws IOException
+		 */
 		public StorageDirectory(File dir) throws IOException {
 			root = dir;
 			File curDir = getCurrentDir();
@@ -137,32 +215,45 @@ public class Storage {
 				removeDir.mkdir();
 			} else
 				clearDirectory(removeDir);
-			lock = null;
 		}
 
+		/**
+		 * 
+		 * @return Root directory
+		 */
 		public File getFile() {
 			return root;
 		}
 
+		/**
+		 * 
+		 * @param dir
+		 * @throws IOException
+		 */
 		public void clearDirectory(File dir) throws IOException {
-			// File curDir = this.getCurrentDir();
-			// if (curDir.exists()) {
-			// // TODO 删除目录中所有文件
-			// // throw new IOException("Cannot remove current directory " +
-			// // curDir);
-			// } else if (!curDir.mkdir())
-			// throw new IOException("Cannot create directory " + curDir);
 			FileUtil.fullyDeleteContent(dir);
 		}
 
+		/**
+		 * 
+		 * @return Current directory
+		 */
 		public File getCurrentDir() {
 			return new File(root, STORAGE_DIR_CURRENT);
 		}
 
+		/**
+		 * 
+		 * @return Transport directory
+		 */
 		public File getTransDir() {
 			return new File(root, STORAGE_DIR_TRANS);
 		}
 
+		/**
+		 * 
+		 * @return Remove directory
+		 */
 		public File getRemoveDir() {
 			return new File(root, STORAGE_DIR_REMOVE);
 		}

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,6 +17,7 @@ import storageserver.event.DuplicateFinishEvent;
 import storageserver.event.HeartbeatResponseEvent;
 import storageserver.event.MigrateFileFinishEvent;
 import storageserver.task.AddFileTask;
+import storageserver.task.AppendFileTask;
 import storageserver.task.DuplicateFileTask;
 import storageserver.task.GetFileTask;
 import storageserver.task.HeartbeatTask;
@@ -36,28 +36,107 @@ import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.Logger;
 
+/**
+ * Storage server implementation
+ * <p>
+ * It has two set of communication methods.
+ * <p>
+ * It behaves as client for NameServer, send call to, receive call from NS
+ * <p>
+ * It also behave as server for client, receive and handle calls, transport file
+ * streams
+ * <p>
+ * Finally, StorageServers inter-communicate for duplication and load balance
+ * 
+ * @author dengshihong
+ * 
+ */
 public class StorageServer implements TaskEventListener, CallListener,
 		SocketListener {
+	/**
+	 * Logger
+	 */
 	private static final Logger logger = Logger.getLogger(StorageServer.class);
+	/**
+	 * Maximum number of task which can be running simultaneously
+	 */
 	private static final int MAX_THREADS = 20;
+	/**
+	 * Address of StorageServer as Server(ip:port)
+	 */
 	private String address;
+	/**
+	 * The Storage of the StorageServer
+	 */
 	private final Storage storage;
+	/**
+	 * connector for communication with NameServer
+	 */
 	private ClientConnector connector = null;
+	/**
+	 * connector for communication with StorageServer and Client
+	 */
 	private XConnector xConnector = null;
+	/**
+	 * Task list
+	 * <p>
+	 * {taskId, task}
+	 */
 	private Map<Long, Task> tasks = new HashMap<Long, Task>();
+	/**
+	 * Files on migration
+	 * <p>
+	 * {StorageAddress, filename list}
+	 */
 	private Map<String, List<String>> onMigrateFile = new HashMap<String, List<String>>();
+	/**
+	 * Files finished migration but have not reported to NameServer
+	 * <p>
+	 * {StorageAddress, filename list}
+	 */
 	private Map<String, List<String>> overMigrateFile = new HashMap<String, List<String>>();
+	/**
+	 * Task Monitor, used to check task status.
+	 */
 	private TaskMonitor taskMonitor = null;
+	/**
+	 * Task thread executor
+	 */
 	private ExecutorService taskExecutor = null;
+	/**
+	 * Determine whether StorageServer has been initiated.
+	 */
 	private boolean initialized = false;
+	/**
+	 * Determine whether StorageServer has been register to NameServer
+	 */
 	private Boolean registered = false;
+	/**
+	 * For taskId generate
+	 */
 	private Integer taskIDCount = 0;
+	/**
+	 * NameServer taskId to handle this StorageServer's heartbeat
+	 */
 	private long NStid = -1;
 
+	/**
+	 * 
+	 * @param location
+	 *            Root directory for StorageServer
+	 * @throws IOException
+	 */
 	public StorageServer(String location) throws IOException {
 		storage = new Storage(location);
 	}
 
+	/**
+	 * 
+	 * @param port
+	 *            Monitor port for XConnector
+	 * @throws Exception
+	 * @see XConnector
+	 */
 	public void initAndstart(int port) throws Exception {
 		if (initialized) {
 			logger.warn("StorgeServer has been initialized before, you can't do it twice.");
@@ -73,11 +152,6 @@ public class StorageServer implements TaskEventListener, CallListener,
 				throw new Exception(
 						"Initiation failed, couldn't create storage connector.");
 			}
-			// check xconnector
-			// if (null == XConnector.getInstance()) {
-			// throw new Exception(
-			// "Initiation failed, couldn't create storage xconnector.");
-			// }
 
 			taskExecutor = Executors.newFixedThreadPool(MAX_THREADS);
 
@@ -94,8 +168,6 @@ public class StorageServer implements TaskEventListener, CallListener,
 			xConnector.addSocketListener(this);
 			address = InetAddress.getLocalHost().getHostAddress() + ":" + port;
 
-			// start the registration task, if registration success, then start
-			// heartbeat task
 			startRegister();
 
 			logger.info("StorageServer" + connector.getLocalAddress()
@@ -109,24 +181,9 @@ public class StorageServer implements TaskEventListener, CallListener,
 	public void handleCall(Call call) {
 		logger.info("StorageServer" + connector.getLocalAddress()
 				+ " recievced a call: " + call.getType());
-		// switch (call.getType()) {
-		// // TODO 需要添加注册成功之后的处理
-		// case FINISH:{
-		// tasks.get(key)
-		// break;
-		// }
-		// case MIGRATE_FILE_N2S: {
-		// MigrateFileCallN2S handlecall = (MigrateFileCallN2S) call;
-		// for (String key : handlecall.getFiles().keySet()) {
-		// }
-		// break;
-		// }
-		// case SYNC_N2S:
-		// break;
-		// default:
-		// break;
-		// }
 		logger.info("dispatch to task: " + call.getToTaskId());
+
+		// Dispatch calls to taskThread
 		final Task task = tasks.get(call.getToTaskId());
 		if (null == task)
 			logger.error("StorageServer" + address + " couldn't find a task "
@@ -139,7 +196,6 @@ public class StorageServer implements TaskEventListener, CallListener,
 
 	@Override
 	public void handle(TaskEvent event) {
-		// TODO Auto-generated method stub
 		final Task task = event.getTaskThread();
 
 		if (event.getType() == TaskEvent.Type.TASK_FINISHED) {
@@ -195,12 +251,9 @@ public class StorageServer implements TaskEventListener, CallListener,
 			}
 		} else if (event.getType() == TaskEvent.Type.DUPLICATE_FINISHED) {
 			if (task instanceof DuplicateFileTask) {
+				// TODO Need to check for duplication success
 				tasks.get(((DuplicateFinishEvent) event).getParent())
 						.handleCall(null);
-//				if (((DuplicateFinishEvent) event).getStatus() == XConnector.Type.OP_FINISH_SUC) {
-//				} else {
-//
-//				}
 			}
 		} else {
 
@@ -214,6 +267,7 @@ public class StorageServer implements TaskEventListener, CallListener,
 		try {
 			dis = new DataInputStream(s.getInputStream());
 			op = dis.readByte();
+			// Setup task to handle the request according to opcode
 			switch (op) {
 			case XConnector.Type.OP_WRITE_BLOCK:
 				logger.info("Storage " + address + " start a addFileTask.");
@@ -237,6 +291,9 @@ public class StorageServer implements TaskEventListener, CallListener,
 		}
 	}
 
+	/**
+	 * Start the Register task
+	 */
 	public void startRegister() {
 		Task task = null;
 		int id;
@@ -249,6 +306,9 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskMonitor.addTask(task);
 	}
 
+	/**
+	 * Start the Heartbeat task
+	 */
 	public void startHeartbeat() {
 		Task task = null;
 		int id;
@@ -262,6 +322,9 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskMonitor.addTask(task);
 	}
 
+	/**
+	 * Start the Sync task
+	 */
 	public void startSyncTask() {
 		Task task = null;
 		int id;
@@ -274,6 +337,13 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskMonitor.addTask(task);
 	}
 
+	/**
+	 * 
+	 * @param socket
+	 *            Socket with the Client who send the request
+	 * @param dis
+	 *            DataInputStream of the socket
+	 */
 	public void startAddFileTask(Socket socket, DataInputStream dis) {
 		Task task = null;
 		int id;
@@ -286,6 +356,13 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskMonitor.addTask(task);
 	}
 
+	/**
+	 * 
+	 * @param socket
+	 *            Socket with the Client who send the request
+	 * @param dis
+	 *            DataInputStream of the socket
+	 */
 	public void startGetFileTask(Socket socket, DataInputStream dis) {
 		Task task = null;
 		int id;
@@ -298,10 +375,31 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskMonitor.addTask(task);
 	}
 
+	/**
+	 * 
+	 */
 	public void startAppendFileTask() {
-
+		Task task = null;
+		int id;
+		synchronized (taskIDCount) {
+			id = taskIDCount++;
+		}
+		task = new AppendFileTask(id);
+		tasks.put(task.getTaskId(), task);
+		taskExecutor.execute(task);
+		taskMonitor.addTask(task);
 	}
 
+	/**
+	 * 
+	 * @param address
+	 *            Address of the StorageServer to duplicate the file
+	 * @param filename
+	 *            Duplicate File name
+	 * @param parent
+	 *            TaskId of the task to begin this duplication operation, need
+	 *            to notify this task when finished
+	 */
 	public void startDuplicateFileTask(String address, String filename,
 			long parent) {
 		Task task = null;
@@ -316,6 +414,13 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskMonitor.addTask(task);
 	}
 
+	/**
+	 * 
+	 * @param address
+	 *            Address of the StorageServer from which to get files
+	 * @param Files
+	 *            List of filenames to get
+	 */
 	public void startMigrateFileTask(String address, List<String> files) {
 		Task workingTask = null;
 		int id;
