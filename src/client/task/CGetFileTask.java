@@ -34,7 +34,7 @@ public class CGetFileTask
 	private String filepath;
 	private String filename;
 	
-	private long remoteTaskId;
+	private long toTaskId;
 
 	public CGetFileTask(long tid, String _path, String _name) {
 		super(tid);
@@ -49,7 +49,7 @@ public class CGetFileTask
 		}
 		if (call.getType() == Call.Type.ADD_FILE_N2C) {
 			this.call = (GetFileCallN2C) call;
-			this.remoteTaskId = call.getFromTaskId();
+			this.toTaskId = call.getFromTaskId();
 			synchronized (waitor)
             {
 				waitor.notify();
@@ -78,12 +78,15 @@ public class CGetFileTask
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+        
+    	CLeaseTask leaseTask = new CLeaseTask(getTaskId(), toTaskId);
+    	leaseTask.start();
 		
 		if(call.getLocations().size() == 0){
 			Log.print("Fatal error! No storage server returned");
 			Log.debug(""+call.getFromTaskId()+" "+call.getToTaskId());
 			FinishCall finishCall = new FinishCall();
-			call.setToTaskId(remoteTaskId);
+			call.setToTaskId(toTaskId);
 			call.setFromTaskId(getTaskId());
 			ClientConnector.getInstance().sendCall(finishCall);
 			return;

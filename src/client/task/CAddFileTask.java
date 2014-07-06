@@ -83,7 +83,7 @@ public class CAddFileTask
     public void run()
     {
         // TODO Auto-generated method stub
-
+    	
         AddFileCallC2N callC2N = new AddFileCallC2N(filepath, filename);
         callC2N.setFromTaskId(getTaskId());
         ClientConnector.getInstance().sendCall(callC2N);
@@ -101,6 +101,9 @@ public class CAddFileTask
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
+        
+//    	CLeaseTask leaseTask = new CLeaseTask(getTaskId(), toTaskId);
+//    	leaseTask.start();
         
         if (type == Call.Type.ABORT) {
 			return;
