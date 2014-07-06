@@ -127,7 +127,7 @@ public class StorageServer implements TaskEventListener, CallListener,
 		final Task task = tasks.get(call.getToTaskId());
 		if (null == task)
 			logger.error("StorageServer" + address
-					+ " couldn't find a task to handle the call.");
+					+ " couldn't find a task "+ call.getToTaskId() + " to handle the call.");
 		else {
 			logger.info("StorageServer" + address + " start handle the call.");
 			task.handleCall(call);
@@ -271,7 +271,7 @@ public class StorageServer implements TaskEventListener, CallListener,
 		synchronized (taskIDCount) {
 			id = taskIDCount++;
 		}
-		workingTask = new MigrateFileTask(id, address, files);
+		workingTask = new MigrateFileTask(id, address, files, storage);
 		tasks.put(workingTask.getTaskId(), workingTask);
 		taskExecutor.execute(workingTask);
 		taskMonitor.addTask(workingTask);

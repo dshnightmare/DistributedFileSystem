@@ -48,7 +48,9 @@ public class TaskEvent
         
         HEARTBEAT_RESPONSE("HEARTBEAT_RESPONSE"),
         
-        REG_FINISHED("REG_FINISHED");
+        REG_FINISHED("REG_FINISHED"),
+        
+        MIGRATE_FINISHED("MIGRATE_FINISHED");
 
         private String name;
 

@@ -90,6 +90,10 @@ public class Storage {
 		File transDir = storageDir.getTransDir();
 		File dest = new File(curDir.getAbsolutePath() + "//" + name);
 		File src = new File(transDir.getAbsolutePath() + "//" + name);
+		if(dest.exists())
+		{
+			dest.delete();
+		}
 		if (src.exists() && src.renameTo(dest))
 		{
 			
