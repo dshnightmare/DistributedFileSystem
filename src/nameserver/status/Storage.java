@@ -29,7 +29,9 @@ public class Storage
     /**
      * Percentage of storage load.
      */
-    private int load;
+    private int taskSum;
+
+    private int storageLoad;
 
     /**
      * Files that are contained by this storage server.
@@ -65,6 +67,7 @@ public class Storage
     public synchronized void setHeartbeatTime(long time)
     {
         this.heartbeatTime = time;
+        fireEvent(new StatusEvent(StatusEvent.Type.HEARTBEAT, this));
     }
 
     /**
@@ -80,11 +83,12 @@ public class Storage
     /**
      * Set storage load.
      * 
-     * @param load
+     * @param taskSum
      */
-    public void setLoad(int load)
+    public void setTaskSum(int taskSum)
     {
-        this.load = load;
+        this.taskSum = taskSum;
+        fireEvent(new StatusEvent(StatusEvent.Type.TASK_SUM_CHANGED, this));
     }
 
     /**
@@ -92,9 +96,20 @@ public class Storage
      * 
      * @return
      */
-    public int getLoad()
+    public int getTaskSum()
     {
-        return load;
+        return taskSum;
+    }
+
+    public void setStorageLoad(int load)
+    {
+        this.storageLoad = load;
+        fireEvent(new StatusEvent(StatusEvent.Type.LOAD_CHANGED, this));
+    }
+
+    public int getStorageLoad()
+    {
+        return storageLoad;
     }
 
     /**

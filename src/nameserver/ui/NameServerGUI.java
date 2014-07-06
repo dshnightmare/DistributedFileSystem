@@ -72,6 +72,11 @@ public class NameServerGUI
         case STORAGE_REGISTERED:
             addStoragePanel(event.getStorage());
             break;
+        case HEARTBEAT:
+        case LOAD_CHANGED:
+        case TASK_SUM_CHANGED:
+            updateStoragePanel(event.getStorage());
+            break;
         }
     }
 
@@ -79,12 +84,19 @@ public class NameServerGUI
     {
         final StorageInfo info = new StorageInfo();
 
-        info.updateId(storage.getId());
-        info.updateLoad(storage.getLoad());
+        info.update(storage);
         storages.put(storage, info);
         storagePanel.add(info.getPanel());
 
         frame.validate();
+    }
+
+    private void updateStoragePanel(Storage storage)
+    {
+        final StorageInfo info = storages.get(storage);
+        if (null == info)
+            return;
+        info.update(storage);
     }
 
     private void removeStoragePanel(Storage storage)

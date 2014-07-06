@@ -16,7 +16,11 @@ public class HeartbeatCallS2N
      * {storage id, list of file id}
      */
     private final int load;
-    private final Map<String, List<String>> migratedFiles;
+    public int getLoad() {
+		return load;
+	}
+
+	private final Map<String, List<String>> migratedFiles;
 
     public HeartbeatCallS2N(Map<String, List<String>> migratedFiles, int load)
     {

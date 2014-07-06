@@ -23,7 +23,7 @@ public class TestGUI
         gui.init();
 
         Storage storage = new Storage("localhost");
-        storage.setLoad(70);
+        storage.setTaskSum(70);
         gui.handle(new StatusEvent(Type.STORAGE_REGISTERED, storage));
 
         try
@@ -36,7 +36,7 @@ public class TestGUI
         }
 
         storage = new Storage("localhost2");
-        storage.setLoad(20);
+        storage.setTaskSum(20);
         gui.handle(new StatusEvent(Type.STORAGE_REGISTERED, storage));
 
         try
