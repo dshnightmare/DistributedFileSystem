@@ -251,11 +251,13 @@ public class AddFileTask
      */
     private void sendResponseCall()
     {
-    	logger.info("XXXXXXX" + Status.getInstance().getStorageNum());
         List<Storage> storages = file.getLocations();
         List<String> locations = new ArrayList<String>();
         for (Storage s : storages)
+        {
             locations.add(s.getId());
+            System.out.println("--------------" + s.getId());
+        }
 
         String fileId = file.getId();
         Call back = new AddFileCallN2C(fileId, locations);
