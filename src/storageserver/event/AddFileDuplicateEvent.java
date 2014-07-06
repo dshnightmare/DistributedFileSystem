@@ -5,6 +5,11 @@ import java.util.List;
 import common.event.TaskEvent;
 import common.task.Task;
 
+/**
+ * 
+ * @author dengshihong
+ * 
+ */
 public class AddFileDuplicateEvent extends TaskEvent {
 	private final String filename;
 	private final List<String> todo;
