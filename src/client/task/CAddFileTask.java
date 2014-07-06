@@ -83,7 +83,7 @@ public class CAddFileTask
     public void run()
     {
         // TODO Auto-generated method stub
-
+    	
         AddFileCallC2N callC2N = new AddFileCallC2N(filepath, filename);
         callC2N.setFromTaskId(getTaskId());
         ClientConnector.getInstance().sendCall(callC2N);
@@ -102,6 +102,9 @@ public class CAddFileTask
             e1.printStackTrace();
         }
         
+//    	CLeaseTask leaseTask = new CLeaseTask(getTaskId(), toTaskId);
+//    	leaseTask.start();
+        
         if (type == Call.Type.ABORT) {
 			return;
 		}
@@ -119,7 +122,8 @@ public class CAddFileTask
         }
 
         String location = call.getLocations().get(0);
-        //storageSocket = xConnector.getSocket(location);
+        String[] tmpStrings = location.split(":");
+        storageSocket = XConnector.getSocket(tmpStrings[0], Integer.parseInt(tmpStrings[1]));
 
         try
         {

@@ -1,5 +1,6 @@
 package test.client;
 
+import storageserver.StorageServer;
 import nameserver.NameServer;
 import client.ClientCMD;
 import client.ClientGUI;
@@ -17,6 +18,14 @@ public class TestClientGUI extends TestCase{
         {
             e.printStackTrace();
         }
+
+		try {
+			StorageServer ss = new StorageServer("D:");
+			ss.initAndstart(5555);
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
 	}
 	
 	public void testClient(){

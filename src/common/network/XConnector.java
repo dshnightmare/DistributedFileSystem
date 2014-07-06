@@ -16,8 +16,17 @@ import common.call.Call;
 import common.call.CallDispatcher;
 import common.call.CallListener;
 import common.util.Configuration;
+import common.util.Log;
 import common.util.Logger;
 
+/**
+ * XConnector has two functions:
+ * 1. getSocket(): create socket on (ip, port)
+ * 2. start up a thread to listen on (port), and feed SocketListeners
+ * with socket accepted
+ * @author gengyufeng
+ *
+ */
 public class XConnector 
 	extends Thread
 	implements SocketDispatcher{
@@ -37,10 +46,11 @@ public class XConnector
 	public void run() {
 		try {
 			ss = new ServerSocket(port);
-			System.out.println("XConnector started listening on port:" + port);
+			Log.info("XConnector started listening on port:" + port);
 
 			while (true) {
 				Socket client = ss.accept();
+				Log.info("XConnector received connection:"+client.getRemoteSocketAddress().toString());
 				for(SocketListener listener:socketListeners){
 					listener.handleSocket(client);
 				}
@@ -59,7 +69,7 @@ public class XConnector
 	 * @param port	port
 	 * @return
 	 */
-	public Socket getSocket(String ip, int port){
+	public static Socket getSocket(String ip, int port){
 		Socket socket = null;
 		try {
 			socket = new Socket(ip, port);

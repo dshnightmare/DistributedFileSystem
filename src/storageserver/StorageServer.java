@@ -87,6 +87,7 @@ public class StorageServer implements TaskEventListener, CallListener,
 			// xConnector = XConnector.getInstance();
 			// xConnector.addListener(this);
 			xConnector = new XConnector(port);
+			xConnector.start();
 			xConnector.addSocketListener(this);
 			address = InetAddress.getLocalHost().getHostAddress() + ":" + port;
 
