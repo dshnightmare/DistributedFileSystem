@@ -82,6 +82,7 @@ public class Status implements StatusEventListener
                 break;
             count--;
             result.add(s);
+            System.out.println(">>>>>> " + s.getId());
         }
 
         return result;
