@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.Inflater;
 
 import storageserver.Storage;
 import storageserver.event.AddFileDuplicateEvent;
@@ -76,6 +77,7 @@ public class AddFileTask extends StorageServerTask {
 					throw (new Exception("AddFileTask: filelength errors."));
 
 				fos.close();
+				logger.info("------------------------>need to duplicate" + todo);
 				synchronized (waitor) {
 					waitNum = todo;
 					fireEvent(new AddFileDuplicateEvent(this, filename,

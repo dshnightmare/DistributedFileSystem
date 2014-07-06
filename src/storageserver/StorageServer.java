@@ -309,6 +309,7 @@ public class StorageServer implements TaskEventListener, CallListener,
 		synchronized (taskIDCount) {
 			id = taskIDCount++;
 		}
+		logger.info("----------------->storage start a duplicateTask");
 		task = new DuplicateFileTask(id, storage, address, filename, parent);
 		tasks.put(task.getTaskId(), task);
 		taskExecutor.execute(task);
