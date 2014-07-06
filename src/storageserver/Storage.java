@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.naming.spi.DirStateFactory.Result;
-
+import common.util.Configuration;
 import common.util.FileUtil;
 import common.util.Log;
 import common.util.Logger;
@@ -16,6 +16,7 @@ import common.util.Logger;
 public class Storage {
 	public static final Logger LOG = Logger.getLogger(Storage.class);
 
+	public static final long MAXSTORAGE = Configuration.getInstance().getLong(Configuration.SS_MAX_STORAGE);
 	public static final String STORAGE_DIR_CURRENT = "current";
 	public static final String STORAGE_DIR_TRANS = "trans";
 	public static final String STORAGE_DIR_REMOVE = "removed";
@@ -35,6 +36,19 @@ public class Storage {
 		storageDir = new StorageDirectory(rootFile);
 	}
 
+	public int analyzeStorageLoad()
+	{
+		long load = 0;
+		for (File file : storageDir.getCurrentDir().listFiles()) {
+			if (file.isFile())
+				load += file.length();
+		}
+		
+		int t = (int)(load / MAXSTORAGE) * 100;
+		if(t > 100)
+			t = 100;
+		return t;
+	}
 	public List<String> analyzeCurrentFiles() {
 		List<String> files = new ArrayList<String>();
 		for (File file : storageDir.getCurrentDir().listFiles()) {
@@ -76,8 +90,10 @@ public class Storage {
 		File transDir = storageDir.getTransDir();
 		File dest = new File(curDir.getAbsolutePath() + "//" + name);
 		File src = new File(transDir.getAbsolutePath() + "//" + name);
-		if (src.exists())
-			src.renameTo(dest);
+		if (src.exists() && src.renameTo(dest))
+		{
+			
+		}
 		else
 			throw (new IOException("source file not exist."));
 	}

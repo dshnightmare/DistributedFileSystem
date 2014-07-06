@@ -36,6 +36,8 @@ public class Configuration {
 	public static final String SS_REG_INTERVAL = "ss_registeration_interval";
 	public static final String SS_HB_INTERVAL = "ss_heartbeat_interval";
 	public static final String SS_SYNC_INTERVAL = "ss_sync_interval";
+	
+	public static final String SS_MAX_STORAGE = "ss_max_storage";
 
 	private Configuration() throws IOException {
 		InputStream in = new BufferedInputStream(new FileInputStream(

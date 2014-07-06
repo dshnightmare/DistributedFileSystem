@@ -131,6 +131,11 @@ public class TaskMonitor
             }
         }
     }
+    
+    public int getTaskSum()
+    {
+        return tasks.size();
+    }
 
     /**
      * Inner class of Monitoring task. It will wake up regularly and check all

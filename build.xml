@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<project name="DistributedFileSystem" default="run_nameserver" basedir=".">
+<project name="DistributedFileSystem" default="run_name" basedir=".">
 
 	<property name="src.dir" value="src" />
 	<property name="dst.dir" value="classes" />
 	<property name="jar.dir" value="jar" />
 	<property name="lib.dir" value="lib" />
 	<property name="nameserver.main-class" value="nameserver.NameServerLauncher" />
-	<property name="storageserver.main-class" value="" />
+	<property name="storageserver.main-class" value="storageserver.StorageServerLauncher" />
 	<property name="client.main-class" value="client.ClientLauncher" />
+	<property name="base" value="----" />
+	<property name="port" value="-1" />
 
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar" />
@@ -35,7 +37,7 @@
 
 	<target name="rebuild" depends="clean, build" />
 
-	<target name="run_nameserver">
+	<target name="run_name">
 		<java classname="${nameserver.main-class}" fork="true">
 			<classpath>
 				<path refid="classpath" />
@@ -43,14 +45,25 @@
 			</classpath>
 		</java>
 	</target>
-	
+
+	<target name="run_storage">
+		<java classname="${storageserver.main-class}" fork="true">
+			<arg value="${base}" />
+			<arg value="${port}" />
+			<classpath>
+				<path refid="classpath" />
+				<path location="${jar.dir}/${ant.project.name}.jar" />
+			</classpath>
+		</java>
+	</target>
+
 	<target name="run_client">
-			<java classname="${client.main-class}" fork="true">
-				<classpath>
-					<path refid="classpath" />
-					<path location="${jar.dir}/${ant.project.name}.jar" />
-				</classpath>
-			</java>
-		</target>
+		<java classname="${client.main-class}" fork="true">
+			<classpath>
+				<path refid="classpath" />
+				<path location="${jar.dir}/${ant.project.name}.jar" />
+			</classpath>
+		</java>
+	</target>
 
 </project>

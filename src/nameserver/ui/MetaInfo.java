@@ -59,10 +59,13 @@ public class MetaInfo
             for (Entry<String, Map<String, String>> e : meta
                 .getValidDirectoryList().entrySet())
             {
+                if (0 == e.getValue().size())
+                {
+                    model.addElement(e.getKey());
+                }
                 for (Entry<String, String> en : e.getValue().entrySet())
                 {
-                    model.addElement(e.getKey() + " " + en.getKey() + " "
-                        + en.getValue());
+                    model.addElement(e.getKey() + en.getKey() + "(" + en.getValue() + ")");
                 }
             }
         }

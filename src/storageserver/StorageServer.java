@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 
 import storageserver.event.BeforeRegFinishEvent;
 import storageserver.event.HeartbeatResponseEvent;
@@ -220,7 +219,7 @@ public class StorageServer implements TaskEventListener, CallListener,
 		synchronized (taskIDCount) {
 			id = taskIDCount++;
 		}
-		task = new HeartbeatTask(id, overMigrateFile, onMigrateFile, NStid);
+		task = new HeartbeatTask(id, overMigrateFile, onMigrateFile, NStid, taskMonitor);
 		tasks.put(task.getTaskId(), task);
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
