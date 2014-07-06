@@ -128,6 +128,9 @@ public class AddFileTask
             file.unlockWrite();
 
             sendFinishCall();
+            
+            System.out.println("?????? " + file.getLocationsCount());
+            
             setFinish();
         }
     }

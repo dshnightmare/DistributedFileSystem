@@ -38,7 +38,7 @@ public class SyncTask
      * The duplicate number of file.
      */
     private int duplicate;
-    
+
     private String address;
 
     /**
@@ -77,16 +77,19 @@ public class SyncTask
                 List<String> removeList = new ArrayList<String>();
                 for (String id : files)
                 {
+                    System.out.println("{{{{{ id: " + id);
                     File file = Meta.getInstance().getFile(id);
                     if (null == file)
+                    {
                         removeList.add(id);
+                    }
                     else
                     {
                         if (file.getLocationsCount() > duplicate)
                             removeList.add(id);
                         else
                             file.addLocation(Status.getInstance().getStorage(
-                                getInitiator()));
+                                address));
                     }
                 }
                 sendResponseCall(removeList);
