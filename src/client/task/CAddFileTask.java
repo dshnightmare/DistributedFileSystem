@@ -138,8 +138,8 @@ public class CAddFileTask
             in = new DataInputStream(storageSocket.getInputStream());
             out.writeByte(XConnector.Type.OP_WRITE_BLOCK);
             out.writeInt(call.getLocations().size()-1);//other ss to send
-            for(int i=0; i<call.getLocations().size()-1; i++){
-            	out.writeUTF(locationStrings[i]);
+            for(int i=1; i<call.getLocations().size(); i++){
+            	out.writeUTF(call.getLocations().get(i));
             }
             out.writeUTF(call.getFileId());//file name
             out.writeLong(fileLength);//file size
