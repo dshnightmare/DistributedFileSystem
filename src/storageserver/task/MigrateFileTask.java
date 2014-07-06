@@ -1,5 +1,6 @@
 package storageserver.task;
 
+import java.net.Socket;
 import java.util.List;
 
 import common.call.Call;
@@ -26,7 +27,7 @@ public class MigrateFileTask extends StorageServerTask {
 	public void run() {
 		String[] string = address.split(":");
 		for (String filename : filenames) {
-			//XConnector.getSocket(string[0], Integer.parseInt(string[1]));
+			//Socket socket = XConnector.getSocket(string[0], Integer.parseInt(string[1]));
 		}
 	}
 

@@ -30,4 +30,8 @@ public class SyncCallS2N
 	public String getAddress() {
 		return address;
 	}
+
+	public int getLoad() {
+		return load;
+	}
 }
