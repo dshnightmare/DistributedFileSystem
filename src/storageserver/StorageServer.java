@@ -163,14 +163,7 @@ public class StorageServer implements TaskEventListener, CallListener,
 						.getWorking();
 				for (String key : working.keySet()) {
 					if (working.get(key).isEmpty() == false) {
-						Task workingTask = null;
-						synchronized (taskIDCount) {
-							workingTask = new MigrateFileTask(taskIDCount++,
-									key, working.get(key));
-						}
-						tasks.put(workingTask.getTaskId(), workingTask);
-						taskExecutor.execute(workingTask);
-						taskMonitor.addTask(workingTask);
+						startMigrateFileTask(key, working.get(key));
 					}
 				}
 			}
@@ -204,9 +197,8 @@ public class StorageServer implements TaskEventListener, CallListener,
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally{
-			
+		} finally {
+
 		}
 	}
 
@@ -245,9 +237,8 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
 	}
-	
-	public void startAddFileTask(Socket socket, DataInputStream dis)
-	{
+
+	public void startAddFileTask(Socket socket, DataInputStream dis) {
 		Task task = null;
 		int id;
 		synchronized (taskIDCount) {
@@ -258,8 +249,8 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
 	}
-	
-	public void startGetFileTask(Socket socket, DataInputStream dis){
+
+	public void startGetFileTask(Socket socket, DataInputStream dis) {
 		Task task = null;
 		int id;
 		synchronized (taskIDCount) {
@@ -270,8 +261,20 @@ public class StorageServer implements TaskEventListener, CallListener,
 		taskExecutor.execute(task);
 		taskMonitor.addTask(task);
 	}
-	
-	public void startAppendFileTask(){
-		
+
+	public void startAppendFileTask() {
+
+	}
+
+	public void startMigrateFileTask(String address, List<String> files) {
+		Task workingTask = null;
+		int id;
+		synchronized (taskIDCount) {
+			id = taskIDCount++;
+		}
+		workingTask = new MigrateFileTask(id, address, files);
+		tasks.put(workingTask.getTaskId(), workingTask);
+		taskExecutor.execute(workingTask);
+		taskMonitor.addTask(workingTask);
 	}
 }

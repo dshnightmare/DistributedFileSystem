@@ -37,6 +37,7 @@ public class AddFileTask extends StorageServerTask {
 		long length;
 		int todo;
 		String[] todoAddress = null;
+		int toreadlen;
 		int readlen;
 		byte[] inputByte = null;
 		FileOutputStream fos = null;
@@ -55,19 +56,15 @@ public class AddFileTask extends StorageServerTask {
 				inputByte = new byte[1024];
 				fos = new FileOutputStream(storage.getTransFile(filename));
 				dos = new DataOutputStream(socket.getOutputStream());
-				while(length > inputByte.length){
-					readlen = dis.read(inputByte, 0, inputByte.length);
-					if(readlen != inputByte.length)
-						throw(new Exception("AddFileTask: filelength errors."));
+				toreadlen = (length < inputByte.length) ? (int)length : inputByte.length;
+				while(length > 0 && (readlen = dis.read(inputByte, 0, toreadlen)) > 0){
 					fos.write(inputByte, 0, readlen);
 					fos.flush();
 					length -=  readlen;
+					toreadlen = (length < inputByte.length) ? (int)length : inputByte.length;
 				}
-				readlen = dis.read(inputByte, 0, inputByte.length);
-				if(readlen != length)
+				if(length < 0)
 					throw(new Exception("AddFileTask: filelength errors."));
-				fos.write(inputByte, 0, readlen);
-				fos.flush();
 //				fireEvent(event);
 //				synchronized (waitor) {
 //					waitor.wait();
