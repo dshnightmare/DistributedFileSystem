@@ -413,6 +413,7 @@ public class BackupUtil
                         committedTaskIds.add(taskId);
                     }
                     
+                }
 
                 while (!suspendedTasks.isEmpty())
                 {
