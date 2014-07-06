@@ -162,6 +162,7 @@ public class CAddFileTask
         }
         if (status == XConnector.Type.OP_FINISH_FAIL) {
 			Log.error("CAddFileTask Upload failed");
+	        leaseTask.interrupt();
 			return;
 		}
 		FinishCall finishCall = new FinishCall();

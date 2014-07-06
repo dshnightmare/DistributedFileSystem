@@ -9,6 +9,7 @@ import java.util.Map;
 import client.task.CAddFileTask;
 import client.task.CCreateDirTask;
 import client.task.CGetDirectoryTask;
+import client.task.CGetFileTask;
 import client.task.CMoveDirectoryTask;
 import client.task.CMoveFileTask;
 import client.task.CRemoveDirectoryTask;
@@ -89,7 +90,7 @@ public class Client
 	 */
 	public void getFileAsync(String path, String name, File file){
 		Log.info("getFileASync - direct:"+path+name);
-		CAddFileTask task = new CAddFileTask(IdGenerator.getInstance().getLongId()
+		CGetFileTask task = new CGetFileTask(IdGenerator.getInstance().getLongId()
 				, path, name, file);
 		new Thread(task).start();
 		taskMonitor.addTask(task);

@@ -32,6 +32,7 @@ import javax.swing.text.View;
 
 import common.event.TaskEvent;
 import common.event.TaskEventListener;
+import common.util.Configuration;
 import common.util.Log;
 import common.util.WrapLayout;
 
@@ -262,7 +263,9 @@ public class ClientGUI
 							frame.setTitle("DFS -- "+currentDirectory);
 						}
 						else {	//file
-							String fileString = currentDirectory+((JLabel)item.getComponent(1)).getText();
+							String localPath = Configuration.getInstance().getString("client_dir");
+							String fileString = localPath+currentDirectory+((JLabel)item.getComponent(1)).getText();
+							fileString = fileString.replaceAll("\\\\", "/");
 							File file = new File(fileString);
 							if (file.exists()) {
 								file.delete();

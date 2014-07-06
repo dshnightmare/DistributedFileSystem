@@ -50,7 +50,7 @@ public class CGetFileTask
 		if(call.getToTaskId() != getTaskId()){
 			return;
 		}
-		if (call.getType() == Call.Type.ADD_FILE_N2C) {
+		if (call.getType() == Call.Type.GET_FILE_N2C) {
 			this.call = (GetFileCallN2C) call;
 			this.toTaskId = call.getFromTaskId();
 			synchronized (waitor)
@@ -100,15 +100,17 @@ public class CGetFileTask
 			out = new DataOutputStream(storageSocket.getOutputStream());
 			dis = new DataInputStream(storageSocket.getInputStream());
 			fos = new FileOutputStream(file);
+			
 			out.writeByte(XConnector.Type.OP_READ_BLOCK);
-
 			long length = dis.readLong();
+			long totalLen = length;
 			byte[] inputByte = new byte[1024];
 			int toreadlen = (length < inputByte.length) ? (int)length : inputByte.length;
 			int readlen;
 			while(length > 0 && (readlen = dis.read(inputByte, 0, toreadlen)) > 0){
 				fos.write(inputByte, 0, readlen);
 				fos.flush();
+				Log.info("Data transfered："+(((double)(totalLen-length)/totalLen)*100)+"%");
 				length -=  readlen;
 				toreadlen = (length < inputByte.length) ? (int)length : inputByte.length;
 			}
@@ -120,9 +122,13 @@ public class CGetFileTask
 		} finally {
 			try {
 				status = XConnector.Type.OP_FINISH_SUC;
-				out.close();
-				dis.close();
-				fos.close();
+				if (null != out) {
+					out.close();
+				}
+				if(null != dis)
+					dis.close();
+				if(null != fos)
+					fos.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -130,6 +136,7 @@ public class CGetFileTask
 		}
         if (status == XConnector.Type.OP_FINISH_FAIL) {
 			Log.error("CGetFileTask Download failed");
+	        leaseTask.interrupt();
 			return;
 		}
 		FinishCall finishCall = new FinishCall();

@@ -73,7 +73,7 @@ public class XConnector
 		Socket socket = null;
 		try {
 			socket = new Socket(ip, port);
-			System.out.println("XConnector connected to"
+			Log.info("XConnector connected to"
 			+socket.getRemoteSocketAddress().toString());
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
