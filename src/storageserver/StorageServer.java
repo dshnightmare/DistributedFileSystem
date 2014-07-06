@@ -15,6 +15,7 @@ import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 import storageserver.event.BeforeRegFinishEvent;
 import storageserver.event.HeartbeatResponseEvent;
 import storageserver.task.AddFileTask;
+import storageserver.task.GetFileTask;
 import storageserver.task.HeartbeatTask;
 import storageserver.task.MigrateFileTask;
 import storageserver.task.RegisterTask;
