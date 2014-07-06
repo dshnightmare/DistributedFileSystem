@@ -50,7 +50,11 @@ public class TaskEvent
         
         REG_FINISHED("REG_FINISHED"),
         
-        MIGRATE_FINISHED("MIGRATE_FINISHED");
+        MIGRATE_FINISHED("MIGRATE_FINISHED"),
+        
+        ADDFILE_DUPLICATE("ADDFILE_DUPLICATE"),
+        
+        DUPLICATE_FINISHED("DUPLICATE_FINISHED");
 
         private String name;
 

@@ -76,6 +76,12 @@ public class Storage {
 			file.delete();
 		return file;
 	}
+	
+	public File getTransFileNotDelete(String name) {
+		File file = new File(storageDir.getTransDir().getAbsolutePath() + "//"
+				+ name);
+		return file;
+	}
 
 	public File getFile(String name) throws IOException{
 		File file = new File(storageDir.getCurrentDir().getAbsoluteFile()
