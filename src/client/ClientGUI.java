@@ -265,8 +265,13 @@ public class ClientGUI
 						else {	//file
 							String localPath = Configuration.getInstance().getString("client_dir");
 							String fileString = localPath+currentDirectory+((JLabel)item.getComponent(1)).getText();
-							fileString = fileString.replaceAll("\\\\", "/");
+							fileString = fileString.replaceAll("\\\\", "////");
+							Log.debug(">>>"+fileString);
 							File file = new File(fileString);
+							if (!file.exists()) {
+								Log.info("Creating local dir");
+								file.mkdirs();
+							}
 							if (file.exists()) {
 								file.delete();
 								fileItem.setBackground(null);
