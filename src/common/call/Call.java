@@ -3,77 +3,132 @@ package common.call;
 import java.io.Serializable;
 
 /**
- * Base class of all kinds of other call used in the RPC system.
- * </p>
- * derived calls contains call sent nameserver2client, c2n, n2storageserver, s2n
- * </p>
+ * Base class of all kinds of other call used in the RPC system. </p> derived
+ * calls contains call sent nameserver2client, c2n, n2storageserver, s2n </p>
  * every derived call links with a task, like AddFileCall, GetFileCall, etc.
+ * 
  * @author gengyufeng
- *
+ * @author lishunyang
  */
 public abstract class Call
     implements Serializable
 {
+    /**
+     * Serial id.
+     */
     private static final long serialVersionUID = -1157466700148810064L;
+
     /**
      * type of call, defined below as enum Type
      */
     private final Type type;
+
     /**
-     * nameserver use this attribute to distinguish different clients, it's derived by
-     * call the socket's getremotesocketaddress
+     * nameserver use this attribute to distinguish different clients, it's
+     * derived by call the socket's getremotesocketaddress
      */
     private String initiator;
+
     /**
-     * Client, NameServer and StorageServer both have id for their tasks respective, when a
-     * Call is passed between two entity, they assign fromTaskId as their own taskId.
-     * </p>
-     * if Call is initiated, toTaskId will be remained -1, if Call is a response, it will be
-     * the fromTaskId of the call it response to.
+     * Client, NameServer and StorageServer both have id for their tasks
+     * respective, when a Call is passed between two entity, they assign
+     * fromTaskId as their own taskId. </p> if Call is initiated, toTaskId will
+     * be remained -1, if Call is a response, it will be the fromTaskId of the
+     * call it response to.
      */
     private long fromTaskId = -1;
+
+    /**
+     * Indicates the related task of remote peer.
+     */
     private long toTaskId = -1;
 
+    /**
+     * Construction method.
+     * 
+     * @param type
+     */
     public Call(Type type)
     {
         this.type = type;
     }
 
+    /**
+     * Get call type.
+     * 
+     * @return
+     */
     public Type getType()
     {
         return type;
     }
 
+    /**
+     * Set "from task" id.
+     * 
+     * @param fromTaskId
+     */
     public void setFromTaskId(long fromTaskId)
     {
         this.fromTaskId = fromTaskId;
     }
 
+    /**
+     * Get "from task" id.
+     * 
+     * @return
+     */
     public long getFromTaskId()
     {
         return fromTaskId;
     }
 
+    /**
+     * Set "to task" id.
+     * 
+     * @param toTaskId
+     */
     public void setToTaskId(long toTaskId)
     {
         this.toTaskId = toTaskId;
     }
 
+    /**
+     * Get "to task" id.
+     * 
+     * @return
+     */
     public long getToTaskId()
     {
         return toTaskId;
     }
 
+    /**
+     * Set initiator's address.
+     * 
+     * @return
+     */
     public String getInitiator()
     {
         return initiator;
     }
 
+    /**
+     * Get initiator' address.
+     * 
+     * @param initiator
+     */
     public void setInitiator(String initiator)
     {
         this.initiator = initiator;
     }
 
+    /**
+     * Call type.
+     * 
+     * @author lishunyang
+     * 
+     */
     public static enum Type
     {
         /**
@@ -106,6 +161,9 @@ public abstract class Call
          */
         ADD_FILE_N2C("ADD_FILE_N2C"),
 
+        /**
+         * Add file from client to name server.
+         */
         ADD_DIRECTORY_C2N("ADD_DIRECTORY_C2N"),
 
         /**
@@ -113,8 +171,14 @@ public abstract class Call
          */
         GET_FILE_C2N("GET_FILE_C2N"), GET_FILE_N2C("GET_FILE_N2C"),
 
+        /**
+         * Get directory from client to name server.
+         */
         GET_DIRECTORY_C2N("GET_DIRECTORY_C2N"),
 
+        /**
+         * Get directory return call from name server to client.
+         */
         GET_DIRECTORY_N2C("GET_DIRECTORY_N2C"),
 
         /**
@@ -132,6 +196,9 @@ public abstract class Call
          */
         REMOVE_FILE_C2N("REMOVE_FILE_C2N"),
 
+        /**
+         * Remove file return call from name server to client.
+         */
         REMOVE_DIRECTORY_C2N("REMOVE_DIRECTORY_C2N"),
 
         /**
@@ -139,6 +206,9 @@ public abstract class Call
          */
         MOVE_FILE_C2N("MOVE_FILE_C2N"),
 
+        /**
+         * Move file call from client to name server.
+         */
         MOVE_DIRECTORY_C2N("MOVE_DIRECTORY_C2N"),
 
         /**
@@ -166,13 +236,24 @@ public abstract class Call
          */
         LEASE_C2N("LEASE_C2N");
 
+        /**
+         * Human-readable name.
+         */
         private String name;
 
+        /**
+         * Construction method.
+         * 
+         * @param name
+         */
         private Type(String name)
         {
             this.name = name;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString()
         {
