@@ -5,9 +5,18 @@ import java.util.List;
 
 import common.call.Call;
 
+/**
+ * Call of getting directory, sent from <tt>NameServer</tt> to <tt>Client</tt>.
+ * 
+ * @author lishunyang
+ * 
+ */
 public class GetDirectoryCallN2C
     extends Call
 {
+    /**
+     * Serial id.
+     */
     private static final long serialVersionUID = -2876278623815280597L;
 
     /**
@@ -15,6 +24,11 @@ public class GetDirectoryCallN2C
      */
     private List<String> filesAndDirectories = new ArrayList<String>();
 
+    /**
+     * Construction method.
+     * 
+     * @param filesAndDirectories
+     */
     public GetDirectoryCallN2C(List<String> filesAndDirectories)
     {
         super(Call.Type.GET_DIRECTORY_N2C);
