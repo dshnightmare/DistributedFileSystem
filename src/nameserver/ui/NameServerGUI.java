@@ -8,11 +8,8 @@ import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 
 import nameserver.meta.Meta;
-import nameserver.meta.MetaEvent;
-import nameserver.meta.MetaEventListener;
 import nameserver.status.StatusEvent;
 import nameserver.status.StatusEventListener;
 import nameserver.status.Storage;

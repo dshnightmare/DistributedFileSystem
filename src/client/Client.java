@@ -183,19 +183,19 @@ public class Client
 
 	@Override
 	public void handle(TaskEvent event) {
-		// TODO Auto-generated method stub
-		if(!(event.getTaskThread() instanceof CAddFileTask)
-				&&!(event.getTaskThread() instanceof CCreateDirTask)
-				&&!(event.getTaskThread() instanceof CRemoveFileTask)
-				&&!(event.getTaskThread() instanceof CRemoveDirectoryTask)){
-			return;
-		}
-		synchronized(listeners){
-			if (listeners.size() != 0) {
-				listeners.get(0).handle(event);
-				listeners.remove(0);
-			}
-		}
+//		// TODO Auto-generated method stub
+//		if(!(event.getTaskThread() instanceof CAddFileTask)
+//				&&!(event.getTaskThread() instanceof CCreateDirTask)
+//				&&!(event.getTaskThread() instanceof CRemoveFileTask)
+//				&&!(event.getTaskThread() instanceof CRemoveDirectoryTask)){
+//			return;
+//		}
+//		synchronized(listeners){
+//			if (listeners.size() != 0) {
+//				listeners.get(0).handle(event);
+//				listeners.remove(0);
+//			}
+//		}
 	}
 
 	@Override

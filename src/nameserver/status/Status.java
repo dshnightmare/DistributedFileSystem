@@ -3,14 +3,12 @@ package nameserver.status;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import nameserver.status.StatusEvent.Type;
 
 /**
- * Status of storage servers.
+ * Keep status of all storage servers.
  * 
  * @author lishunyang
  * @see Storage
@@ -28,6 +26,10 @@ public class Status implements StatusEventListener
      */
     private List<Storage> status = new ArrayList<Storage>();
 
+    /**
+     * Status event listener, if any status of storage server changes, notify
+     * them.
+     */
     private List<StatusEventListener> listeners =
         new ArrayList<StatusEventListener>();
 
@@ -96,7 +98,6 @@ public class Status implements StatusEventListener
     {
         final boolean remove = status.remove(storage);
 
-        System.out.println("@@@@@@@ " + remove);
         if (remove)
         {
             fireEvent(new StatusEvent(Type.STORAGE_DEAD, storage));
@@ -151,27 +152,50 @@ public class Status implements StatusEventListener
         return result;
     }
 
+    /**
+     * Get how many storage server there is.
+     * 
+     * @return
+     */
     public synchronized int getStorageNum()
     {
         return status.size();
     }
-    
+
+    /**
+     * Add <tt>StatusEventListener</tt>
+     * 
+     * @param listener
+     */
     public void addEventListener(StatusEventListener listener)
     {
         listeners.add(listener);
     }
 
+    /**
+     * Remove <tt>StatusEventListener</tt>
+     * 
+     * @param listener
+     */
     public void removeEventListener(StatusEventListener listener)
     {
         listeners.remove(listener);
     }
 
+    /**
+     * Fire an <tt>StatusEvent</tt>, notify the listeners.
+     * 
+     * @param event
+     */
     public void fireEvent(StatusEvent event)
     {
         for (StatusEventListener l : listeners)
             l.handle(event);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handle(StatusEvent event)
     {

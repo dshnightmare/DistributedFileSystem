@@ -11,7 +11,8 @@ import common.util.Log;
 import nameserver.meta.File;
 
 /**
- * Storage server meta data.
+ * Storage server meta data, includes server id, heart-beat time stamp, load,
+ * sum of running taks.
  * 
  * @author lishunyang
  * 
@@ -33,6 +34,12 @@ public class Storage
      */
     private int taskSum;
 
+    /**
+     * Storage load status.
+     * <p>
+     * It represents the percentage of using capacity which ranges from 0 to
+     * 100.
+     */
     private int storageLoad;
 
     /**
@@ -68,7 +75,6 @@ public class Storage
      */
     public synchronized void setHeartbeatTime(long time)
     {
-    	Log.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         this.heartbeatTime = time;
         fireEvent(new StatusEvent(StatusEvent.Type.HEARTBEAT, this));
     }
@@ -104,12 +110,22 @@ public class Storage
         return taskSum;
     }
 
+    /**
+     * Update storage load status.
+     * 
+     * @param load Load of storage server.
+     */
     public void setStorageLoad(int load)
     {
         this.storageLoad = load;
         fireEvent(new StatusEvent(StatusEvent.Type.LOAD_CHANGED, this));
     }
 
+    /**
+     * Get storage load percentage.
+     * 
+     * @return
+     */
     public int getStorageLoad()
     {
         return storageLoad;
@@ -210,16 +226,31 @@ public class Storage
         }
     }
 
+    /**
+     * Add <tt>StatusEvent</tt> listener.
+     * 
+     * @param listener
+     */
     public void addEventListener(StatusEventListener listener)
     {
         listeners.add(listener);
     }
 
+    /**
+     * Remove <tt>StatusEvent</tt> listener.
+     * 
+     * @param listener
+     */
     public void removeEventListener(StatusEventListener listener)
     {
         listeners.remove(listener);
     }
 
+    /**
+     * Fire a <tt>StatusEvent</tt> event, notify those listeners.
+     * 
+     * @param event
+     */
     public void fireEvent(StatusEvent event)
     {
         for (StatusEventListener l : listeners)

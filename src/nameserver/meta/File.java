@@ -57,6 +57,14 @@ public class File
      */
     private List<Storage> locations = new ArrayList<Storage>();
 
+    /**
+     * Parse bare file id from full file id.
+     * <p>
+     * Full file id: bareid_version
+     * 
+     * @param fileId
+     * @return
+     */
     public static long getBareIdFromFileId(String fileId)
     {
         String[] tokens = fileId.split(SEPARATOR);
@@ -67,6 +75,14 @@ public class File
         return Long.valueOf(tokens[0]);
     }
 
+    /**
+     * Parse version from full file id.
+     * <p>
+     * Full file id: bareid_version
+     * 
+     * @param fileId
+     * @return
+     */
     public static long getVersionFromFileId(String fileId)
     {
         String[] tokens = fileId.split(SEPARATOR);
