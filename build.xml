@@ -6,6 +6,7 @@
 	<property name="dst.dir" value="classes" />
 	<property name="jar.dir" value="jar" />
 	<property name="lib.dir" value="lib" />
+	<property name="doc.dir" value="doc" />
 	<property name="nameserver.main-class" value="nameserver.NameServerLauncher" />
 	<property name="storageserver.main-class" value="storageserver.StorageServerLauncher" />
 	<property name="client.main-class" value="client.ClientLauncher" />
@@ -68,6 +69,34 @@
 				<path location="${jar.dir}/${ant.project.name}.jar" />
 			</classpath>
 		</java>
+	</target>
+
+	<!-- JAVADOC -->
+	<target name="javadoc" description="Generates project javadoc.">
+		<javadoc author="true" destdir="${doc.dir}" package="true" version="true" use="true" windowtitle="Distributed File System API" classpathref="classpath" source="1.6+" maxmemory="256m">
+			<packageset dir="src">
+				<include name="**" />
+			</packageset>
+			<tag name="todo" description="To do:" />
+			<tag name="note" description="Note:" />
+			<link href="${j2se_api}" />
+			<header>
+				<![CDATA[
+	                <b> Distributed File System. </b>
+	                ]]>
+	            </header>
+		<bottom>
+			<![CDATA[
+	                <font size="-1">
+			<a href="https://github.com/dshnightmare/DistributedFileSystem"> 
+								 Github pages</a>
+			<br>
+				<a href="http://gnu.org"> Distributable under LGPL license. </a>
+				<br>
+				</font>
+	                ]]>
+	            </bottom>
+		</javadoc>
 	</target>
 
 </project>
