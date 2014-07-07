@@ -7,6 +7,12 @@ import common.call.c2n.MoveDirectoryCallC2N;
 import common.network.Connector;
 import common.util.Logger;
 
+/**
+ * Task of moving directory from one place to another, or just renaming it.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class MoveDirectoryTask
     extends NameServerTask
 {
@@ -16,10 +22,23 @@ public class MoveDirectoryTask
     private final static Logger logger = Logger
         .getLogger(MoveDirectoryTask.class);
 
+    /**
+     * Old directory name.
+     */
     private String oldDirName;
 
+    /**
+     * New directory name.
+     */
     private String newDirName;
 
+    /**
+     * Construction method.
+     * 
+     * @param tid
+     * @param call
+     * @param connector
+     */
     public MoveDirectoryTask(long tid, Call call, Connector connector)
     {
         super(tid, call, connector);
@@ -29,6 +48,9 @@ public class MoveDirectoryTask
         this.newDirName = c.getNewDirectoryName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -61,12 +83,18 @@ public class MoveDirectoryTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {
         setDead();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {

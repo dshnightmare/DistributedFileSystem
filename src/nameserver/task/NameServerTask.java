@@ -88,8 +88,6 @@ public abstract class NameServerTask
         call.setFromTaskId(getTaskId());
         call.setToTaskId(remoteTaskId);
         call.setInitiator(initiator);
-        
-        System.out.println("SSSSSSS " + call.getType() + ", initiator: " + call.getInitiator() + " toTaskId: " + remoteTaskId + " fromTaskId: " + getTaskId());
 
         connector.sendCall(call);
     }

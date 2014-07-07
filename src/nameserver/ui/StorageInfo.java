@@ -1,7 +1,6 @@
 package nameserver.ui;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -12,18 +11,44 @@ import javax.swing.JTextArea;
 
 import nameserver.status.Storage;
 
+/**
+ * Storage information panel.
+ * <p>
+ * This panel is pretty ugly.
+ * 
+ * @author lishunyang
+ * 
+ */
 public class StorageInfo
 {
+    /**
+     * Panel instance.
+     */
     private JPanel panel;
 
+    /**
+     * Storage id.
+     */
     private JTextArea id;
 
+    /**
+     * Storage saving load.
+     */
     private JProgressBar load;
 
+    /**
+     * Storage sum of running task.
+     */
     private JTextArea taskSum;
 
+    /**
+     * Storage icon.
+     */
     private static final ImageIcon serverIcon = new ImageIcon("ico/server.png");
 
+    /**
+     * Construction method.
+     */
     public StorageInfo()
     {
         panel = new JPanel();
@@ -49,6 +74,11 @@ public class StorageInfo
         panel.add(subPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Update storage panel inforation.
+     * 
+     * @param storage
+     */
     public void update(Storage storage)
     {
         this.id.setText(storage.getId());
@@ -56,6 +86,11 @@ public class StorageInfo
         this.taskSum.setText("Running task: " + storage.getTaskSum());
     }
 
+    /**
+     * Get panel instance.
+     * 
+     * @return
+     */
     public JPanel getPanel()
     {
         return panel;
