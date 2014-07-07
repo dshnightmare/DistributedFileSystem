@@ -7,6 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * 
+ * @author dengshihong
+ *
+ */
 public class FileUtil {
 	private static final Logger LOG = Logger.getLogger(FileUtil.class);
 

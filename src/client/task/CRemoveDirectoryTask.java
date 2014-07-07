@@ -7,12 +7,22 @@ import common.network.ClientConnector;
 import common.task.Task;
 import common.util.Log;
 
+/**
+ * remove a directory
+ * @author gengyufeng
+ *
+ */
 public class CRemoveDirectoryTask 
 	extends Task{
 	private String dir;
 	private Object netWaitor = new Object();
 	private long toTaskId;
 
+	/**
+	 * remove dir
+	 * @param tid
+	 * @param dir
+	 */
 	public CRemoveDirectoryTask(long tid, String dir) {
 		super(tid);
 		this.dir = dir;

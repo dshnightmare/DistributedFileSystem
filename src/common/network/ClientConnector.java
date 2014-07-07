@@ -21,21 +21,41 @@ import common.util.Log;
 import common.util.SwitchObjectAndByte;
 
 /**
- * Client holds an object of this class. 
+ * every client need an instance of ClientConnector to Name Server
+ * </b>
+ * ClientConnector sends calls to name server, and collects responses. calls and responses
+ * are defined in package common.call
+ * </b>
+ * use sendCall(Call) to send a Call
+ * </b>
+ * implement CallListener and add listener to ClientConnector to deal with responses
  * @author geng yufeng
  *
  */
 public class ClientConnector implements Connector, CallDispatcher{
 	
 	private volatile static ClientConnector instance;
-	
+	/**
+	 * socket created to connect with name server
+	 */
 	private Socket socket = null;
+	/**
+	 * name server ip/port
+	 */
 	private String remoteIP;
 	private int remotePort;
 	private Configuration cf;
+	/**
+	 * list of command to be sent to name server
+	 */
 	private BlockingQueue<Call> commands;
+	/**
+	 * list of responses received form name server
+	 */
 	private BlockingQueue<Call> responses;
-	
+	/**
+	 * listeners for response add to clientConnector
+	 */
 	private List<CallListener> responseListeners = new ArrayList<CallListener>();
 	
 	public ClientConnector(){
@@ -46,6 +66,10 @@ public class ClientConnector implements Connector, CallDispatcher{
 		responses = new LinkedBlockingDeque<Call>();
 	}
 	
+	/**
+	 * get a globally unique ClientConnector instance
+	 * @return
+	 */
 	public static ClientConnector getInstance(){
 		if(null == instance){
 			synchronized (ClientConnector.class) {

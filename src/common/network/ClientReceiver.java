@@ -9,6 +9,12 @@ import common.util.Configuration;
 import common.util.Log;
 import common.util.SwitchObjectAndByte;
 
+/**
+ * holds socket with name server, wait for any data input. read data and translate
+ * them into Call
+ * @author gengyufeng
+ *
+ */
 public class ClientReceiver extends Thread{
 
 	private ClientConnector connector;

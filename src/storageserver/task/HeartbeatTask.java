@@ -10,21 +10,44 @@ import storageserver.event.HeartbeatResponseEvent;
 import common.call.Call;
 import common.call.n2s.MigrateFileCallN2S;
 import common.call.s2n.HeartbeatCallS2N;
-import common.task.Task;
 import common.task.TaskMonitor;
 import common.util.Configuration;
 import common.util.Logger;
 
+/**
+ * 
+ * @author dengshihong
+ * 
+ */
 public class HeartbeatTask extends StorageServerTask {
+	/**
+	 * 
+	 */
 	private final static Logger logger = Logger.getLogger(HeartbeatTask.class);
+	/**
+	 * 
+	 */
 	private final long NStid;
+	/**
+	 * 
+	 */
 	private final TaskMonitor taskMonitor;
+	/**
+	 * 
+	 */
 	private Map<String, List<String>> overMigrateFile;
+	/**
+	 * 
+	 */
 	private Map<String, List<String>> onMigrateFile;
+	/**
+	 * 
+	 */
 	private Boolean alive = true;
 
 	public HeartbeatTask(long tid, Map<String, List<String>> overMigrateFile,
-			Map<String, List<String>> onMigrateFile, long NStid, TaskMonitor taskMonitor) {
+			Map<String, List<String>> onMigrateFile, long NStid,
+			TaskMonitor taskMonitor) {
 		super(tid);
 		this.overMigrateFile = overMigrateFile;
 		this.onMigrateFile = onMigrateFile;
@@ -65,9 +88,8 @@ public class HeartbeatTask extends StorageServerTask {
 				}
 			}
 			fireEvent(new HeartbeatResponseEvent(this, working));
-		}
-		else if (call.getType() == Call.Type.ABORT){
-			//TODO 可能需要加锁
+		} else if (call.getType() == Call.Type.ABORT) {
+			// TODO 可能需要加锁
 			alive = false;
 		}
 
@@ -82,13 +104,15 @@ public class HeartbeatTask extends StorageServerTask {
 				migratefile.putAll(overMigrateFile);
 				overMigrateFile.clear();
 			}
-			HeartbeatCallS2N call = new HeartbeatCallS2N(migratefile, taskMonitor.getTaskSum());
+			HeartbeatCallS2N call = new HeartbeatCallS2N(migratefile,
+					taskMonitor.getTaskSum());
 			call.setToTaskId(NStid);
-			logger.info("---------->"+NStid);
+			logger.info("---------->" + NStid);
 			call.setFromTaskId(getTaskId());
 			connector.sendCall(call);
 			try {
-				TimeUnit.SECONDS.sleep(Configuration.getInstance().getInteger(Configuration.SS_HB_INTERVAL));
+				TimeUnit.SECONDS.sleep(Configuration.getInstance().getInteger(
+						Configuration.SS_HB_INTERVAL));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

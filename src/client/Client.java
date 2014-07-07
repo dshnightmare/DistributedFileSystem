@@ -27,7 +27,8 @@ import common.util.IdGenerator;
 import common.util.Log;
 
 /**
- * tasks are generated elsewhere, and addTask() here to start
+ * implements a method for each task type, operation is captured on GUI, and
+ * method is called here to start up a Task
  * @author gengyufeng
  *
  */
@@ -50,6 +51,10 @@ public class Client
 		taskMonitor.addListener(this);
 	}
 	
+	/**
+	 * there's only one instance of Client globally
+	 * @return
+	 */
 	public static Client getInstance(){
 		if(null == instance){
 			synchronized (Client.class) {
@@ -137,7 +142,13 @@ public class Client
 		new Thread(task).start();
 		taskMonitor.addTask(task);
 	}
-	
+	/**
+	 * move file 
+	 * @param oldDir	old directory
+	 * @param oldName	old file name
+	 * @param newDir	new file directory
+	 * @param newName	new file name
+	 */
 	public void moveFileDirectASync(String oldDir, String oldName
 			,String newDir, String newName){
 		Task task = null;

@@ -18,6 +18,11 @@ import common.util.Constant;
 import common.util.Log;
 import common.util.SwitchObjectAndByte;
 
+/**
+ * listen on given port, accept connection or read data
+ * @author gengyufeng
+ *
+ */
 public class ServerListener extends Thread{
 
 	private int port;
@@ -28,6 +33,11 @@ public class ServerListener extends Thread{
 	private ByteBuffer r_buf;
 	private ByteBuffer w_buf;
 	
+	/**
+	 * setup ServerListener
+	 * @param _connector	server connector it belons to
+	 * @param _port	port to listen
+	 */
 	public ServerListener(ServerConnector _connector, int _port){
 		port = _port;
 		connector = _connector;

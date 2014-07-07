@@ -14,10 +14,20 @@ import common.util.Configuration;
  */
 public class CLeaseTask 
 	extends Thread{
-
+	/**
+	 * NS task id
+	 */
 	private long toTaskId;
+	/**
+	 * client task id(not used)
+	 */
 	private long fromTaskId;
 	
+	/**
+	 * every task start a LeaseTask to send lease
+	 * @param fromTaskId	not cared
+	 * @param toTaskId	id of the task on NS
+	 */
 	public CLeaseTask(long fromTaskId, long toTaskId){
 		this.toTaskId = toTaskId;
 		this.fromTaskId = fromTaskId;

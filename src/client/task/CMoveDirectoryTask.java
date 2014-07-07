@@ -8,6 +8,11 @@ import common.call.c2n.MoveFileCallC2N;
 import common.network.ClientConnector;
 import common.task.Task;
 
+/**
+ * move a directory to new location
+ * @author gengyufeng
+ *
+ */
 public class CMoveDirectoryTask 	
 	extends Task{
 	
@@ -15,7 +20,12 @@ public class CMoveDirectoryTask
 	private String oldDir;
 	private String newDir;
 	
-	
+	/**
+	 * 
+	 * @param tid
+	 * @param oldDir old directory
+	 * @param newDir new directory
+	 */
 	public CMoveDirectoryTask(long tid, String oldDir, String newDir) {
 		super(tid);
 		this.oldDir = oldDir;

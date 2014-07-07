@@ -29,29 +29,46 @@ public class CAddFileTask
     extends Task
 {
 
-    /*
-     * get connection with storage server
-     */
-    private XConnector xConnector;
-
     private Socket storageSocket;
-
+    /**
+     * Stream to Read/Write file with Storage Server
+     */
     private DataOutputStream out;
     private DataInputStream in;
 
-    // wait for the ns to return the call
+    /**
+     * wait for the ns to return the call
+     */
     private AddFileCallN2C call;
-
+    /**
+     * wait on this object for NS to response
+     */
     private Object waitor = new Object();
-
+    /**
+     * direction of file uploaded on NameServer
+     */
     private String filepath;
-
+    /**
+     * file uploaded can have different name with local file
+     */
     private String filename;
+    /**
+     * handle of the local file to be uploaded
+     */
     private File file;
-    
+    /**
+     * toTaskId and type of responsed call(N2C)
+     */
     private long toTaskId;
     private Call.Type type;
 
+    /**
+     * create addfiletask, should call new Thread(task).start
+     * @param tid	task id, unique globally
+     * @param _path	target path
+     * @param _name	target name
+     * @param file	local file handler
+     */
     public CAddFileTask(long tid, String _path, String _name, File file)
     {
         super(tid);

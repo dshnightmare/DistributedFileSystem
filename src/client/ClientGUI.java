@@ -72,6 +72,9 @@ public class ClientGUI
 	
 	private Client client = Client.getInstance();
 	
+	/**
+	 * init essential parts of GUI, must be called 
+	 */
 	public void init(){
 		frame.setTitle("DFS -- "+currentDirectory);
 		frame.setLayout(new BorderLayout());

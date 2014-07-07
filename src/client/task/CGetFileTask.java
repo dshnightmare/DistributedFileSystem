@@ -19,25 +19,47 @@ import common.task.Task;
 import common.util.IdGenerator;
 import common.util.Log;
 
+/**
+ * target to download a file
+ * @author gengyufeng
+ *
+ */
 public class CGetFileTask 
 	extends Task{
-	
+	/**
+	 * socket used to connect with storage server(which is returned by NS)
+	 */
 	private Socket storageSocket;
+	/**
+	 * file/socket stream
+	 */
 	private DataOutputStream out;
 	private DataInputStream dis;
 	private FileOutputStream fos;
+	/**
+	 * local target file handler
+	 */
 	private File file;
 	
 	//wait for the ns to return the call
 	private GetFileCallN2C call;
 	
 	private Object waitor = new Object();
-	
+	/**
+	 * path and name of the file to be downloaded
+	 */
 	private String filepath;
 	private String filename;
 	
 	private long toTaskId;
 
+	/**
+	 * ASync task to download a file
+	 * @param tid	globally unique task id
+	 * @param _path	path of file to be downloaded
+	 * @param _name	name of file to be downloaded
+	 * @param file	local target file handler
+	 */
 	public CGetFileTask(long tid, String _path, String _name, File file) {
 		super(tid);
 		filepath = _path;

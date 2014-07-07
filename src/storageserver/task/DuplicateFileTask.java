@@ -2,7 +2,6 @@ package storageserver.task;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.net.Socket;
 
@@ -12,14 +11,37 @@ import common.call.Call;
 import common.network.XConnector;
 import common.util.Logger;
 
+/**
+ * Duplicate file from the transDir of the Storage
+ * 
+ * @author dengshihong
+ * 
+ */
 public class DuplicateFileTask extends StorageServerTask {
-	private final static Logger logger = Logger.getLogger(DuplicateFileTask.class);
+	/**
+	 * Logger
+	 */
+	private final static Logger logger = Logger
+			.getLogger(DuplicateFileTask.class);
+	/**
+	 * 
+	 */
 	private final Storage storage;
+	/**
+	 * 
+	 */
 	private final String address;
+	/**
+	 * 
+	 */
 	private final String filename;
+	/**
+	 * 
+	 */
 	private final long parent;
 
-	public DuplicateFileTask(long tid, Storage storage, String address, String filename, long parent) {
+	public DuplicateFileTask(long tid, Storage storage, String address,
+			String filename, long parent) {
 		super(tid);
 		this.storage = storage;
 		this.address = address;
@@ -43,16 +65,18 @@ public class DuplicateFileTask extends StorageServerTask {
 		DataInputStream dis = null;
 		FileInputStream fis = null;
 		try {
-			Socket socket = XConnector.getSocket(string[0], Integer.parseInt(string[1]));
+			Socket socket = XConnector.getSocket(string[0],
+					Integer.parseInt(string[1]));
 			try {
 				dos = new DataOutputStream(socket.getOutputStream());
 				dis = new DataInputStream(socket.getInputStream());
-				fis = new FileInputStream(storage.getTransFileNotDelete(filename));
+				fis = new FileInputStream(
+						storage.getTransFileNotDelete(filename));
 				dos.writeByte(XConnector.Type.OP_WRITE_BLOCK);
 				dos.writeInt(0);
 				dos.writeUTF(filename);
 				dos.writeLong(storage.getTransFileNotDelete(filename).length());
-				
+
 				sendByte = new byte[1024];
 				while ((readlen = fis.read(sendByte, 0, sendByte.length)) > 0) {
 					dos.write(sendByte, 0, readlen);
@@ -63,8 +87,7 @@ public class DuplicateFileTask extends StorageServerTask {
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.info("DuplicateFileTask failed");
-			}
-			finally{
+			} finally {
 				if (fis != null)
 					fis.close();
 				if (dis != null)

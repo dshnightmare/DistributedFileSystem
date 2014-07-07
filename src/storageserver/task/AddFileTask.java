@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.Inflater;
 
 import storageserver.Storage;
 import storageserver.event.AddFileDuplicateEvent;
@@ -14,6 +13,11 @@ import common.call.Call;
 import common.network.XConnector;
 import common.util.Logger;
 
+/**
+ * 
+ * @author dengshihong
+ * 
+ */
 public class AddFileTask extends StorageServerTask {
 	private final static Logger logger = Logger.getLogger(AddFileTask.class);
 	private final Socket socket;
