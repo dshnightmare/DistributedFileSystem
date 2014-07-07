@@ -2,17 +2,36 @@ package common.call;
 
 import java.io.Serializable;
 
+/**
+ * Base class of all kinds of other call used in the RPC system.
+ * </p>
+ * derived calls contains call sent nameserver2client, c2n, n2storageserver, s2n
+ * </p>
+ * every derived call links with a task, like AddFileCall, GetFileCall, etc.
+ * @author gengyufeng
+ *
+ */
 public abstract class Call
     implements Serializable
 {
     private static final long serialVersionUID = -1157466700148810064L;
-
+    /**
+     * type of call, defined below as enum Type
+     */
     private final Type type;
-
+    /**
+     * nameserver use this attribute to distinguish different clients, it's derived by
+     * call the socket's getremotesocketaddress
+     */
     private String initiator;
-
+    /**
+     * Client, NameServer and StorageServer both have id for their tasks respective, when a
+     * Call is passed between two entity, they assign fromTaskId as their own taskId.
+     * </p>
+     * if Call is initiated, toTaskId will be remained -1, if Call is a response, it will be
+     * the fromTaskId of the call it response to.
+     */
     private long fromTaskId = -1;
-
     private long toTaskId = -1;
 
     public Call(Type type)

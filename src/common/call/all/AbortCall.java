@@ -2,6 +2,11 @@ package common.call.all;
 
 import common.call.Call;
 
+/**
+ * Call sent when a task is aborted.
+ * @author gengyufeng
+ *
+ */
 public class AbortCall
     extends Call
 {

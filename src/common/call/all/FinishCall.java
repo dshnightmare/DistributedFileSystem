@@ -1,7 +1,11 @@
 package common.call.all;
 
 import common.call.Call;
-
+/**
+ * when a task finished successfully, a finish call will be sent to the remote entity.
+ * @author gengyufeng
+ *
+ */
 public class FinishCall
     extends Call
 {

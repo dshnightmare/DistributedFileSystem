@@ -1,7 +1,13 @@
 package common.call.c2n;
 
 import common.call.Call;
-
+/**
+ * Call to add directory
+ * <p>
+ * @see Call
+ * @author gengyufeng
+ *
+ */
 public class AddDirectoryCallC2N
     extends Call
 {
