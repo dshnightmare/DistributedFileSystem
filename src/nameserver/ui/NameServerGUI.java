@@ -14,32 +14,69 @@ import nameserver.status.StatusEvent;
 import nameserver.status.StatusEventListener;
 import nameserver.status.Storage;
 
+/**
+ * Graphical User Interface of NameServer.
+ * <p>
+ * This GUI is pretty ugly..
+ * 
+ * @author lishunyang
+ * 
+ */
 public class NameServerGUI
     implements StatusEventListener
 {
+    /**
+     * Single instance pattern.
+     */
     private static NameServerGUI instance = new NameServerGUI();
 
+    /**
+     * Main frame.
+     */
     private JFrame frame = new JFrame("Name Server");
 
+    /**
+     * Tab component.
+     */
     private JTabbedPane tab = new JTabbedPane(JTabbedPane.TOP,
         JTabbedPane.WRAP_TAB_LAYOUT);
 
+    /**
+     * Storage status information panel.
+     */
     private JPanel storagePanel = new JPanel();
 
+    /**
+     * Meta data information panel.
+     */
     private JPanel directoryPanel = new JPanel();
 
+    /**
+     * Status of storages, for storages can be added or removed dynamically.
+     */
     private Map<Storage, StorageInfo> storages =
         new HashMap<Storage, StorageInfo>();
 
+    /**
+     * Construction method.
+     */
     private NameServerGUI()
     {
     }
 
+    /**
+     * Get GUI instance.
+     * 
+     * @return
+     */
     public static NameServerGUI getInstance()
     {
         return instance;
     }
 
+    /**
+     * Initialize GUI.
+     */
     public void init()
     {
         frame.setBounds(100, 100, 450, 300);
@@ -58,6 +95,9 @@ public class NameServerGUI
         frame.setVisible(true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized void handle(StatusEvent event)
     {
@@ -77,6 +117,11 @@ public class NameServerGUI
         }
     }
 
+    /**
+     * Add a new storage panel.
+     * 
+     * @param storage
+     */
     private void addStoragePanel(Storage storage)
     {
         final StorageInfo info = new StorageInfo();
@@ -88,6 +133,11 @@ public class NameServerGUI
         frame.validate();
     }
 
+    /**
+     * Update storage panel information.
+     * 
+     * @param storage
+     */
     private void updateStoragePanel(Storage storage)
     {
         final StorageInfo info = storages.get(storage);
@@ -96,6 +146,11 @@ public class NameServerGUI
         info.update(storage);
     }
 
+    /**
+     * Remove a specified storage panel.
+     * 
+     * @param storage
+     */
     private void removeStoragePanel(Storage storage)
     {
         final StorageInfo panel = storages.remove(storage);

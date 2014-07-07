@@ -256,7 +256,6 @@ public class AddFileTask
         for (Storage s : storages)
         {
             locations.add(s.getId());
-            System.out.println("--------------" + s.getId());
         }
 
         String fileId = file.getId();

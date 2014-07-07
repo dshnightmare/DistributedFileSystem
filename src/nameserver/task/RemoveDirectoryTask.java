@@ -7,6 +7,12 @@ import common.call.c2n.RemoveDirectoryCallC2N;
 import common.network.Connector;
 import common.util.Logger;
 
+/**
+ * Task of removing directory.
+ * 
+ * @author lishunyang
+ * @see NameServerTask
+ */
 public class RemoveDirectoryTask
     extends NameServerTask
 {
@@ -21,6 +27,13 @@ public class RemoveDirectoryTask
      */
     private String dirName;
 
+    /**
+     * Construction method.
+     * 
+     * @param tid
+     * @param call
+     * @param connector
+     */
     public RemoveDirectoryTask(long tid, Call call, Connector connector)
     {
         super(tid, call, connector);
@@ -28,6 +41,9 @@ public class RemoveDirectoryTask
         this.dirName = c.getDirectoryName();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void run()
     {
@@ -56,6 +72,9 @@ public class RemoveDirectoryTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void handleCall(Call call)
     {
@@ -69,6 +88,9 @@ public class RemoveDirectoryTask
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void release()
     {

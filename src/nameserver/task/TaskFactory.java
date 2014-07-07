@@ -66,6 +66,7 @@ public class TaskFactory
             task = new RemoveDirectoryTask(taskId, call, connector);
             break;
         case REGISTRATION_S2N:
+            // For registration call, we start a heartbeat task.
             task =
                 new HeartbeatTask(taskId, call, connector,
                     conf.getLong(Configuration.HEARTBEAT_INTERVAL_KEY));
@@ -86,6 +87,7 @@ public class TaskFactory
             return null;
         }
 
+        // heatbeat call and sync task doesn't need lease.
         if (Call.Type.REGISTRATION_S2N != call.getType()
             && Call.Type.SYNC_S2N != call.getType())
         {

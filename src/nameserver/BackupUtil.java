@@ -24,32 +24,73 @@ import java.util.Set;
 import common.call.Call;
 import common.util.Configuration;
 import common.util.Logger;
-import nameserver.meta.Directory;
 import nameserver.meta.Meta;
 
+/**
+ * Backup tools, used for save/restore <tt>Meta</tt> image, save/restore log
+ * messge.
+ * 
+ * @author lishunyang
+ * 
+ */
 public class BackupUtil
 {
+    /**
+     * Logger.
+     */
     private final static Logger logger = Logger.getLogger(BackupUtil.class);
 
+    /**
+     * Log file name.
+     */
     private final static String logFileName = "LOG";
 
+    /**
+     * Image file name.
+     */
     private final static String imageFileName = "IMAGE";
 
+    /**
+     * Time format suffix of image file name.
+     */
     private final static DateFormat timeFormat = new SimpleDateFormat(
         "yyyyMMddHHmmss");
 
+    /**
+     * Separator.
+     */
     private final static String SEPERATOR = " ";
 
+    /**
+     * Issue log flag.
+     */
     private final static String ISSUE = "<ISSUE>";
 
+    /**
+     * Commit log flag.
+     */
     private final static String COMMIT = "<COMMIT>";
 
+    /**
+     * Single instance pattern.
+     */
     private static BackupUtil instance = null;
 
+    /**
+     * Log file directory.
+     */
     private static String logDirName;
 
+    /**
+     * Image file directory.
+     */
     private static String imageDirName;
 
+    /**
+     * Construction method.
+     * 
+     * @throws Exception
+     */
     private BackupUtil()
         throws Exception
     {
@@ -82,6 +123,11 @@ public class BackupUtil
         }
     }
 
+    /**
+     * Get <tt>BackupUtil</tt> instance.
+     * 
+     * @return
+     */
     public synchronized static BackupUtil getInstance()
     {
         try
@@ -98,6 +144,13 @@ public class BackupUtil
         return instance;
     }
 
+    /**
+     * Write backup image file.
+     * <p>
+     * Other threads can't visit <tt>Meta</tt> until writing process is over.
+     * <p>
+     * After image file finished, log file will be deleted.
+     */
     public synchronized void writeBackupImage()
     {
         final Meta meta = Meta.getInstance();
@@ -148,6 +201,12 @@ public class BackupUtil
         }
     }
 
+    /**
+     * Restore <tt>Meta</tt> from image file.
+     * <p>
+     * If there are many image files, it will only choose the most recently
+     * created image file.
+     */
     public synchronized void readBackupImage()
     {
         final Meta meta = Meta.getInstance();
@@ -273,13 +332,25 @@ public class BackupUtil
                 }
             }
         }
-
-        // for (File f : backups)
-        // {
-        // System.out.println(f.getName());
-        // }
     }
 
+    /**
+     * Write operation issue log.
+     * <p>
+     * <strong>Warning:</strong> Only those operations that modify <tt>Meta</tt>
+     * need to be recorded, such as "add file/directory" and
+     * "rename file/directory", other operation will just be ingored..Every
+     * operation log item contains of two parts: issue and commit.
+     * <p>
+     * Once an operation has started, issue log will be written to log file.
+     * <p>
+     * After the operation finished, commit log will be written to log file, and
+     * then update <tt>Meta</tt> structure.
+     * 
+     * @param tid
+     * @param type
+     * @param description
+     */
     public synchronized void writeLogIssue(long tid, Call.Type type,
         String description)
     {
@@ -313,6 +384,21 @@ public class BackupUtil
         }
     }
 
+    /**
+     * Write operation commit log.
+     * <p>
+     * <strong>Warning:</strong> Only those operations that modify <tt>Meta</tt>
+     * need to be recorded, such as "add file/directory" and
+     * "rename file/directory", other operation will just be ingored..Every
+     * operation log item contains of two parts: issue and commit.
+     * <p>
+     * Once an operation has started, issue log will be written to log file.
+     * <p>
+     * After the operation finished, commit log will be written to log file, and
+     * then update <tt>Meta</tt> structure.
+     * 
+     * @param tid
+     */
     public synchronized void writeLogCommit(long tid)
     {
         final String logFilePath = logDirName + logFileName;
@@ -344,6 +430,9 @@ public class BackupUtil
         }
     }
 
+    /**
+     * Delete log file.
+     */
     public synchronized void deleteBackLog()
     {
         final String logFilePath = logDirName + logFileName;
@@ -352,6 +441,12 @@ public class BackupUtil
         file.delete();
     }
 
+    /**
+     * Restore <tt>Meta</tt> from log file.
+     * <p>
+     * <strong>Warning:</strong> Only committed operation will be restored.
+     * Restoring process MUST in issue log order.
+     */
     public synchronized void readBackupLog()
     {
         final Meta meta = Meta.getInstance();
@@ -529,6 +624,13 @@ public class BackupUtil
         }
     }
 
+    /**
+     * Test whether a log line is specified call type.
+     * 
+     * @param logCall
+     * @param call
+     * @return
+     */
     private boolean callEqual(String logCall, Call.Type call)
     {
         return logCall.compareTo(call.toString()) == 0;

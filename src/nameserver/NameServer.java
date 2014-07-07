@@ -26,7 +26,6 @@ import common.event.TaskEventListener;
 import common.task.Task;
 import common.task.TaskMonitor;
 import common.util.Configuration;
-import common.util.Log;
 import common.util.Logger;
 
 /**
@@ -56,11 +55,6 @@ public class NameServer
      * Maximum number of task which can be running simultaneously.
      */
     private final static int MAX_THREADS = 20;
-
-    /**
-     * Time period of making snapshot.(second)
-     */
-    private final static long SNAPSHOT_PERIOD = 10;
 
     /**
      * Server connector, used to send/receive call to/from client and storage
