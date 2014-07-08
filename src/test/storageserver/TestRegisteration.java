@@ -2,8 +2,6 @@ package test.storageserver;
 
 import java.util.concurrent.TimeUnit;
 
-import common.network.ServerConnector;
-
 import nameserver.NameServer;
 import storageserver.StorageServer;
 import junit.framework.TestCase;
@@ -14,7 +12,7 @@ import junit.framework.TestCase;
  * 
  */
 public class TestRegisteration extends TestCase {
-	private static ServerConnector connector;
+	// private static ServerConnector connector;
 	private static NameServer ns;
 	private static StorageServer ss;
 
